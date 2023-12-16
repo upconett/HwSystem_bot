@@ -1,1 +1,1 @@
-i am a iron man
+Install requrements in venv with command "pip install -r requirements.txt"
