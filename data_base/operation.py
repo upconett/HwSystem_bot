@@ -63,12 +63,12 @@ async def db_psql_UserData(id: int, formatted: bool = False):
 	"""
 	response = []
 	try:
-		response = await PostgreSQL.select(
+		response = (await PostgreSQL.select(
 			table='users',
 			what='*',
 			where='id',
 			where_value=id
-		)[0]
+		))[0]
 	except Exception as exception:
 		await ut_LogCreate(
 			id=00000000,
