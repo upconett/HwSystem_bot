@@ -46,8 +46,8 @@ async def on_shutdown(_):
 
 
 # <---------- Основные функции ---------->
-client.register_handlers_commands(dp)
-group.register_handlers_student(dp)
+client.register_handlers_client(dp)
+group.register_handlers_group(dp)
 
 
 executor.start_polling(dp, skip_updates=True, on_startup=on_startup)

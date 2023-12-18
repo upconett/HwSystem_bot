@@ -58,7 +58,7 @@ async def db_psql_UserData(id: int, formatted: bool = False):
 	"""
 	Return data about user formatted or not.
 	:param id: Telegram ID
-	:param formatted:
+	:param formatted: Dictionary for code or str for output
 	:return: Dictionary if formatted False or string if formatted True
 	"""
 	response = []

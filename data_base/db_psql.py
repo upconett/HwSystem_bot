@@ -10,6 +10,7 @@ from utilities.ut_logger import ut_LogCreate
 
 # <---------- Переменные ---------->
 filename = 'db_psql.py'
+__all__ = ['PostgreSQL', 'db_psql_InsertUser', 'db_psql_InsertChat', 'db_psql_InsertGroup']
 
 
 # <---------- Основные классы ---------->
@@ -68,6 +69,7 @@ class PostgreSQL:
 		try:
 			with self.conn.cursor() as cursor:
 				cursor.execute(f"UPDATE {table} SET {what} = ? WHERE {where} = ?;", (what_value, where_value,))
+			return True
 		except Exception as exception:
 			await ut_LogCreate(
 				id=00000000,
@@ -102,7 +104,7 @@ class PostgreSQL:
 
 
 # <---------- Основные функции ---------->
-async def db_psql_InsertUser(db: connection, id, username, full_name):
+async def db_psql_InsertUser(db: connection, id: int, username: str, full_name: str):
 	"""
 	Insert new user in users table.
 	:param db: Connect object
@@ -126,7 +128,7 @@ async def db_psql_InsertUser(db: connection, id, username, full_name):
 		return False
 
 
-async def db_psql_InsertGroup(db: connection, group_name, group_password, owner_id, default_lessons='', default_breaks=''):
+async def db_psql_InsertGroup(db: connection, group_name: str, group_password: str, owner_id: int, default_lessons: dict = '', default_breaks: dict = ''):
 	"""
 	Insert new group in groups table.
 	:param db: Connect object
@@ -145,14 +147,14 @@ async def db_psql_InsertGroup(db: connection, group_name, group_password, owner_
 		await ut_LogCreate(
 			id=00000000,
 			filename=filename,
-			function='PostgreSQL.insert_group',
+			function='db_psql_InsertGroup',
 			exception=exception,
 			content=''
 		)
 		return False
 
 
-async def db_psql_InsertChat(db: connection, id, title, group_id, settings=''):
+async def db_psql_InsertChat(db: connection, id: int, title: str, group_id: int, settings: dict = ''):
 	"""
 	Insert new chat in chats table.
 	:param db: Connect object
@@ -170,7 +172,8 @@ async def db_psql_InsertChat(db: connection, id, title, group_id, settings=''):
 		await ut_LogCreate(
 			id=00000000,
 			filename=filename,
-			function='PostgreSQL.insert_chat',
+			function='db_psql_InsertChat',
 			exception=exception,
 			content=''
 		)
+		return False

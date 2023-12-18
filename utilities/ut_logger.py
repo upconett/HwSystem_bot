@@ -5,7 +5,7 @@ from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
 
 
-# <---------- Импорт сторонних функций ---------->
+# <---------- Импорт локальных функций ---------->
 from data_base.operation import db_psql_UserData
 
 
