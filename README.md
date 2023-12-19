@@ -11,24 +11,24 @@ The bot **finds out when the next lesson is** in schedule and writes down the ta
 
 ## Features 💠
 - **Homework**
-  - **Save** your homework from group chat with your classmates (text, photo).
-  - **View** saved tasks in bot private messages.
-  - **Set notifications** on home tasks.
+   - **Save** your homework from group chat with your classmates (text, photo).
+   - **View** saved tasks in bot private messages.
+   - **Set notifications** on home tasks.
 
 - **Schedule**
-  - Save the **main schedule** for the week.
-  - Specify when **lessons start/end.**
-  - **View** schedules in private messages.
-  - **Set notifications** on break times.
+   - Save the **main schedule** for the week.
+   - Specify when **lessons start/end.**
+   - **View** schedules in private messages.
+   - **Set notifications** on break times.
 
 - **Events**
-  - **Save** special events.
-  - **View** saved events in private messages.
-  - **Set notifications** on the most important events.
+   - **Save** special events.
+   - **View** saved events in private messages.
+   - **Set notifications** on the most important events.
 
 - **Groups**
-  - **Manage** your class groups.
-  - **Add admins** that have access to group settings.
+   - **Manage** your class groups.
+   - **Add admins** that have access to group settings.
 
 
 ## Setup  ⚙️
