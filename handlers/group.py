@@ -44,8 +44,18 @@ async def group_callback_SelectGroup(query: types.CallbackQuery):
 		)
 
 
-async def group_callback_BindGroup(query: types.CallbackQuery):
-	pass
+async def group_callback_BindChatSettings(query: types.CallbackQuery):
+	try:
+		group_id = query.data[18:]
+		# edit message
+	except Exception as exception:
+		await ut_LogCreate(
+			id=query.from_user.id,
+			filename=filename,
+			function='group_callback_BindChatSettings',
+			exception=exception,
+			content=''
+		)
 
 
 # <---------- Handler функции ---------->
@@ -106,4 +116,4 @@ async def group_handler_ChatStart(message: types.Message):
 def register_handlers_group(dp: Dispatcher):
 	dp.register_message_handler(group_handler_ChatStart, content_types=ContentType.NEW_CHAT_MEMBERS)
 	dp.register_callback_query_handler(group_callback_SelectGroup, Text(startswith='ConnectGroup'))
-	dp.register_callback_query_handler(group_callback_BindGroup, Text(startswith='ChoosedGroup'))
+	dp.register_callback_query_handler(group_callback_BindChatSettings, Text(startswith='ChoosedGroup'))
