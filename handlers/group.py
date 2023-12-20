@@ -19,7 +19,22 @@ filename = 'group.py'
 
 # <---------- Callback функции ---------->
 async def group_callback_SelectGroup(query: types.CallbackQuery):
-	pass
+	try:
+		groups = query.data[18:]
+		await bot.edit_message_text(
+			chat_id=query.message.chat.id,
+			message_id=query.message.message_id,
+			text=msgr_SelectGroup,
+			reply_markup=kb_inline_SelectGroup(groups)
+		)
+	except Exception as exception:
+		await ut_LogCreate(
+			id=query.from_user.id,
+			filename=filename,
+			function='group_callback_SelectGroup',
+                        exception=exception,
+			content=''
+		)
 
 
 # <---------- Handler функции ---------->
