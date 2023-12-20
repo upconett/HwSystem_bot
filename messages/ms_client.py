@@ -19,7 +19,7 @@ mscl_CommandStartOrHelp_NoGroup = (
 )
 
 
-def mscl_CommandStartOrHelp_NoRegister(first_name: str):
+async def mscl_CommandStartOrHelp_NoRegister(first_name: str):
 	return (
 		f'⚙️ [HomeWorker_Bot](https://t.me/HwSystem_bot)\n'
 		f'Привет, {first_name} 👋\n'

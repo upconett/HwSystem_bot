@@ -64,6 +64,7 @@ async def db_psql_UserData(id: int, formatted: bool = False):
 	response = []
 	try:
 		response = (await PostgreSQL.select(
+			self=psql,
 			table='users',
 			what='*',
 			where='id',

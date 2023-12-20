@@ -6,7 +6,7 @@ from aiogram.utils import executor
 from create_bot import dp
 from handlers import client, group
 from data_base.operation import db_PsqlStart, db_MongoDbStart
-from utilities.ut_logger import ut_LogStart, ut_LogCreate
+from utilities.ut_logger import ut_LogStart
 
 
 # <---------- Переменные ---------->
@@ -24,21 +24,9 @@ async def on_startup(_):
 	if ut_LogStart():
 		print('Logger started OK!')
 	if db_PsqlStart():
-		await ut_LogCreate(
-			id=00000000,
-			filename=filename,
-			function='on_startup',
-			exception='',
-			content='Database PSQL connected!'
-		)
+		print('PSQL started OK!')
 	if db_MongoDbStart():
-		await ut_LogCreate(
-			id=00000000,
-			filename=filename,
-			function='on_startup',
-			exception='',
-			content='Database MongoDB connected!'
-		)
+		print('MongoDB started OK!')
 
 
 async def on_shutdown(_):

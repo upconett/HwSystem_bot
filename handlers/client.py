@@ -37,7 +37,7 @@ async def client_support_CommandStartOrHelp(id: int, full_name: str, username: s
 			reply_markup = kb_inline_GroupPanel
 		content = 'Already on database.'
 	else:
-		text = mscl_CommandStartOrHelp_NoRegister(first_name=full_name.split()[0])
+		text = await mscl_CommandStartOrHelp_NoRegister(first_name=full_name.split()[0])
 		reply_markup = kb_inline_GroupPanel
 		response = await db_psql_InsertUser(
 			db=psql,

@@ -47,13 +47,7 @@ class PostgreSQL:
 					cursor.execute(f"SELECT {what} FROM {table};")
 				return cursor.fetchall()
 		except Exception as exception:
-			await ut_LogCreate(
-				id=00000000,
-				filename=filename,
-				function='PostgreSQL.select',
-				exception=exception,
-				content=''
-			)
+			print(f'FILENAME="{filename}"; FUNCTION="PostgreSQL.select"; CONTENT=""; EXCEPTION="{exception}";')
 			return False
 
 	async def update(self, table: str, what: str, what_value: any, where: str, where_value: any):
@@ -71,13 +65,7 @@ class PostgreSQL:
 				cursor.execute(f"UPDATE {table} SET {what} = ? WHERE {where} = ?;", (what_value, where_value,))
 			return True
 		except Exception as exception:
-			await ut_LogCreate(
-				id=00000000,
-				filename=filename,
-				function='PostgreSQL.update',
-				exception=exception,
-				content=''
-			)
+			print(f'FILENAME="{filename}"; FUNCTION="PostgreSQL.update"; CONTENT=""; EXCEPTION="{exception}";')
 			return False
 
 	async def delete(self, table: str, where: str, where_value: any):
@@ -93,13 +81,7 @@ class PostgreSQL:
 				cursor.execute(f"DELETE FROM {table} WHERE {where} = ?;", (where_value,))
 			return True
 		except Exception as exception:
-			await ut_LogCreate(
-				id=00000000,
-				filename=filename,
-				function='PostgreSQL.delete',
-				exception=exception,
-				content=''
-			)
+			print(f'FILENAME="{filename}"; FUNCTION="PostgreSQL.delete"; CONTENT=""; EXCEPTION="{exception}";')
 			return False
 
 
@@ -154,19 +136,19 @@ async def db_psql_InsertGroup(db: connection, group_name: str, group_password: s
 		return False
 
 
-async def db_psql_InsertChat(db: connection, id: int, title: str, group_id: int, settings: dict = ''):
+async def db_psql_InsertChat(db: connection, id: int, title: str, group_id: int, notifications: bool):
 	"""
 	Insert new chat in chats table.
 	:param db: Connect object
 	:param id: Telegram chat id
 	:param title: Telegram chat title
 	:param group_id: Group id
-	:param settings: Notification etc.
+	:param notifications: Notification for now
 	:return: True if OK or False if not OK
 	"""
 	try:
 		with db.cursor() as cursor:
-			cursor.execute(f'INSERT INTO chats (id, title, settings, group_id) VALUES (?, ?, ?, ?)', (id, title, settings, group_id))
+			cursor.execute(f'INSERT INTO chats (id, title, notifications, group_id) VALUES (?, ?, ?, ?)', (id, title, notifications, group_id))
 		return True
 	except Exception as exception:
 		await ut_LogCreate(
