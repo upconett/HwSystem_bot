@@ -36,13 +36,7 @@ async def group_handler_ChatStart(message: types.Message):
 						where='id',
 						where_value=id
 					)
-					group_name = await PostgreSQL.select(
-        table='groups',
-        what='group_name',
-        where='group_id',
-        where_value=group_id
-    )
-    groups.append((group_id, group_name,))
+    groups.append(group_id)
 				await bot.send_message(
 					chat_id=message.chat.id,
 					text=msgr_ChatStart,
