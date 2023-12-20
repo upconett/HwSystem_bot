@@ -44,6 +44,10 @@ async def group_callback_SelectGroup(query: types.CallbackQuery):
 		)
 
 
+async def group_callback_BindGroup(query: types.CallbackQuery):
+	pass
+
+
 # <---------- Handler функции ---------->
 async def group_handler_ChatStart(message: types.Message):
 	try:
@@ -102,3 +106,4 @@ async def group_handler_ChatStart(message: types.Message):
 def register_handlers_group(dp: Dispatcher):
 	dp.register_message_handler(group_handler_ChatStart, content_types=ContentType.NEW_CHAT_MEMBERS)
 	dp.register_callback_query_handler(group_callback_SelectGroup, Text(startswith='ConnectGroup'))
+	dp.register_callback_query_handler(group_callback_BindGroup, Text(startswith='ChoosedGroup'))
