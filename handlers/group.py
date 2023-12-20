@@ -47,7 +47,19 @@ async def group_callback_SelectGroup(query: types.CallbackQuery):
 async def group_callback_BindChatSettings(query: types.CallbackQuery):
 	try:
 		group_id = query.data[18:]
-		# edit message
+		await bot.edit_message_text(
+			chat_id=query.message.chat.id,
+			message_id=query.message.message_id,
+			text=msgr_ChatSettins,
+			reply_markup=kb_inline_ChatSettings
+		)
+		await ut_LogCreate(
+			id=query.from_user.id,
+			filename=filename,
+			function='group_callback_BindChatSettings',
+			exception='',
+			content=f'Choosed group with id={group_id}'
+		)
 	except Exception as exception:
 		await ut_LogCreate(
 			id=query.from_user.id,
