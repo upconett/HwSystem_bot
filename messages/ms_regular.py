@@ -4,4 +4,4 @@ msreg_TrueOrFalseToRussian = {
 }
 
 
-msreg_StartOrHelp = ['/start', '/help', 'старт', 'помощь', 'начало', 'хелп', 'start', 'begin', 'help']
+msreg_StartOrHelp = ['/start', '/help', 'старт', 'помощь', 'начало', 'хелп', 'start', 'begin', 'help', '⚙️ Помощь']
