@@ -37,6 +37,8 @@ The bot **finds out when the next lesson is** in schedule and writes down the ta
 pip install -r requirements.txt
 ```
 \
-Create config.py file with variables: **TOKEN, db_host, db_user, db_password, db_name**\
+**Install** and setup **PostgreSQL** and **MongoDB**.\
+Create **blank databases** with the **same name** and create **similar users** there.\
+Make shure db servers **work properly** because they are used in **startupConfiguration**.\
 \
-Add **config.py, venv, .idea, .git** and** .gitignore** to .gitignore
+Add **config.json, venv, .idea, .git** and **.gitignore** to .gitignore
