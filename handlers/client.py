@@ -10,7 +10,7 @@ from data_base.db_psql import *
 from messages.ms_client import *
 from messages.ms_regular import *
 from keyboards.kb_client import *
-from data_base.operation import psql
+from data_base.operation import psql, db_psql_InsertUser
 from utilities.ut_logger import ut_LogCreate
 
 
@@ -28,8 +28,8 @@ async def client_support_CommandStartOrHelp(id: int, full_name: str, username: s
 	:return: content - result of operations with PostgreSQL
 	"""
 	client_data = await db_psql_UserData(id=id)
-	if client_data[1]:
-		if client_data[3]:
+	if client_data['username']:
+		if client_data['group_id']:
 			text = mscl_CommandStartOrHelp_WithGroup
 			reply_markup = kb_reply_CommandStartOrHelp
 		else:
@@ -40,7 +40,6 @@ async def client_support_CommandStartOrHelp(id: int, full_name: str, username: s
 		text = await mscl_CommandStartOrHelp_NoRegister(first_name=full_name.split()[0])
 		reply_markup = kb_inline_GroupPanel
 		response = await db_psql_InsertUser(
-			db=psql,
 			id=id,
 			username=username,
 			full_name=full_name
@@ -52,7 +51,8 @@ async def client_support_CommandStartOrHelp(id: int, full_name: str, username: s
 	await bot.send_message(
 		chat_id=id,
 		text=text,
-		reply_markup=reply_markup
+		reply_markup=reply_markup,
+		disable_web_page_preview=True
 	)
 	return content
 
@@ -134,5 +134,5 @@ def register_handlers_client(dp: Dispatcher):
 	:param dp:
 	:return:
 	"""
-	dp.register_message_handler(client_handler_CommandStartOrHelp, Text(msreg_StartOrHelp))
+	dp.register_message_handler(client_handler_CommandStartOrHelp, Text(equals=msreg_StartOrHelp, ignore_case=True))
 	dp.register_callback_query_handler(client_callback_CommandStartOrHelp, Text('ButtonHelp'))

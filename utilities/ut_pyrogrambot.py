@@ -13,10 +13,15 @@ async def ut_GetChatMembers(chat_id: int):
 	:param chat_id: Telegram chat ID
 	:return: List with member`s ids
 	"""
-	app = Client("test_session", api_id=api_id, api_hash=api_hash, bot_token=TOKEN, in_memory=True)
-	chat_members = []
-	await app.start()
-	async for member in app.get_chat_members(chat_id):
-		chat_members = chat_members + [member.user.id]
-	await app.stop()
-	return chat_members
+	# chat_id = int(str(chat_id)[1:])
+	print(chat_id)
+	try:
+		app = Client("dev_session", api_id=api_id, api_hash=api_hash, bot_token=TOKEN, in_memory=True)
+		chat_members = []
+		await app.start()
+		async for member in app.get_chat_members(chat_id):
+			chat_members = chat_members + [member.user.id]
+		await app.stop()
+		return chat_members
+	except Exception as exception:
+		print(exception)

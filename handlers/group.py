@@ -12,7 +12,7 @@ from keyboards.kb_group import *
 from utilities.ut_logger import ut_LogCreate
 from utilities.ut_security import ut_EncodeLink
 from utilities.ut_pyrogrambot import ut_GetChatMembers
-from data_base.operation import psql
+from data_base.operation import psql, db_psql_InsertChat
 
 
 # <---------- Переменные ---------->
@@ -183,8 +183,10 @@ async def group_callback_ReloadChat(query: types.CallbackQuery):
 async def group_handler_ChatStart(message: types.Message):
 	try:
 		if message.chat.type == 'group' or message.chat.type == 'supergroup':
-			if message.from_user.bot.id == await bot.get_me():
+			print('111')
+			if message.from_user.bot.id == (await bot.get_me())['id']:
 				chat_members = await ut_GetChatMembers(chat_id=message.chat.id)
+				print(chat_members)
 				group_ids = []
 				group_names = []
 				for id in chat_members:
@@ -205,6 +207,7 @@ async def group_handler_ChatStart(message: types.Message):
 						)
 						group_ids.append(group_id)
 						group_names.append(group_name)
+				print(group_ids, group_names)
 				reply_markup = await kb_inline_ConnectGroup(
 					group_ids=group_ids,
 					group_names=group_names
@@ -244,7 +247,7 @@ async def group_handler_ChatStart(message: types.Message):
 
 
 def register_handlers_group(dp: Dispatcher):
-	dp.register_message_handler(group_handler_ChatStart, content_types=ContentType.NEW_CHAT_MEMBERS)
+	dp.register_message_handler(group_handler_ChatStart, commands='group') # , content_types=ContentType.NEW_CHAT_MEMBERS
 	dp.register_callback_query_handler(group_callback_SelectGroup, Text(startswith='ConnectGroup'))
 	dp.register_callback_query_handler(group_callback_BindChatSettings, Text(startswith='ChosenGroup'))
 	dp.register_callback_query_handler(group_callback_BindGroup, Text(startswith='ChatSettings'))

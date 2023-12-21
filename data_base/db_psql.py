@@ -6,7 +6,7 @@ from psycopg2.extensions import connection
 
 # <---------- Переменные ---------->
 filename = 'db_psql.py'
-__all__ = ['PostgreSQL', 'db_psql_InsertUser', 'db_psql_InsertChat', 'db_psql_InsertGroup']
+__all__ = ['PostgreSQL']
 
 
 # <---------- Основные классы ---------->
@@ -38,7 +38,7 @@ class PostgreSQL:
 		try:
 			with self.conn.cursor() as cursor:
 				if where != '':
-					cursor.execute(f"SELECT {what} FROM {table} WHERE {where} = ?;", (where_value,))
+					cursor.execute(f"SELECT {what} FROM {table} WHERE {where} = %s", (where_value,))
 				else:
 					cursor.execute(f"SELECT {what} FROM {table};")
 				return cursor.fetchall()
@@ -58,7 +58,7 @@ class PostgreSQL:
 		"""
 		try:
 			with self.conn.cursor() as cursor:
-				cursor.execute(f"UPDATE {table} SET {what} = ? WHERE {where} = ?;", (what_value, where_value,))
+				cursor.execute(f"UPDATE {table} SET {what} = %s WHERE {where} = %s", (what_value, where_value,))
 			return True
 		except Exception as exception:
 			print(f'FILENAME="{filename}"; FUNCTION="PostgreSQL.update"; CONTENT=""; EXCEPTION="{exception}";')
@@ -74,7 +74,7 @@ class PostgreSQL:
 		"""
 		try:
 			with self.conn.cursor() as cursor:
-				cursor.execute(f"DELETE FROM {table} WHERE {where} = ?;", (where_value,))
+				cursor.execute(f"DELETE FROM {table} WHERE {where} = %s", (where_value,))
 			return True
 		except Exception as exception:
 			print(f'FILENAME="{filename}"; FUNCTION="PostgreSQL.delete"; CONTENT=""; EXCEPTION="{exception}";')
@@ -82,58 +82,4 @@ class PostgreSQL:
 
 
 # <---------- Основные функции ---------->
-async def db_psql_InsertUser(db: connection, id: int, username: str, full_name: str):
-	"""
-	Insert new user in users table.
-	:param db: Connect object
-	:param id: Telegram id
-	:param username: Telegram username
-	:param full_name: Telegram full_name
-	:return: True if OK or False if not OK
-	"""
-	try:
-		with db.cursor() as cursor:
-			cursor.execute(f'INSERT INTO users (id, username, full_name, group_id, group_admin) VALUES (?, ?, ?, ?, ?)', (id, username, full_name, None, False))
-		return True
-	except Exception as exception:
-		print(f'FILENAME="{filename}"; FUNCTION="db_psql_InsertUser"; CONTENT=""; EXCEPTION="{exception}";')
-		return False
 
-
-async def db_psql_InsertGroup(db: connection, group_name: str, group_password: str, owner_id: int, default_lessons: dict = '', default_breaks: dict = ''):
-	"""
-	Insert new group in groups table.
-	:param db: Connect object
-	:param group_name:
-	:param group_password:
-	:param owner_id: Telegram id from owner
-	:param default_lessons: Schedule {'weekday': {'0': 'lesson0',},}
-	:param default_breaks: Schedule {'weekday': {'0': ['hh:MM - start', 'hhMM - end'],},}
-	:return: True if OK or False if not OK
-	"""
-	try:
-		with db.cursor() as cursor:
-			cursor.execute(f'INSERT INTO users (group_id, group_name, group_password, owner_id, default_lessons, default_breaks) VALUES (?, ?, ?, ?, ?)', (None, group_name, group_password, owner_id, default_lessons, default_breaks))
-		return True
-	except Exception as exception:
-		print(f'FILENAME="{filename}"; FUNCTION="db_psql_InsertGroup"; CONTENT=""; EXCEPTION="{exception}";')
-		return False
-
-
-async def db_psql_InsertChat(db: connection, id: int, title: str, group_id: int, notifications: bool):
-	"""
-	Insert new chat in chats table.
-	:param db: Connect object
-	:param id: Telegram chat id
-	:param title: Telegram chat title
-	:param group_id: Group id
-	:param notifications: Notification for now
-	:return: True if OK or False if not OK
-	"""
-	try:
-		with db.cursor() as cursor:
-			cursor.execute(f'INSERT INTO chats (id, title, notifications, group_id) VALUES (?, ?, ?, ?)', (id, title, notifications, group_id))
-		return True
-	except Exception as exception:
-		print(f'FILENAME="{filename}"; FUNCTION="db_psql_InsertChat"; CONTENT=""; EXCEPTION="{exception}";')
-		return False
