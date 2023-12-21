@@ -12,7 +12,7 @@ from messages.ms_regular import *
 from keyboards.kb_client import *
 from data_base.operation import psql
 from utilities.ut_logger import ut_LogCreate
-from create_bot import owner_id
+from create_bot import creator_id
 
 
 # <---------- Переменные ---------->
