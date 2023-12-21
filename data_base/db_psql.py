@@ -30,7 +30,29 @@ class PostgreSQL:
 		self.conn = ps.connect(host=host, port=port, dbname=database, user=user, password=password)
 		self.conn.autocommit = True
 
-	async def select(self, table: str, what: str = '*', where: str = '', where_value: any = ''):
+    def createTables(self):
+        """
+        Tables creation. On first startup.
+        """
+        for table in ['users', 'groups', 'chats']:
+            try:
+                with self.conn.cursor() as cursor:
+                    cursor.execute(f'DROP DATABASE {table};')
+            except:
+                pass
+            cursor.execute(
+                f"CREATE TABLE public.users 
+                (id int8 NOT NULL,
+                username varchar NULL,
+                full_name varchar NOT NULL,
+                group_id int4 NULL,
+                group_admin bool NULL DEFAULT false);"
+                )
+
+
+
+
+    async def select(self, table: str, what: str = '*', where: str = '', where_value: any = ''):
 		"""
 		Select line (lines) from table where column.
 		:param table: Table (users, groups, chats)
