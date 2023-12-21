@@ -6,7 +6,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 
 # <---------- Импорт локальных функций ---------->
-# from data_base.operation import db_psql_UserData
+from data_base.operation import db_psql_UserData
 
 
 # <---------- Переменные ---------->
