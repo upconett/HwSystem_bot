@@ -1,7 +1,7 @@
 # <---------- Импорт локальных функций ---------->
 from data_base.db_mongo import MongoDB
 from data_base.db_psql import PostgreSQL
-from config import db_host, db_name, db_user, db_password
+from create_bot import db_host, db_name, db_user, db_password
 from messages.ms_regular import msreg_TrueOrFalseToRussian
 
 
