@@ -49,4 +49,12 @@ def first_configuration():
     api_id = input('Here type [api_id]: ')
     print('\n<5/7>\
           \nNow it\'s time to initialize databases!\
-          \nThe bot uses PostgreSQL and MongoDB so you need to set them running on your host.')
+          \nThe bot uses PostgreSQL and MongoDB so you need to set them running on your host.\
+          \nYou have to specify [db_host], [db_user], [db_password] and [db_name].\
+          \nRequired columns will be created automatically')
+    db_host = input('Type in [db_host] ("localhost" if db\'s are set on that machine): ')
+    db_user = input('Now type in [db_user] (it has to be created in advance!): ')
+    db_password = input('Type in [db_password] for the user: ')
+    db_name = input('Type in [db_name] (that has to be created in advance!):')
+    print('\nTrying to connect databases...')
+    
