@@ -4,10 +4,6 @@ import psycopg2 as ps
 from psycopg2.extensions import connection
 
 
-# <---------- Импорт локальных функций ---------->
-from utilities.ut_logger import ut_LogCreate
-
-
 # <---------- Переменные ---------->
 filename = 'db_psql.py'
 __all__ = ['PostgreSQL', 'db_psql_InsertUser', 'db_psql_InsertChat', 'db_psql_InsertGroup']
@@ -100,13 +96,7 @@ async def db_psql_InsertUser(db: connection, id: int, username: str, full_name: 
 			cursor.execute(f'INSERT INTO users (id, username, full_name, group_id, group_admin) VALUES (?, ?, ?, ?, ?)', (id, username, full_name, None, False))
 		return True
 	except Exception as exception:
-		await ut_LogCreate(
-			id=00000000,
-			filename=filename,
-			function='db_psql_InsertUser',
-			exception=exception,
-			content=''
-		)
+		print(f'FILENAME="{filename}"; FUNCTION="db_psql_InsertUser"; CONTENT=""; EXCEPTION="{exception}";')
 		return False
 
 
@@ -126,13 +116,7 @@ async def db_psql_InsertGroup(db: connection, group_name: str, group_password: s
 			cursor.execute(f'INSERT INTO users (group_id, group_name, group_password, owner_id, default_lessons, default_breaks) VALUES (?, ?, ?, ?, ?)', (None, group_name, group_password, owner_id, default_lessons, default_breaks))
 		return True
 	except Exception as exception:
-		await ut_LogCreate(
-			id=00000000,
-			filename=filename,
-			function='db_psql_InsertGroup',
-			exception=exception,
-			content=''
-		)
+		print(f'FILENAME="{filename}"; FUNCTION="db_psql_InsertGroup"; CONTENT=""; EXCEPTION="{exception}";')
 		return False
 
 
@@ -151,11 +135,5 @@ async def db_psql_InsertChat(db: connection, id: int, title: str, group_id: int,
 			cursor.execute(f'INSERT INTO chats (id, title, notifications, group_id) VALUES (?, ?, ?, ?)', (id, title, notifications, group_id))
 		return True
 	except Exception as exception:
-		await ut_LogCreate(
-			id=00000000,
-			filename=filename,
-			function='db_psql_InsertChat',
-			exception=exception,
-			content=''
-		)
+		print(f'FILENAME="{filename}"; FUNCTION="db_psql_InsertChat"; CONTENT=""; EXCEPTION="{exception}";')
 		return False

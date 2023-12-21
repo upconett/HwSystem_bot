@@ -134,5 +134,5 @@ def register_handlers_client(dp: Dispatcher):
 	:param dp:
 	:return:
 	"""
-	dp.register_message_handler(client_handler_CommandStartOrHelp, Text(equals=msreg_StartOrHelp).ignore_case)
-	dp.register_callback_query_handler(client_callback_CommandStartOrHelp, Text(equals='ButtonHelp'))
+	dp.register_message_handler(client_handler_CommandStartOrHelp, Text(msreg_StartOrHelp))
+	dp.register_callback_query_handler(client_callback_CommandStartOrHelp, Text('ButtonHelp'))

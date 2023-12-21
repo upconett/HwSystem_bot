@@ -56,7 +56,6 @@ async def ut_LogCreate(id: int, filename: str, function: str, exception, content
 	else:
 		data = await db_psql_UserData(id=id)
 	date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
 	log_message = f'DATA={data}; FILENAME="{filename}"; FUNCTION="{function}"; CONTENT="{content}"; EXCEPTION="{exception}";'
 	print(f'DATE="{date}"; {log_message}')
 	logger.info(log_message)

@@ -2,7 +2,6 @@
 from data_base.db_mongo import MongoDB
 from data_base.db_psql import PostgreSQL
 from config import db_host, db_name, db_user, db_password
-from utilities.ut_logger import ut_LogCreate
 from messages.ms_regular import msreg_TrueOrFalseToRussian
 
 
@@ -13,44 +12,24 @@ filename = 'operation.py'
 
 
 # <---------- Вспомогательные функции ---------->
-async def db_PsqlStart():
+def db_PsqlStart():
 	"""
 	Start connection with PostgreSQL database. Use only once!
 	:return: True if OK or False if not OK
 	"""
-	try:
-		global psql
-		psql = PostgreSQL(host=db_host, user=db_user, password=db_password, database=db_name)
-		return True
-	except Exception as exception:
-		await ut_LogCreate(
-			id=00000000,
-			filename=filename,
-			function='db_PsqlStart',
-			exception=exception,
-			content=''
-		)
-		return False
+	global psql
+	psql = PostgreSQL(host=db_host, user=db_user, password=db_password, database=db_name)
+	return True
 
 
-async def db_MongoDbStart():
+def db_MongoDbStart():
 	"""
 	Start connection with PostgreSQL database. Use only once!
 	:return: True if OK or False if not OK
 	"""
-	try:
-		global mndb
-		mndb = MongoDB(host=db_host, user=db_user, password=db_password, database=db_name)
-		return True
-	except Exception as exception:
-		await ut_LogCreate(
-			id=00000000,
-			filename=filename,
-			function='db_MongoDbStart',
-			exception=exception,
-			content=''
-		)
-		return False
+	global mndb
+	mndb = MongoDB(host=db_host, user=db_user, password=db_password, database=db_name)
+	return True
 
 
 # <---------- Основные функции ---------->
@@ -61,23 +40,13 @@ async def db_psql_UserData(id: int, formatted: bool = False):
 	:param formatted: Dictionary for code or str for output
 	:return: Dictionary if formatted False or string if formatted True
 	"""
-	response = []
-	try:
-		response = (await PostgreSQL.select(
-			self=psql,
-			table='users',
-			what='*',
-			where='id',
-			where_value=id
-		))[0]
-	except Exception as exception:
-		await ut_LogCreate(
-			id=00000000,
-			filename=filename,
-			function='db_psql_UserData',
-			exception=exception,
-			content=''
-		)
+	response = (await PostgreSQL.select(
+		self=psql,
+		table='users',
+		what='*',
+		where='id',
+		where_value=id
+	))[0]
 	if not formatted:
 		if not response:
 			response = [id, '', '', '', '', '']
