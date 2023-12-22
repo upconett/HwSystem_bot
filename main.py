@@ -3,7 +3,7 @@ from aiogram.utils import executor
 
 
 # <---------- Импорт локальных функций ---------->
-from create_bot import dp
+from create_bot import dp, psql, mndb
 from handlers import client, group
 from utilities.ut_logger import ut_LogStart
 
@@ -19,9 +19,13 @@ async def on_startup(_):
 	:param _:
 	:return:
 	"""
-	print(' - - - HomeWorker is online - - -')
+	print('\n - - - HomeWorker is online - - -')
 	if ut_LogStart():
 		print('Logger started OK!')
+	if psql:
+		print('PostgreSQL started OK!')
+	if mndb:
+		print('MongoDB started OK!')
 
 
 async def on_shutdown(_):

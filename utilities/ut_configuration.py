@@ -5,52 +5,71 @@ import json
 
 # <---------- Импорт локальных функций ---------->
 from data_base.db_psql import PostgreSQL
+from data_base.db_mongo import MongoDB
 
 
 # <---------- Основные функции ---------->
 def ut_startupConfiguration():
+	exception_data = (0,0,0,0,0,0,0,0,0)
 	if os.path.isfile('config.json'):
 		with open('config.json') as file:
 			data = json.load(file)
 		if data_is_valid(data):
 			MAIN_TOKEN = data["MAIN_TOKEN"]
 			LOG_TOKEN = data["LOG_TOKEN"]
-			creator_id = data["creator_id"]
+			creators = data["creators"]
 			api_hash = data["api_hash"]
 			api_id = data["api_id"]
 			db_host = data["db_host"]
 			db_user = data["db_user"]
 			db_password = data["db_password"]
 			db_name = data["db_name"]
-			return MAIN_TOKEN, LOG_TOKEN, creator_id, api_hash, api_id, db_host, db_user, db_password, db_name
+			return MAIN_TOKEN, LOG_TOKEN, creators, api_hash, api_id, db_host, db_user, db_password, db_name
 		else:
 			print("Missing some arguments in config.json!\n")
-			first_configuration()
+			if first_configuration() == -1:
+				print('Configuration Error!')
+				return exception_data
+		if data_is_valid(data):
+			MAIN_TOKEN = data["MAIN_TOKEN"]
+			LOG_TOKEN = data["LOG_TOKEN"]
+			creators = data["creators"]
+			api_hash = data["api_hash"]
+			api_id = data["api_id"]
+			db_host = data["db_host"]
+			db_user = data["db_user"]
+			db_password = data["db_password"]
+			db_name = data["db_name"]
+			return MAIN_TOKEN, LOG_TOKEN, creators, api_hash, api_id, db_host, db_user, db_password, db_name
+		else:
+			return exception_data
 	else:
 		print(
 			"It seems to be your first time launching the bot!\n"
 			"Let's do some configuration..."
 		)
-		first_configuration()
+		if first_configuration() == -1:
+			print('Configuration Error!')
+			return exception_data
 		with open('config.json', 'r') as file:
 			data = json.load(file)
 		if data_is_valid(data):
 			MAIN_TOKEN = data["MAIN_TOKEN"]
 			LOG_TOKEN = data["LOG_TOKEN"]
-			creator_id = data["creator_id"]
+			creators = data["creators"]
 			api_hash = data["api_hash"]
 			api_id = data["api_id"]
 			db_host = data["db_host"]
 			db_user = data["db_user"]
 			db_password = data["db_password"]
 			db_name = data["db_name"]
-			return MAIN_TOKEN, LOG_TOKEN, creator_id, api_hash, api_id, db_host, db_user, db_password, db_name
+			return MAIN_TOKEN, LOG_TOKEN, creators, api_hash, api_id, db_host, db_user, db_password, db_name
 		else:
-			print("DATA IS NOT VALID")
+			return exception_data
 		
 
 def data_is_valid(data) -> bool:
-	required_args = ['MAIN_TOKEN', 'LOG_TOKEN', 'creator_id', 'api_hash', 'api_id', 'db_host', 'db_user', 'db_password', 'db_name']
+	required_args = ['MAIN_TOKEN', 'LOG_TOKEN', 'creators', 'api_hash', 'api_id', 'db_host', 'db_user', 'db_password', 'db_name']
 	return list(data.keys()) == required_args
 
 
@@ -63,7 +82,7 @@ def validate_input(argument: str, message: str):
 				'6933313572:dde6NYrts2jVfgpUdmEWynxliSdMnsVkfLM'
 			)
 			output = input(message)
-	elif argument == 'creator_id':
+	elif argument == 'creators':
 		while True:
 			try:
 				output = int(output)
@@ -106,11 +125,14 @@ def first_configuration():
 	LOG_TOKEN = validate_input('LOG_TOKEN', 'Now type in the [TOKEN] for logger bot: ')
 	print(
 		'\n<3/5>\n'
-		'Bots need to know who their creator is!\n'
-		'You need to provide your [user_id] (a sequence of numbers).\n'
+		'Bots need to know who their creators are!\n'
+		'You need to provide [user_ids] (a sequence of numbers).\n'
 		'You can learn your [id] from: https://t.me/getmyid_bot.'
 	)
-	creator_id = validate_input('creator_id', 'Type your [id] in here: ')
+	number = int(input('Type in the number of creators: '))
+	creators = []
+	for i in range(number):
+		creators.append(validate_input('creators', f'Type in {i+1} creator [id]: '))
 	print(
 		'\n<4/5>\n'
 		'For certain bot functions to work properly you need to provide [api_hash] and [api_id]\n'
@@ -130,7 +152,14 @@ def first_configuration():
 	db_password = input('Type in [db_password] for the user: ')
 	db_name = input('Type in [db_name] (that has to be created in advance!): ')
 	print('\nTrying to connect to PostgreSQL...')
-	psql = PostgreSQL(db_host, db_user, db_password, db_name)
+	try:
+		psql = PostgreSQL(db_host, db_user, db_password, db_name)
+	except Exception as ex:
+		print(
+			'Connection Error!\n'
+			f'Exception: {ex}'
+			)
+		return -1
 	print(
 		'Connection successful!\n'
 		'Tables users, groups and chats required.'
@@ -145,11 +174,19 @@ def first_configuration():
 		psql.createTables()
 		print('Tables built successfully!')
 	print('\nTrying to connect to MongoDB...')
-	print(f'Connection successful!')
+	try:
+		mndb = MongoDB(db_host, db_user, db_password, db_name)
+	except Exception as ex:
+		print(
+			'Connection Error!\n'
+			f'Exception: {ex}'
+			)
+		return -1
+	print('Connection successful!')
 	data = {
 		'MAIN_TOKEN': MAIN_TOKEN,
 		'LOG_TOKEN': LOG_TOKEN,
-		'creator_id': creator_id,
+		'creators': creators,
 		'api_hash': api_hash,
 		'api_id': api_id,
 		'db_host': db_host,

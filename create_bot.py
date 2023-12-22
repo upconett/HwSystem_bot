@@ -12,9 +12,13 @@ from data_base.db_mongo import MongoDB
 
 # <---------- Основные функции ---------->
 storage = MemoryStorage()
+exception_data = (0,0,0,0,0,0,0,0,0)
 
-
-MAIN_TOKEN, LOG_TOKEN, creator_id, api_hash, api_id, db_host, db_user, db_password, db_name = ut_startupConfiguration()
+config = ut_startupConfiguration()
+if config != exception_data:
+    MAIN_TOKEN, LOG_TOKEN, creators, api_hash, api_id, db_host, db_user, db_password, db_name = config
+else:
+    quit()
 
 psql = PostgreSQL(host=db_host, user=db_user, password=db_password, database=db_name)
 mndb = MongoDB(host=db_host, user=db_user, password=db_password, database=db_name)
