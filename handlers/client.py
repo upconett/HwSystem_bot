@@ -6,13 +6,11 @@ from aiogram.dispatcher.filters import Text
 # <---------- Импорт локальных функций ---------->
 from create_bot import bot
 from data_base.operation import db_psql_UserData
-from data_base.db_psql import *
 from messages.ms_client import *
 from messages.ms_regular import *
 from keyboards.kb_client import *
-from data_base.operation import psql, db_psql_InsertUser
+from data_base.operation import db_psql_InsertUser
 from utilities.ut_logger import ut_LogCreate
-from create_bot import creator_id
 
 
 # <---------- Переменные ---------->

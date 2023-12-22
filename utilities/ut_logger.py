@@ -3,6 +3,7 @@ import logging
 
 from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
+from pathlib import Path
 
 
 # <---------- Импорт локальных функций ---------->
@@ -23,7 +24,7 @@ def ut_LogStart():
 		global logger
 		logger = logging.getLogger(__name__)
 		logger.setLevel(logging.INFO)
-
+		Path(r"logs").mkdir(parents=True, exist_ok=True)
 		log_filename = f'logs/{datetime.now().strftime("%Y-%m-%d")}_log.log'
 		handler = TimedRotatingFileHandler(log_filename, when="midnight", interval=1, encoding='utf-8')
 		handler.suffix = "%Y-%m-%d"

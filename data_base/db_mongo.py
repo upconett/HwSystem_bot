@@ -6,7 +6,7 @@ from pymongo.mongo_client import MongoClient
 class MongoDB:
 	def __init__(self, host: str, user: str, password: str, database: str, port: int = 27017):
 		"""
-		Конструктор класса, подключение к MongoDB.
+		Class constructor, connecting to MongoDB Server
 		- mongodb://bot:apropos019KOI@es53:27017/Homeworker?authMechanism=SCRAM-SHA-256
 		:param host: IP-address to connect
 		:param user: Username

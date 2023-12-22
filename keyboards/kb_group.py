@@ -6,10 +6,6 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from json import loads
 
 
-# <---------- Импорт функций Aiogram ---------->
-from utilities.ut_security import ut_EncodeLink
-
-
 # <---------- Inline клавиатуры ---------->
 async def kb_inline_ConnectGroup(group_ids: list, group_names: list):
 	button = InlineKeyboardButton(text='👥 Привязать группу', callback_data=f'ConnectGroup|{group_ids}|{group_names}')

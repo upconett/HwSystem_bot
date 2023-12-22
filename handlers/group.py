@@ -1,6 +1,5 @@
 # <---------- Импорт функций Aiogram ---------->
 from aiogram import Dispatcher, types
-from aiogram.types import ContentType
 from aiogram.dispatcher.filters import Text
 
 
@@ -21,6 +20,11 @@ filename = 'group.py'
 
 # <---------- Callback функции ---------->
 async def group_callback_SelectGroup(query: types.CallbackQuery):
+	"""
+	Changes the initialization welcome message to select groups that can be associated with the chat.
+	:param query:
+	:return:
+	"""
 	try:
 		groups = query.data.split('|')[1:]
 		await bot.edit_message_text(
@@ -47,6 +51,11 @@ async def group_callback_SelectGroup(query: types.CallbackQuery):
 
 
 async def group_callback_BindChatSettings(query: types.CallbackQuery):
+	"""
+	Changes the message selecting groups to choose whether to enable or disable notifications for the chat.
+	:param query:
+	:return:
+	"""
 	try:
 		group = query.data.split('|')
 		group_id = int(group[1])
@@ -79,13 +88,17 @@ async def group_callback_BindChatSettings(query: types.CallbackQuery):
 
 
 async def group_callback_BindGroup(query: types.CallbackQuery):
+	"""
+	Finally adds the chat to the database with the selected settings and associates it with the specified group.
+	:param query:
+	:return:
+	"""
 	try:
 		group = query.data.split('|')
 		group_id = int(group[1])
 		group_name = group[2]
 		notifications = bool(group[3])
 		response = await db_psql_InsertChat(
-			db=psql,
 			id=query.message.chat.id,
 			title=query.message.chat.title,
 			group_id=group_id,
@@ -140,6 +153,11 @@ async def group_callback_BindGroup(query: types.CallbackQuery):
 
 
 async def group_callback_ReloadChat(query: types.CallbackQuery):
+	"""
+	If an error occurs when linking a chat, the bot starts re-linking (when you press a special button).
+	:param query:
+	:return:
+	"""
 	try:
 		response = await PostgreSQL.delete(
 			self=psql,
@@ -181,6 +199,12 @@ async def group_callback_ReloadChat(query: types.CallbackQuery):
 
 # <---------- Handler функции ---------->
 async def group_handler_ChatStart(message: types.Message):
+	"""
+	Activated by a message about a new participant joining the chat; if it is a bot or a user, then we welcome him.
+	If the bot sees that it has been added to the chat, it begins the procedure of linking the chat to the group.
+	:param message:
+	:return:
+	"""
 	try:
 		if message.chat.type == 'group' or message.chat.type == 'supergroup':
 			print('111')
@@ -247,7 +271,7 @@ async def group_handler_ChatStart(message: types.Message):
 
 
 def register_handlers_group(dp: Dispatcher):
-	dp.register_message_handler(group_handler_ChatStart, commands='group') # , content_types=ContentType.NEW_CHAT_MEMBERS
+	dp.register_message_handler(group_handler_ChatStart, commands='group')  # , content_types=ContentType.NEW_CHAT_MEMBERS
 	dp.register_callback_query_handler(group_callback_SelectGroup, Text(startswith='ConnectGroup'))
 	dp.register_callback_query_handler(group_callback_BindChatSettings, Text(startswith='ChosenGroup'))
 	dp.register_callback_query_handler(group_callback_BindGroup, Text(startswith='ChatSettings'))

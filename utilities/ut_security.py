@@ -3,7 +3,8 @@ from aiogram.utils.deep_linking import decode_payload, get_start_link
 
 
 # <---------- Импорт локальных функций ---------->
-import create_bot
+from config import pattern_EncodeDecode
+
 
 # <---------- Основные функции ---------->
 async def ut_EncodeLink(group_id: int, id: int):

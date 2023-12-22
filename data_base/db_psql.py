@@ -1,8 +1,6 @@
 # <---------- Импорт сторонних функций ---------->
 import psycopg2 as ps
 
-from psycopg2.extensions import connection
-
 
 # <---------- Переменные ---------->
 filename = 'db_psql.py'
@@ -34,7 +32,8 @@ class PostgreSQL:
 			try:
 				with self.conn.cursor() as cursor:
 					cursor.execute(f'DROP TABLE {table};')
-			except: pass
+			except Exception as exception:
+				print(f'CANNOT DROP TABLE with exception "{exception}"')
 		with self.conn.cursor() as cursor:
 			cursor.execute(r"""CREATE TABLE users
 			(id int8 NOT NULL,
@@ -114,7 +113,3 @@ class PostgreSQL:
 		except Exception as exception:
 			print(f'FILENAME="{filename}"; FUNCTION="PostgreSQL.delete"; CONTENT=""; EXCEPTION="{exception}";')
 			return False
-
-
-# <---------- Основные функции ---------->
-

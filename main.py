@@ -3,7 +3,7 @@ from aiogram.utils import executor
 
 
 # <---------- Импорт локальных функций ---------->
-import create_bot
+from create_bot import dp, db_host, db_user, db_password, db_name
 from handlers import client, group
 from data_base.operation import db_PsqlStart, db_MongoDbStart
 from utilities.ut_logger import ut_LogStart
@@ -11,10 +11,6 @@ from utilities.ut_logger import ut_LogStart
 
 # <---------- Переменные ---------->
 filename = 'main.py'
-db_host = create_bot.db_host
-db_user = create_bot.db_user
-db_password = create_bot.db_password
-db_name = create_bot.db_name
 
 
 # <---------- Функции on_startup и on_shutdown ---------->
@@ -24,7 +20,6 @@ async def on_startup(_):
 	:param _:
 	:return:
 	"""
-	print()
 	print(' - - - HomeWorker is online - - -')
 	if ut_LogStart():
 		print('Logger started OK!')
@@ -39,8 +34,8 @@ async def on_shutdown(_):
 
 
 # <---------- Основные функции ---------->
-client.register_handlers_client(create_bot.dp)
-group.register_handlers_group(create_bot.dp)
+client.register_handlers_client(dp)
+group.register_handlers_group(dp)
 
 
-executor.start_polling(create_bot.dp, skip_updates=True, on_startup=on_startup)
+executor.start_polling(dp, skip_updates=True, on_startup=on_startup)

@@ -77,7 +77,6 @@ async def db_psql_InsertGroup(group_name: str, group_password: str, owner_id: in
 async def db_psql_InsertChat(id: int, title: str, group_id: int, notifications: bool):
 	"""
 	Insert new chat in chats table.
-	:param db: Connect object
 	:param id: Telegram chat id
 	:param title: Telegram chat title
 	:param group_id: Group id
