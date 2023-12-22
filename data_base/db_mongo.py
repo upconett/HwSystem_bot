@@ -16,3 +16,4 @@ class MongoDB:
 		"""
 		self.db = MongoClient(f"mongodb://{user}:{password}@{host}:{port}/{database}?authMechanism=SCRAM-SHA-256")
 		self.db = self.db.get_database(database)
+		print('MongoDB started OK!')

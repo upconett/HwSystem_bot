@@ -1,7 +1,6 @@
 # <---------- Импорт локальных функций ---------->
-from data_base.db_mongo import MongoDB
-from data_base.db_psql import PostgreSQL
 from messages.ms_regular import msreg_TrueOrFalseToRussian
+from create_bot import psql
 
 
 # <---------- Импорт сторонних функций ---------->
@@ -10,29 +9,6 @@ from datetime import datetime
 
 # <---------- Переменные ---------->
 filename = 'operation.py'
-psql = None
-mndb = None
-
-
-# <---------- Вспомогательные функции ---------->
-def db_PsqlStart(db_host, db_user, db_password, db_name):
-	"""
-	Start connection with PostgreSQL database. Use only once!
-	:return: True if OK
-	"""
-	global psql
-	psql = PostgreSQL(host=db_host, user=db_user, password=db_password, database=db_name)
-	return True
-
-
-def db_MongoDbStart(db_host, db_user, db_password, db_name):
-	"""
-	Start connection with PostgreSQL database. Use only once!
-	:return: True if OK
-	"""
-	global mndb
-	mndb = MongoDB(host=db_host, user=db_user, password=db_password, database=db_name)
-	return True
 
 
 # <---------- Основные функции ---------->

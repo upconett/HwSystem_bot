@@ -16,8 +16,8 @@ async def kb_inline_ConnectGroup(group_ids: list, group_names: list):
 
 async def kb_inline_SelectGroup(groups: list):
 	reply_markup = InlineKeyboardMarkup(row_width=2)
-	group_ids = loads(groups[0])
-	group_names = loads(groups[1])
+	group_ids = groups[0]
+	group_names = groups[1]
 	for i in range(len(group_ids)):
 		button = InlineKeyboardButton(text=group_names[i], callback_data=f'ChosenGroup|{group_ids[i]}|{group_names[i]}')
 		reply_markup.row(button)
@@ -40,8 +40,6 @@ async def kb_inline_GroupLink(group_id: int, group_name: str, link: str):
 	return reply_markup
 
 
-async def kb_inline_ReloadChat(message):
-	button0 = InlineKeyboardButton(text='▶️ Попробовать снова', callback_data=f'ReloadChat|{message}')
-	reply_markup = InlineKeyboardMarkup(row_width=1)
-	reply_markup.row(button0)
-	return reply_markup
+btn_inline_TryAgain = InlineKeyboardButton(text='▶️ Попробовать снова', callback_data=f'ReloadChat')
+kb_inline_ReloadChat = InlineKeyboardMarkup(row_width=1)
+kb_inline_ReloadChat.row(btn_inline_TryAgain)

@@ -4,14 +4,18 @@ from aiogram.dispatcher.filters import Text
 
 
 # <---------- Импорт локальных функций ---------->
-from create_bot import bot
+from create_bot import bot, psql
 from data_base.db_psql import *
 from messages.ms_group import *
 from keyboards.kb_group import *
 from utilities.ut_logger import ut_LogCreate
 from utilities.ut_security import ut_EncodeLink
 from utilities.ut_pyrogrambot import ut_GetChatMembers
-from data_base.operation import psql, db_psql_InsertChat
+from data_base.operation import db_psql_InsertChat
+
+
+# <---------- Импорт локальных функций ---------->
+from json import loads
 
 
 # <---------- Переменные ---------->
@@ -26,7 +30,10 @@ async def group_callback_SelectGroup(query: types.CallbackQuery):
 	:return:
 	"""
 	try:
-		groups = query.data.split('|')[1:]
+		group_ids = loads(query.data.split('|')[1])
+		group_names = loads((query.data.split('|')[2]).replace("'", '"'))
+		groups = [group_ids, group_names]
+		print(group_ids, group_names)
 		await bot.edit_message_text(
 			chat_id=query.message.chat.id,
 			message_id=query.message.message_id,
@@ -128,10 +135,11 @@ async def group_callback_BindGroup(query: types.CallbackQuery):
 			content = f'Chat with id={query.message.chat.id}, title={query.message.chat.title} bound to group with group_id={group_id}, group_name={group_name}.'
 		else:
 			text = msgr_GroupBindError
-			reply_markup = kb_inline_ReloadChat(message=query.message)
+			reply_markup = kb_inline_ReloadChat
 			exception = f'Can`t bind chat with id={query.message.chat.id}, title={query.message.chat.title} to group with group_id={group_id}, group_name={group_name}.'
-		await bot.send_message(
+		await bot.edit_message_text(
 			chat_id=query.message.chat.id,
+			message_id=query.message.message_id,
 			text=text,
 			reply_markup=reply_markup
 		)
@@ -207,30 +215,26 @@ async def group_handler_ChatStart(message: types.Message):
 	"""
 	try:
 		if message.chat.type == 'group' or message.chat.type == 'supergroup':
-			print('111')
 			if message.from_user.bot.id == (await bot.get_me())['id']:
 				chat_members = await ut_GetChatMembers(chat_id=message.chat.id)
-				print(chat_members)
 				group_ids = []
 				group_names = []
 				for id in chat_members:
-					group_id = await PostgreSQL.select(
-						self=psql,
+					group_id = await psql.select(
 						table='users',
 						what='group_id',
 						where='id',
 						where_value=id
 					)
 					if group_id and (group_id not in group_ids):
-						group_name = await PostgreSQL.select(
-							self=psql,
+						group_name = await psql.select(
 							table='groups',
 							what='group_name',
 							where='group_id',
-							where_value=group_id
+							where_value=group_id[0][0]
 						)
-						group_ids.append(group_id)
-						group_names.append(group_name)
+						group_ids.append(group_id[0][0])
+						group_names.append(group_name[0][0])
 				print(group_ids, group_names)
 				reply_markup = await kb_inline_ConnectGroup(
 					group_ids=group_ids,
@@ -275,3 +279,4 @@ def register_handlers_group(dp: Dispatcher):
 	dp.register_callback_query_handler(group_callback_SelectGroup, Text(startswith='ConnectGroup'))
 	dp.register_callback_query_handler(group_callback_BindChatSettings, Text(startswith='ChosenGroup'))
 	dp.register_callback_query_handler(group_callback_BindGroup, Text(startswith='ChatSettings'))
+	dp.register_callback_query_handler(group_callback_ReloadChat, Text(startswith='ReloadChat'))
