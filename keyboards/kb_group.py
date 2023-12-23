@@ -2,10 +2,6 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-# <---------- Импорт сторонних функций ---------->
-from json import loads
-
-
 # <---------- Inline клавиатуры ---------->
 async def kb_inline_ConnectGroup(group_ids: list, group_names: list):
 	button = InlineKeyboardButton(text='👥 Привязать группу', callback_data=f'ConnectGroup|{group_ids}|{group_names}')
@@ -34,12 +30,16 @@ async def kb_inline_ChatSettings(group_id: int, group_name: str):
 
 async def kb_inline_GroupLink(group_id: int, group_name: str, link: str):
 	button0 = InlineKeyboardButton(text=f'📲 Вступить в {group_name}', url=link)
-	button1 = InlineKeyboardButton(text='🧨 Удалить ссылку', callback_data=f'DeleteLink|{group_id}')
+	button1 = InlineKeyboardButton(text='🧨 Удалить ссылку', callback_data=f'DeleteLink|{group_id}|{group_name}')
 	reply_markup = InlineKeyboardMarkup(row_width=1)
-	reply_markup.row(button0, button1)
+	reply_markup.row(button0).row(button1)
 	return reply_markup
 
 
-btn_inline_TryAgain = InlineKeyboardButton(text='▶️ Попробовать снова', callback_data=f'ReloadChat')
+btn_inline_TryAgain = InlineKeyboardButton(text='🔄 Попробовать снова', callback_data=f'ReloadChat')
 kb_inline_ReloadChat = InlineKeyboardMarkup(row_width=1)
 kb_inline_ReloadChat.row(btn_inline_TryAgain)
+
+
+async def kb_inline_BoundChatStart(group_id: int, group_name: str):
+	button0 = InlineKeyboardButton(text=f'Отвязать {group_name}', callback_data=f'UnlinkGroup|{group_id}|{group_name}')

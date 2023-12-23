@@ -23,5 +23,5 @@ else:
 psql = PostgreSQL(host=db_host, user=db_user, password=db_password, database=db_name)
 mndb = MongoDB(host=db_host, user=db_user, password=db_password, database=db_name)
 
-bot = Bot(token=MAIN_TOKEN, parse_mode='Markdown')
+bot = Bot(token=MAIN_TOKEN, parse_mode='html', disable_web_page_preview=True)
 dp = Dispatcher(bot, storage=storage)
