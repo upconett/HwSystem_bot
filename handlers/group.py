@@ -24,7 +24,7 @@ filename = 'group.py'
 
 
 # <---------- Вспомогательные функции ---------->
-async def group_is_chat_admin(chat_admins: list, id: int):
+async def group_IsChatAdmin(chat_admins: list, id: int):
 	"""
 	Checks if the user is a chat admin.
 	:param chat_admins: Get by message.chat.get_administrators()
@@ -32,7 +32,7 @@ async def group_is_chat_admin(chat_admins: list, id: int):
 	:return: True or False
 	"""
 	for user in range(len(chat_admins)):
-		if id == chat_admins[user]['user']['id']:
+		if (id == chat_admins[user]['user']['id']) and chat_admins[user]['can_delete_messages'] and chat_admins[user]['can_restrict_members']:
 			return True
 	return False
 
@@ -45,7 +45,7 @@ async def group_callback_SelectGroup(query: types.CallbackQuery):
 	:return:
 	"""
 	try:
-		is_admin = await group_is_chat_admin(
+		is_admin = await group_IsChatAdmin(
 			chat_admins=(await query.message.chat.get_administrators()),
 			id=query.from_user.id
 		)
@@ -61,7 +61,7 @@ async def group_callback_SelectGroup(query: types.CallbackQuery):
 			)
 			content = f'There are this groups: {groups} - in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
 		else:
-			await query.message.answer(text='Вы не админ, а потому не можете настраивать бота в данном чате!')
+			await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
 		await ut_LogCreate(
 			id=query.from_user.id,
@@ -87,7 +87,7 @@ async def group_callback_BindChatSettings(query: types.CallbackQuery):
 	:return:
 	"""
 	try:
-		is_admin = await group_is_chat_admin(
+		is_admin = await group_IsChatAdmin(
 			chat_admins=(await query.message.chat.get_administrators()),
 			id=query.from_user.id
 		)
@@ -107,7 +107,7 @@ async def group_callback_BindChatSettings(query: types.CallbackQuery):
 			)
 			content = f'Chosen group with id={group[1]}'
 		else:
-			await query.message.answer(text='Вы не админ, а потому не можете настраивать бота в данном чате!')
+			await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
 		await ut_LogCreate(
 			id=query.from_user.id,
@@ -133,7 +133,7 @@ async def group_callback_BindGroup(query: types.CallbackQuery):
 	:return:
 	"""
 	try:
-		is_admin = await group_is_chat_admin(
+		is_admin = await group_IsChatAdmin(
 			chat_admins=(await query.message.chat.get_administrators()),
 			id=query.from_user.id
 		)
@@ -181,7 +181,7 @@ async def group_callback_BindGroup(query: types.CallbackQuery):
 				reply_markup=reply_markup
 			)
 		else:
-			await query.message.answer(text='Вы не админ, а потому не можете настраивать бота в данном чате!')
+			await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
 			exception = ''
 		await ut_LogCreate(
@@ -201,6 +201,53 @@ async def group_callback_BindGroup(query: types.CallbackQuery):
 		)
 
 
+async def group_callback_DeleteLink(query: types.CallbackQuery):
+	try:
+		is_admin = await group_IsChatAdmin(
+			chat_admins=(await query.message.chat.get_administrators()),
+			id=query.from_user.id
+		)
+		if is_admin:
+			group_id = (query.data.split('|'))[1]
+			group_name = (query.data.split('|'))[2]
+			await psql.update(
+				table='groups',
+				what='group_link',
+				what_value=None,
+				where='group_id',
+				where_value=group_id
+			)
+			text = await msgr_GroupBoundWithoutLink(
+				group_name=group_name,
+				full_name=query.from_user.full_name,
+				username=query.from_user.username
+			)
+			await bot.edit_message_text(
+				text=text,
+				chat_id=query.message.chat.id,
+				message_id=query.message.message_id
+			)
+			content = f'Delete group_link for chat with id={query.message.chat.id}, title={query.message.chat.title}.'
+		else:
+			await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
+			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
+		await ut_LogCreate(
+			id=query.from_user.id,
+			filename=filename,
+			function='group_callback_BindGroup',
+			content=content,
+			exception=''
+		)
+	except Exception as exception:
+		await ut_LogCreate(
+			id=query.from_user.id,
+			filename=filename,
+			function='group_callback_DeleteLink',
+			exception=exception,
+			content=''
+		)
+
+
 async def group_callback_ReloadChat(query: types.CallbackQuery):
 	"""
 	If an error occurs when linking a chat, the bot starts re-linking (when you press a special button).
@@ -208,7 +255,7 @@ async def group_callback_ReloadChat(query: types.CallbackQuery):
 	:return:
 	"""
 	try:
-		is_admin = await group_is_chat_admin(
+		is_admin = await group_IsChatAdmin(
 			chat_admins=(await query.message.chat.get_administrators()),
 			id=query.from_user.id
 		)
@@ -235,7 +282,7 @@ async def group_callback_ReloadChat(query: types.CallbackQuery):
 				)
 				exception = f'Can`t delete chat with id={query.message.chat.id}, title={query.message.chat.title} from chats table.'
 		else:
-			await query.message.answer(text='Вы не админ, а потому не можете настраивать бота в данном чате!')
+			await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
 			exception = ''
 		await ut_LogCreate(
@@ -266,46 +313,53 @@ async def group_handler_ChatStart(message: types.Message):
 	try:
 		if message.chat.type == 'group' or message.chat.type == 'supergroup':
 			if message.from_user.bot.id == (await bot.get_me())['id']:
-				bound_group_id = (await psql.select(
+				bound_group_id = await psql.select(
 					table='chats',
 					what='group_id',
 					where='id',
 					where_value=message.chat.id
-				))[0][0]
+				)
 				if not bound_group_id:
 					chat_members = await ut_GetChatMembers(chat_id=message.chat.id)
-					group_ids = []
-					group_names = []
-					for id in chat_members:
-						group_id = await psql.select(
-							table='users',
-							what='group_id',
-							where='id',
-							where_value=id
-						)
-						if group_id and (group_id not in group_ids):
-							group_name = await psql.select(
-								table='groups',
-								what='group_name',
-								where='group_id',
-								where_value=group_id[0][0]
+					if chat_members:
+						group_ids = []
+						group_names = []
+						for id in chat_members:
+							group_id = await psql.select(
+								table='users',
+								what='group_id',
+								where='id',
+								where_value=id
 							)
-							group_ids.append(group_id[0][0])
-							group_names.append(group_name[0][0])
-					text = msgr_ChatStart
-					reply_markup = await kb_inline_ConnectGroup(
-						group_ids=group_ids,
-						group_names=group_names
-					)
+							if group_id and (group_id not in group_ids):
+								group_name = await psql.select(
+									table='groups',
+									what='group_name',
+									where='group_id',
+									where_value=group_id[0][0]
+								)
+								group_ids.append(group_id[0][0])
+								group_names.append(group_name[0][0])
+						text = msgr_ChatStart
+						reply_markup = await kb_inline_ConnectGroup(
+							group_ids=group_ids,
+							group_names=group_names
+						)
+						content = f'Bot entered chat with id={message.chat.id}, title={message.chat.title}.'
+					else:
+						text = msgr_NoSuperGroup
+						reply_markup = None
+						content = f'Bot entered non supergroup chat with id={message.chat.id}, title={message.chat.title}.'
 				else:
 					bound_group_name = (await psql.select(
 						table='groups',
 						what='group_name',
 						where='group_id',
-						where_value=bound_group_id
+						where_value=bound_group_id[0]
 					))[0][0]
 					text = msgr_BoundChatStart(group_name=bound_group_name)
 					reply_markup = None
+					content = f'Bot entered chat with id={message.chat.id}, title={message.chat.title} and already linked group with group_id={bound_group_id}, name={bound_group_name}.'
 				await bot.send_message(
 					chat_id=message.chat.id,
 					text=text,
@@ -316,7 +370,7 @@ async def group_handler_ChatStart(message: types.Message):
 					filename=filename,
 					function='group_handler_ChatStart',
 					exception='',
-					content=f'Bot entered chat with id={message.chat.id}, title={message.chat.title}.'
+					content=content
 				)
 			elif message.from_user.is_bot:
 				await bot.send_message(
@@ -346,3 +400,4 @@ def register_handlers_group(dp: Dispatcher):
 	dp.register_callback_query_handler(group_callback_BindChatSettings, Text(startswith='ChosenGroup'))
 	dp.register_callback_query_handler(group_callback_BindGroup, Text(startswith='ChatSettings'))
 	dp.register_callback_query_handler(group_callback_ReloadChat, Text(startswith='ReloadChat'))
+	dp.register_callback_query_handler(group_callback_DeleteLink, Text(startswith='DeleteLink'))
