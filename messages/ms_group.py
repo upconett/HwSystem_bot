@@ -7,6 +7,13 @@ msgr_ChatStart = (
 )
 
 
+def msgr_BoundChatStart(group_name: str):
+	return (
+		f'Кажется, этот чат уже привязан к группе {group_name}\n'
+		f'Хотите её отвязать или продолжим работать с ней?'
+	)
+
+
 msgr_NewBotInChat = f'О, у меня появился друг? Спасибо ❤️‍'
 
 

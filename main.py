@@ -19,7 +19,7 @@ async def on_startup(_):
 	:param _:
 	:return:
 	"""
-	print('\n - - - HomeWorker is online - - -')
+	print('\n- - - HomeWorker is online - - -')
 	if ut_LogStart():
 		print('Logger started OK!')
 	if psql:
