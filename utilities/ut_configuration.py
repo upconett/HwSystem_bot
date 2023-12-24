@@ -7,6 +7,8 @@ import json
 from data_base.db_psql import PostgreSQL
 from data_base.db_mongo import MongoDB
 
+from messages.ms_configuration import *
+
 
 # <---------- Основные функции ---------->
 def ut_startupConfiguration():
@@ -77,17 +79,14 @@ def validate_input(argument: str, message: str):
 	output = input(message)
 	if argument in ['MAIN_TOKEN', 'LOG_TOKEN']:
 		while len(output) != 46:
-			print(
-				'\nERROR > [TOKEN] should be 46 chars long and looking like this:\n'
-				'6933313572:dde6NYrts2jVfgpUdmEWynxliSdMnsVkfLM'
-			)
+			print(mscf_ErrorMainToken)
 			output = input(message)
 	elif argument == 'creators':
 		while True:
 			try:
 				output = int(output)
 			except ValueError:
-				print('\nERROR > Your [id] should look like this: 3815494825')
+				print(mscf_ErrorCreators)
 				output = input(message)
 				continue
 			break
@@ -96,57 +95,35 @@ def validate_input(argument: str, message: str):
 			try:
 				output = int(output)
 			except ValueError:
-				print('\nERROR > [api_id] should look like this: 12306494')
+				print(mscf_ErrorApiId)
 				output = input(message)
 				continue
 			break
 	elif argument == 'db_host':
 		while not (output == 'localhost' or output.count('.') == 3):
-			print(
-				'\nERROR > [db_host] has to look like this:\n'
-				'32.124.53.56 or be "localhost"'
-			)
+			print(mscf_ErrorDBHost)
 			output = input(message)
 	return output
 
 
 def first_configuration():
-	print(
-		"\n<1/5>\n"
-		"Bot [TOKEN] is required to work with TelegramAPI.\n"
-		"You can get it from: https://t.me/BotFather."
-	)
+	print(mscf_MainToken)
 	MAIN_TOKEN = validate_input('MAIN_TOKEN', 'Type in the [TOKEN] for your bot: ')
-	print(
-		'\n<2/5>\n'
-		'Logger is minimal bot that outputs runtime info of your main bot.\n'
-		'Get another [TOKEN] for this one.'
-	)
+	
+	print(mscf_LogToken)
 	LOG_TOKEN = validate_input('LOG_TOKEN', 'Now type in the [TOKEN] for logger bot: ')
-	print(
-		'\n<3/5>\n'
-		'Bots need to know who their creators are!\n'
-		'You need to provide [user_ids] (a sequence of numbers).\n'
-		'You can learn your [id] from: https://t.me/getmyid_bot.'
-	)
+
+	print(mscf_Creators)
 	number = int(input('Type in the number of creators: '))
 	creators = []
 	for i in range(number):
 		creators.append(validate_input('creators', f'Type in {i+1} creator [id]: '))
-	print(
-		'\n<4/5>\n'
-		'For certain bot functions to work properly you need to provide [api_hash] and [api_id]\n'
-		'To get these follow the guide: https://core.telegram.org/api/obtaining_api_id'
-	)
+
+	print(mscf_ApiHashId)
 	api_hash = input('Type [api_hash] first: ')
 	api_id = validate_input('api_id', 'Here type [api_id]: ')
-	print(
-		"\n<5/5>\n"
-		"Now it's time to initialize databases!\n"
-		"The bot uses PostgreSQL and MongoDB so you need to set them running on your host.\n"
-		"You have to specify [db_host], [db_user], [db_password] and [db_name].\n"
-		"Required columns will be created automatically"
-	)
+
+	print(mscf_DBProperties)
 	db_host = validate_input('db_host', "Type in [db_host] ('localhost' if db's are set on that machine): ")
 	db_user = input('Now type in [db_user] (it has to be created in advance!): ')
 	db_password = input('Type in [db_password] for the user: ')
