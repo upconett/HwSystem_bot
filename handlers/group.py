@@ -92,9 +92,8 @@ async def group_callback_BindChatSettings(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			group = query.data.split('|')
-			group_id = int(group[1])
-			group_name = group[2]
+			group_id = int(query.data.split('|')[1])
+			group_name = query.data.split('|')[2]
 			reply_markup = await kb_inline_ChatSettings(
 				group_id=group_id,
 				group_name=group_name
@@ -105,7 +104,7 @@ async def group_callback_BindChatSettings(query: types.CallbackQuery):
 				text=msgr_ChatSettings,
 				reply_markup=reply_markup
 			)
-			content = f'Chosen group with id={group[1]}'
+			content = f'Chosen group with id={group_id}'
 		else:
 			await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
@@ -138,10 +137,9 @@ async def group_callback_BindGroup(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			group = query.data.split('|')
-			group_id = int(group[1])
-			group_name = group[2]
-			notifications = bool(group[3])
+			group_id = int(query.data.split('|')[1])
+			group_name = query.data.split('|')[2]
+			notifications = bool(query.data.split('|')[3])
 			response = await db_psql_InsertChat(
 				id=query.message.chat.id,
 				title=query.message.chat.title,
@@ -208,8 +206,8 @@ async def group_callback_DeleteLink(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			group_id = (query.data.split('|'))[1]
-			group_name = (query.data.split('|'))[2]
+			group_id = int(query.data.split('|')[1])
+			group_name = query.data.split('|')[2]
 			await psql.update(
 				table='groups',
 				what='group_link',
@@ -297,6 +295,48 @@ async def group_callback_ReloadChat(query: types.CallbackQuery):
 			id=query.from_user.id,
 			filename=filename,
 			function='group_callback_ReloadChat',
+			exception=exception,
+			content=''
+		)
+
+
+async def group_callback_UnlinkGroup(query: types.CallbackQuery):
+	try:
+		is_admin = await group_IsChatAdmin(
+			chat_admins=(await query.message.chat.get_administrators()),
+			id=query.from_user.id
+		)
+		if is_admin:
+			group_id = int(query.data.split('|')[1])
+			group_name = query.data.split('|')[2]
+			await psql.delete(
+				table='chats',
+				where='group_id',
+				where_value=group_id
+			)
+			text = await msgr_GroupUnlink(group_name=group_name)
+			await bot.edit_message_text(
+				text=text,
+				chat_id=query.message.chat.id,
+				message_id=query.message.message_id
+			)
+			content = f''
+		else:
+			await query.message.answer(
+				text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
+			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
+		await ut_LogCreate(
+			id=query.from_user.id,
+			filename=filename,
+			function='group_callback_UnlinkGroup',
+			exception='',
+			content=content
+		)
+	except Exception as exception:
+		await ut_LogCreate(
+			id=query.from_user.id,
+			filename=filename,
+			function='group_callback_UnlinkGroup',
 			exception=exception,
 			content=''
 		)
@@ -401,3 +441,4 @@ def register_handlers_group(dp: Dispatcher):
 	dp.register_callback_query_handler(group_callback_BindGroup, Text(startswith='ChatSettings'))
 	dp.register_callback_query_handler(group_callback_ReloadChat, Text(startswith='ReloadChat'))
 	dp.register_callback_query_handler(group_callback_DeleteLink, Text(startswith='DeleteLink'))
+	dp.register_callback_query_handler(group_callback_UnlinkGroup, Text(startswith='UnlinkGroup'))
