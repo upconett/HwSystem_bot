@@ -42,7 +42,8 @@ kb_inline_ReloadChat.row(btn_inline_TryAgain)
 
 
 async def kb_inline_BoundChatStart(group_id: int, group_name: str):
-	button0 = InlineKeyboardButton(text=f'Отвязать {group_name}', callback_data=f'UnlinkGroup|{group_id}|{group_name}')
-	button1 = InlineKeyboardButton(text=f'Продолжить', callback_data=f'ContinueWithGroup|{group_id}|{group_name}')
+	button0 = InlineKeyboardButton(text=f'🗑 Отвязать {group_name}', callback_data=f'UnlinkGroup|{group_id}|{group_name}')
+	button1 = InlineKeyboardButton(text='🔑 Продолжить', callback_data=f'ContinueWithGroup|{group_id}|{group_name}')
 	reply_markup = InlineKeyboardMarkup(row_width=1)
 	reply_markup.row(button0).row(button1)
+	return reply_markup

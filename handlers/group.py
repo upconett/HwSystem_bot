@@ -24,16 +24,51 @@ filename = 'group.py'
 
 
 # <---------- Вспомогательные функции ---------->
-async def group_IsChatAdmin(chat_admins: list, id: int):
+async def group_IsChatAdmin(chat_admins: list, id: int) -> bool:
 	"""
 	Checks if the user is a chat admin.
 	:param chat_admins: Get by message.chat.get_administrators()
 	:param id: Telegram ID of the user to check
-	:return: True or False
+	:return:
 	"""
 	for user in range(len(chat_admins)):
 		if (id == chat_admins[user]['user']['id']) and chat_admins[user]['can_delete_messages'] and chat_admins[user]['can_restrict_members']:
 			return True
+	return False
+
+
+async def group_IsBotUser(id: int) -> bool:
+	"""
+	Checks if the user in database.
+	:param id: Telegram ID of the user to check
+	:return:
+	"""
+	response = await psql.select(
+		table='users',
+		what='*',
+		where='id',
+		where_value=id
+	)
+	if response:
+		return True
+	return False
+
+
+async def group_IsGroupMember(group_id: int, id: int) -> bool:
+	"""
+	Checks if the user in group. Use only after group_IsBotUser().
+	:param group_id: ID of group
+	:param id: Telegram ID of the user to check
+	:return:
+	"""
+	response = await psql.select(
+		table='users',
+		what='group_id',
+		where='id',
+		where_value=id
+	)
+	if response[0][0] == group_id:
+		return True
 	return False
 
 
@@ -45,21 +80,27 @@ async def group_callback_SelectGroup(query: types.CallbackQuery):
 	:return:
 	"""
 	try:
+		await query.answer()
 		is_admin = await group_IsChatAdmin(
 			chat_admins=(await query.message.chat.get_administrators()),
 			id=query.from_user.id
 		)
 		if is_admin:
-			group_ids = loads(query.data.split('|')[1])
-			group_names = loads((query.data.split('|')[2]).replace("'", '"'))
-			groups = [group_ids, group_names]
-			await bot.edit_message_text(
-				chat_id=query.message.chat.id,
-				message_id=query.message.message_id,
-				text=msgr_SelectGroup,
-				reply_markup=(await kb_inline_SelectGroup(groups=groups))
-			)
-			content = f'There are this groups: {groups} - in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
+			is_BotUser = await group_IsBotUser(id=query.from_user.id)
+			if is_BotUser:
+				group_ids = loads(query.data.split('|')[1])
+				group_names = loads((query.data.split('|')[2]).replace("'", '"'))
+				groups = [group_ids, group_names]
+				await bot.edit_message_text(
+					chat_id=query.message.chat.id,
+					message_id=query.message.message_id,
+					text=msgr_SelectGroup,
+					reply_markup=(await kb_inline_SelectGroup(groups=groups))
+				)
+				content = f'There are this groups: {groups} - in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
+			else:
+				await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не пользователь бота, а потому не можете взаимодействовать с ним!')
+				content = f'Tried to interact with bot in chat with id={query.message.chat.id}, title={query.message.chat.title}, but no register.'
 		else:
 			await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
@@ -87,24 +128,30 @@ async def group_callback_BindChatSettings(query: types.CallbackQuery):
 	:return:
 	"""
 	try:
+		await query.answer()
 		is_admin = await group_IsChatAdmin(
 			chat_admins=(await query.message.chat.get_administrators()),
 			id=query.from_user.id
 		)
 		if is_admin:
-			group_id = int(query.data.split('|')[1])
-			group_name = query.data.split('|')[2]
-			reply_markup = await kb_inline_ChatSettings(
-				group_id=group_id,
-				group_name=group_name
-			)
-			await bot.edit_message_text(
-				chat_id=query.message.chat.id,
-				message_id=query.message.message_id,
-				text=msgr_ChatSettings,
-				reply_markup=reply_markup
-			)
-			content = f'Chosen group with id={group_id}'
+			is_BotUser = await group_IsBotUser(id=query.from_user.id)
+			if is_BotUser:
+				group_id = int(query.data.split('|')[1])
+				group_name = query.data.split('|')[2]
+				reply_markup = await kb_inline_ChatSettings(
+					group_id=group_id,
+					group_name=group_name
+				)
+				await bot.edit_message_text(
+					chat_id=query.message.chat.id,
+					message_id=query.message.message_id,
+					text=msgr_ChatSettings,
+					reply_markup=reply_markup
+				)
+				content = f'Chosen group with id={group_id}'
+			else:
+				await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не пользователь бота, а потому не можете взаимодействовать с ним!')
+				content = f'Tried to interact with bot in chat with id={query.message.chat.id}, title={query.message.chat.title}, but no register.'
 		else:
 			await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
@@ -132,52 +179,59 @@ async def group_callback_BindGroup(query: types.CallbackQuery):
 	:return:
 	"""
 	try:
+		await query.answer()
 		is_admin = await group_IsChatAdmin(
 			chat_admins=(await query.message.chat.get_administrators()),
 			id=query.from_user.id
 		)
 		if is_admin:
-			group_id = int(query.data.split('|')[1])
-			group_name = query.data.split('|')[2]
-			notifications = bool(query.data.split('|')[3])
-			response = await db_psql_InsertChat(
-				id=query.message.chat.id,
-				title=query.message.chat.title,
-				group_id=group_id,
-				notifications=notifications,
-			)
-			content = ''
-			exception = ''
-			if response:
-				link = await ut_EncodeLink(
+			is_BotUser = await group_IsBotUser(id=query.from_user.id)
+			if is_BotUser:
+				group_id = int(query.data.split('|')[1])
+				group_name = query.data.split('|')[2]
+				notifications = bool(query.data.split('|')[3])
+				response = await db_psql_InsertChat(
+					id=query.message.chat.id,
+					title=query.message.chat.title,
 					group_id=group_id,
-					id=query.from_user.id
+					notifications=notifications,
 				)
-				await PostgreSQL.update(
-					self=psql,
-					table='groups',
-					what='group_link',
-					what_value=link,
-					where='group_id',
-					where_value=group_id
+				content = ''
+				exception = ''
+				if response:
+					link = await ut_EncodeLink(
+						group_id=group_id,
+						id=query.from_user.id
+					)
+					await PostgreSQL.update(
+						self=psql,
+						table='groups',
+						what='group_link',
+						what_value=link,
+						where='group_id',
+						where_value=group_id
+					)
+					text = await msgr_GroupBound(group_name=group_name)
+					reply_markup = await kb_inline_GroupLink(
+						group_id=group_id,
+						group_name=group_name,
+						link=link
+					)
+					content = f'Chat with id={query.message.chat.id}, title={query.message.chat.title} bound to group with group_id={group_id}, group_name={group_name}.'
+				else:
+					text = msgr_GroupBindError
+					reply_markup = kb_inline_ReloadChat
+					exception = f'Can`t bind chat with id={query.message.chat.id}, title={query.message.chat.title} to group with group_id={group_id}, group_name={group_name}.'
+				await bot.edit_message_text(
+					chat_id=query.message.chat.id,
+					message_id=query.message.message_id,
+					text=text,
+					reply_markup=reply_markup
 				)
-				text = await msgr_GroupBound(group_name=group_name)
-				reply_markup = await kb_inline_GroupLink(
-					group_id=group_id,
-					group_name=group_name,
-					link=link
-				)
-				content = f'Chat with id={query.message.chat.id}, title={query.message.chat.title} bound to group with group_id={group_id}, group_name={group_name}.'
 			else:
-				text = msgr_GroupBindError
-				reply_markup = kb_inline_ReloadChat
-				exception = f'Can`t bind chat with id={query.message.chat.id}, title={query.message.chat.title} to group with group_id={group_id}, group_name={group_name}.'
-			await bot.edit_message_text(
-				chat_id=query.message.chat.id,
-				message_id=query.message.message_id,
-				text=text,
-				reply_markup=reply_markup
-			)
+				await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не пользователь бота, а потому не можете взаимодействовать с ним!')
+				content = f'Tried to interact with bot in chat with id={query.message.chat.id}, title={query.message.chat.title}, but no register.'
+				exception = ''
 		else:
 			await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
@@ -201,31 +255,37 @@ async def group_callback_BindGroup(query: types.CallbackQuery):
 
 async def group_callback_DeleteLink(query: types.CallbackQuery):
 	try:
+		await query.answer()
 		is_admin = await group_IsChatAdmin(
 			chat_admins=(await query.message.chat.get_administrators()),
 			id=query.from_user.id
 		)
 		if is_admin:
-			group_id = int(query.data.split('|')[1])
-			group_name = query.data.split('|')[2]
-			await psql.update(
-				table='groups',
-				what='group_link',
-				what_value=None,
-				where='group_id',
-				where_value=group_id
-			)
-			text = await msgr_GroupBoundWithoutLink(
-				group_name=group_name,
-				full_name=query.from_user.full_name,
-				username=query.from_user.username
-			)
-			await bot.edit_message_text(
-				text=text,
-				chat_id=query.message.chat.id,
-				message_id=query.message.message_id
-			)
-			content = f'Delete group_link for chat with id={query.message.chat.id}, title={query.message.chat.title}.'
+			is_BotUser = await group_IsBotUser(id=query.from_user.id)
+			if is_BotUser:
+				group_id = int(query.data.split('|')[1])
+				group_name = query.data.split('|')[2]
+				await psql.update(
+					table='groups',
+					what='group_link',
+					what_value=None,
+					where='group_id',
+					where_value=group_id
+				)
+				text = await msgr_GroupBoundWithoutLink(
+					group_name=group_name,
+					full_name=query.from_user.full_name,
+					username=query.from_user.username
+				)
+				await bot.edit_message_text(
+					text=text,
+					chat_id=query.message.chat.id,
+					message_id=query.message.message_id
+				)
+				content = f'Delete group_link for chat with id={query.message.chat.id}, title={query.message.chat.title}.'
+			else:
+				await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не пользователь бота, а потому не можете взаимодействовать с ним!')
+				content = f'Tried to interact with bot in chat with id={query.message.chat.id}, title={query.message.chat.title}, but no register.'
 		else:
 			await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
@@ -253,20 +313,14 @@ async def group_callback_ReloadChat(query: types.CallbackQuery):
 	:return:
 	"""
 	try:
+		await query.answer()
 		is_admin = await group_IsChatAdmin(
 			chat_admins=(await query.message.chat.get_administrators()),
 			id=query.from_user.id
 		)
 		if is_admin:
-			response = await PostgreSQL.delete(
-				self=psql,
-				table='chats',
-				where='id',
-				where_value=query.message.chat.id
-			)
-			content = ''
-			exception = ''
-			if response:
+			is_BotUser = await group_IsBotUser(id=query.from_user.id)
+			if is_BotUser:
 				await bot.send_message(
 					chat_id=query.message.chat.id,
 					text=msgr_ChatReloaded
@@ -274,20 +328,16 @@ async def group_callback_ReloadChat(query: types.CallbackQuery):
 				await group_handler_ChatStart(message=query.message)
 				content = f'Chat with id={query.message.chat.id}, title={query.message.chat.title} was deleted from chats table.'
 			else:
-				await bot.send_message(
-					chat_id=query.message.chat.id,
-					text=msgr_ChatReloadError
-				)
-				exception = f'Can`t delete chat with id={query.message.chat.id}, title={query.message.chat.title} from chats table.'
+				await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не пользователь бота, а потому не можете взаимодействовать с ним!')
+				content = f'Tried to interact with bot in chat with id={query.message.chat.id}, title={query.message.chat.title}, but no register.'
 		else:
 			await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
-			exception = ''
 		await ut_LogCreate(
 			id=query.from_user.id,
 			filename=filename,
 			function='group_callback_ReloadChat',
-			exception=exception,
+			exception='',
 			content=content
 		)
 	except Exception as exception:
@@ -301,26 +351,38 @@ async def group_callback_ReloadChat(query: types.CallbackQuery):
 
 
 async def group_callback_UnlinkGroup(query: types.CallbackQuery):
+	"""
+	Unlink a chat from a group if there is any group in the chat after the bot enters.
+	:param query:
+	:return:
+	"""
 	try:
+		await query.answer()
 		is_admin = await group_IsChatAdmin(
 			chat_admins=(await query.message.chat.get_administrators()),
 			id=query.from_user.id
 		)
 		if is_admin:
-			group_id = int(query.data.split('|')[1])
-			group_name = query.data.split('|')[2]
-			await psql.delete(
-				table='chats',
-				where='group_id',
-				where_value=group_id
-			)
-			text = await msgr_GroupUnlink(group_name=group_name)
-			await bot.edit_message_text(
-				text=text,
-				chat_id=query.message.chat.id,
-				message_id=query.message.message_id
-			)
-			content = f''
+			is_BotUser = await group_IsBotUser(id=query.from_user.id)
+			if is_BotUser:
+				group_id = int(query.data.split('|')[1])
+				group_name = query.data.split('|')[2]
+				await psql.delete(
+					table='chats',
+					where='group_id',
+					where_value=group_id
+				)
+				text = await msgr_GroupUnlink(group_name=group_name)
+				await bot.edit_message_text(
+					text=text,
+					chat_id=query.message.chat.id,
+					message_id=query.message.message_id
+				)
+				await group_handler_ChatStart(message=query.message)
+				content = f'Unlinked chat from group with id={group_id}, name={group_name}.'
+			else:
+				await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не пользователь бота, а потому не можете взаимодействовать с ним!')
+				content = f'Tried to interact with bot in chat with id={query.message.chat.id}, title={query.message.chat.title}, but no register.'
 		else:
 			await query.message.answer(
 				text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
@@ -380,25 +442,34 @@ async def group_handler_ChatStart(message: types.Message):
 								)
 								group_ids.append(group_id[0][0])
 								group_names.append(group_name[0][0])
-						text = msgr_ChatStart
-						reply_markup = await kb_inline_ConnectGroup(
-							group_ids=group_ids,
-							group_names=group_names
-						)
-						content = f'Bot entered chat with id={message.chat.id}, title={message.chat.title}.'
+						if group_ids and group_names:
+							text = msgr_ChatStart
+							reply_markup = await kb_inline_ConnectGroup(
+								group_ids=group_ids,
+								group_names=group_names
+							)
+							content = f'Bot entered chat with id={message.chat.id}, title={message.chat.title} with this groups: group_ids={group_ids}, group_names={group_names}.'
+						else:
+							text = msgr_NoGroupsInChat
+							reply_markup = kb_inline_ReloadChat
+							content = f'Bot entered chat with id={message.chat.id}, title={message.chat.title} without groups.'
 					else:
 						text = msgr_NoSuperGroup
 						reply_markup = None
 						content = f'Bot entered non supergroup chat with id={message.chat.id}, title={message.chat.title}.'
 				else:
+					bound_group_id = bound_group_id[0][0]
 					bound_group_name = (await psql.select(
 						table='groups',
 						what='group_name',
 						where='group_id',
-						where_value=bound_group_id[0]
+						where_value=bound_group_id
 					))[0][0]
 					text = msgr_BoundChatStart(group_name=bound_group_name)
-					reply_markup = None
+					reply_markup = await kb_inline_BoundChatStart(
+						group_id=bound_group_id,
+						group_name=bound_group_name
+					)
 					content = f'Bot entered chat with id={message.chat.id}, title={message.chat.title} and already linked group with group_id={bound_group_id}, name={bound_group_name}.'
 				await bot.send_message(
 					chat_id=message.chat.id,

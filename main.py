@@ -15,7 +15,7 @@ filename = 'main.py'
 # <---------- Функции on_startup и on_shutdown ---------->
 async def on_startup(_):
 	"""
-	Инициализация всех подключений
+	Initializing all connections.
 	:param _:
 	:return:
 	"""
@@ -26,6 +26,7 @@ async def on_startup(_):
 		print('PostgreSQL started OK!')
 	if mndb:
 		print('MongoDB started OK!')
+	print()
 
 
 async def on_shutdown(_):

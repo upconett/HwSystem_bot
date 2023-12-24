@@ -12,7 +12,7 @@ from data_base.db_mongo import MongoDB
 
 # <---------- Основные функции ---------->
 storage = MemoryStorage()
-exception_data = (0,0,0,0,0,0,0,0,0)
+exception_data = (0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 config = ut_startupConfiguration()
 if config != exception_data:
