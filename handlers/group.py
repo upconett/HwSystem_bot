@@ -404,6 +404,71 @@ async def group_callback_UnlinkGroup(query: types.CallbackQuery):
 		)
 
 
+async def group_callback_ContinueWithGroup(query: types.CallbackQuery):
+	"""
+
+	:param query:
+	:return:
+	"""
+	try:
+		await query.answer()
+		is_admin = await group_IsChatAdmin(
+			chat_admins=(await query.message.chat.get_administrators()),
+			id=query.from_user.id
+		)
+		if is_admin:
+			is_BotUser = await group_IsBotUser(id=query.from_user.id)
+			if is_BotUser:
+				group_id = int(query.data.split('|')[1])
+				group_name = query.data.split('|')[2]
+				link = await ut_EncodeLink(
+					group_id=group_id,
+					id=query.from_user.id
+				)
+				text = await msgr_GroupBound(group_name=group_name)
+				reply_markup = await kb_inline_GroupLink(
+					group_id=group_id,
+					group_name=group_name,
+					link=link
+				)
+				await PostgreSQL.update(
+					self=psql,
+					table='groups',
+					what='group_link',
+					what_value=link,
+					where='group_id',
+					where_value=group_id
+				)
+				await bot.edit_message_text(
+					chat_id=query.message.chat.id,
+					message_id=query.message.message_id,
+					text=text,
+					reply_markup=reply_markup
+				)
+				content = f'Chat with id={query.message.chat.id}, title={query.message.chat.title} continue with group with group_id={group_id}, group_name={group_name}.'
+			else:
+				await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не пользователь бота, а потому не можете взаимодействовать с ним!')
+				content = f'Tried to interact with bot in chat with id={query.message.chat.id}, title={query.message.chat.title}, but no register.'
+		else:
+			await query.message.answer(text=f'<a href="https://t.me/{query.from_user.username}">{query.from_user.full_name}</a>, вы не админ, а потому не можете настраивать бота в данном чате!')
+			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
+		await ut_LogCreate(
+			id=query.from_user.id,
+			filename=filename,
+			function='group_callback_ContinueWithGroup',
+			exception='',
+			content=content
+		)
+	except Exception as exception:
+		await ut_LogCreate(
+			id=query.from_user.id,
+			filename=filename,
+			function='group_callback_ContinueWithGroup',
+			exception=exception,
+			content=''
+		)
+
+
 # <---------- Handler функции ---------->
 async def group_handler_ChatStart(message: types.Message):
 	"""
