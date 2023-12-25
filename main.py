@@ -4,7 +4,7 @@ from aiogram.utils import executor
 
 # <---------- Импорт локальных функций ---------->
 from create_bot import dp, psql, mndb
-from handlers import client, group
+from handlers import client, group, schedule
 from utilities.ut_logger import ut_LogStart
 
 
@@ -34,8 +34,9 @@ async def on_shutdown(_):
 
 
 # <---------- Основные функции ---------->
+schedule.register_handlers_schedule(dp)
 client.register_handlers_client(dp)
 group.register_handlers_group(dp)
 
 
-executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+executor.start_polling(dp, skip_updates=True, on_startup=on_startup, timeout=10)

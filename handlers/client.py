@@ -17,6 +17,18 @@ filename = 'client.py'
 
 
 # <---------- Вспомогательные функции ---------->
+async def client_IsGroupMember(id:int) -> bool:
+	"""
+	If client is in any group.
+	:param id:
+	:return:
+	"""
+	client_data = await db_psql_UserData(id=id)
+	if client_data['group_id']:
+		return True
+	return False
+
+
 async def client_support_CommandStartOrHelp(id: int, full_name: str, username: str):
 	"""
 	Unified function for 'help' command or 'ButtonHelp' callback.
@@ -84,7 +96,6 @@ async def client_callback_CommandStartOrHelp(query: types.CallbackQuery):
 			content=''
 		)
 
-
 # <---------- Handler функции ---------->
 async def client_handler_CommandStartOrHelp(message: types.Message):
 	"""
@@ -134,3 +145,4 @@ def register_handlers_client(dp: Dispatcher):
 	"""
 	dp.register_message_handler(client_handler_CommandStartOrHelp, Text(equals=msreg_StartOrHelp, ignore_case=True))
 	dp.register_callback_query_handler(client_callback_CommandStartOrHelp, Text('ButtonHelp'))
+
