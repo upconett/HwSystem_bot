@@ -14,12 +14,12 @@ kb_reply_CommandStartOrHelp.row(btn_reply_CommandStartOrHelp_1, btn_reply_Comman
 kb_reply_CommandStartOrHelp.row(btn_reply_CommandStartOrHelp_3, btn_reply_CommandStartOrHelp_4)
 
 
+btn_reply_CancelRegistration = KeyboardButton(text='❌ Отмена')
+kb_reply_CancelRegistration = ReplyKeyboardMarkup(resize_keyboard=True)
+kb_reply_CancelRegistration.add(btn_reply_CancelRegistration)
+
+
 # <---------- Inline клавиатуры ---------->
 btn_inline_GroupPanel = InlineKeyboardButton(text='👥 Группа', callback_data='GroupPanel')
 kb_inline_GroupPanel = InlineKeyboardMarkup(row_width=1)
 kb_inline_GroupPanel.add(btn_inline_GroupPanel)
-
-
-btn_inline_Help = InlineKeyboardButton(text='⚙️ Помощь', callback_data='ButtonHelp')
-kb_inline_Help = InlineKeyboardMarkup(row_width=1)
-kb_inline_Help.add(btn_inline_Help)

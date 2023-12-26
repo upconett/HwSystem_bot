@@ -1,6 +1,8 @@
 # <---------- Импорт функций Aiogram ---------->
 from aiogram import Dispatcher, types
+from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
+from aiogram.dispatcher.filters.state import State, StatesGroup
 
 
 # <---------- Импорт локальных функций ---------->
@@ -16,70 +18,55 @@ from utilities.ut_logger import ut_LogCreate
 filename = 'client.py'
 
 
+# <---------- Машины состояния ---------->
+class FSMGroupRegister(StatesGroup):
+	name = State()
+	password = State()
+
+
 # <---------- Вспомогательные функции ---------->
-async def client_support_CommandStartOrHelp(id: int, full_name: str, username: str):
-	"""
-	Unified function for 'help' command or 'ButtonHelp' callback.
-	:param id: Telegram ID
-	:param full_name: Full name from Telegram
-	:param username: Username from Telegram
-	:return: content - result of operations with PostgreSQL
-	"""
-	client_data = await db_psql_UserData(id=id)
-	if client_data['username']:
-		if client_data['group_id']:
-			text = mscl_CommandStartOrHelp_WithGroup
-			reply_markup = kb_reply_CommandStartOrHelp
-		else:
-			text = mscl_CommandStartOrHelp_NoGroup
-			reply_markup = kb_inline_GroupPanel
-		content = 'Already on database.'
-	else:
-		text = await mscl_CommandStartOrHelp_NoRegister(first_name=full_name.split()[0])
-		reply_markup = kb_inline_GroupPanel
-		response = await db_psql_InsertUser(
-			id=id,
-			username=username,
-			full_name=full_name
-		)
-		if response:
-			content = 'Added to database.'
-		else:
-			content = 'Failed to add to database.'
-	await bot.send_message(
-		chat_id=id,
-		text=text,
-		reply_markup=reply_markup,
-		disable_web_page_preview=True
-	)
-	return content
 
 
 # <---------- Callback функции ---------->
-async def client_callback_CommandStartOrHelp(query: types.CallbackQuery):
+async def client_callback_GroupPanel(query: types.CallbackQuery):
 	"""
-	Triggered by 'ButtonHelp' callback use.
+
 	:param query:
 	:return:
 	"""
 	try:
-		content = await client_support_CommandStartOrHelp(
-			id=query.from_user.id,
-			full_name=query.from_user.full_name,
-			username=query.from_user.username
-		)
-		await ut_LogCreate(
-			id=query.from_user.id,
-			filename=filename,
-			function='client_callback_CommandStartOrHelp',
-			exception='',
-			content=f'Initialized {query.data} callback. {content}'
+		await bot.edit_message_text(
+			chat_id=query.message.chat.id,
+			message_id=query.message.message_id,
 		)
 	except Exception as exception:
 		await ut_LogCreate(
 			id=query.from_user.id,
 			filename=filename,
-			function='client_callback_CommandStartOrHelp',
+			function='client_callback_GroupPanel',
+			exception=exception,
+			content=''
+		)
+
+
+async def client_callback_RegisterGroupStart(query: types.CallbackQuery):
+	"""
+	Starts group registration FSM machine.
+	:param query:
+	:return:
+	"""
+	try:
+		await bot.edit_message_text(
+			chat_id=query.message.chat.id,
+			message_id=query.message.message_id,
+			text=mscl_RegistergroupStart,
+			reply_markup=kb_reply_CancelRegistration
+		)
+	except Exception as exception:
+		await ut_LogCreate(
+			id=query.from_user.id,
+			filename=filename,
+			function='client_callback_RegisterGroupStart',
 			exception=exception,
 			content=''
 		)
@@ -104,10 +91,32 @@ async def client_handler_CommandStartOrHelp(message: types.Message):
 			content = 'No database operations.'
 			exception = 'Used from group.'
 		else:
-			content = await client_support_CommandStartOrHelp(
-				id=message.from_user.id,
-				full_name=message.from_user.full_name,
-				username=message.from_user.username
+			client_data = await db_psql_UserData(id=message.from_user.id)
+			if client_data['username']:
+				if client_data['group_id']:
+					text = mscl_CommandStartOrHelp_WithGroup
+					reply_markup = kb_reply_CommandStartOrHelp
+				else:
+					text = mscl_CommandStartOrHelp_NoGroup
+					reply_markup = kb_inline_GroupPanel
+				content = 'Already on database.'
+			else:
+				text = await mscl_CommandStartOrHelp_NoRegister(first_name=message.from_user.full_name.split()[0])
+				reply_markup = kb_inline_GroupPanel
+				response = await db_psql_InsertUser(
+					id=message.from_user.id,
+					username=message.from_user.username,
+					full_name=message.from_user.full_name
+				)
+				if response:
+					content = 'Added to database.'
+				else:
+					content = 'Failed to add to database.'
+			await bot.send_message(
+				chat_id=id,
+				text=text,
+				reply_markup=reply_markup,
+				disable_web_page_preview=True
 			)
 		await ut_LogCreate(
 			id=message.from_user.id,
@@ -133,4 +142,3 @@ def register_handlers_client(dp: Dispatcher):
 	:return:
 	"""
 	dp.register_message_handler(client_handler_CommandStartOrHelp, Text(equals=msreg_StartOrHelp, ignore_case=True))
-	dp.register_callback_query_handler(client_callback_CommandStartOrHelp, Text('ButtonHelp'))
