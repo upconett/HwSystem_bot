@@ -15,6 +15,7 @@ from utilities.ut_logger import ut_LogCreate
 
 
 # <---------- Константы ---------->
+filename = 'schedule.py'
 states = ['sc_monday', 'sc_tuesday', 'sc_wednesday', 'sc_thursday', 'sc_friday', 'sc_saturday']
 days_0 = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
 days_1 = ['Понедельник', 'Вторник', 'Среду', 'Четверг', 'Пятницу', 'Субботу']
@@ -28,6 +29,19 @@ class UpdateMainScheduleFSM(StatesGroup):
     sc_thursday = State()
     sc_friday = State()
     sc_saturday = State()
+
+
+# <---------- Вспомогательные функции ---------->
+async def client_IsGroupMember(id:int) -> bool:
+	"""
+	If client is in any group.
+	:param id:
+	:return:
+	"""
+	client_data = await db_psql_UserData(id=id)
+	if client_data['group_id']:
+		return True
+	return False
 
 
 # <---------- Handler функции ---------->
