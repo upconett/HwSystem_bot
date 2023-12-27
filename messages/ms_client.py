@@ -30,7 +30,19 @@ async def mscl_CommandStartOrHelp_NoRegister(first_name: str):
 
 mscl_GroupPanel_NoGroup = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
-	''
+	'Хотите войти в группу или создать её?'
+)
+
+
+mscl_GroupPanel_WithGroupNoAdmin = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Хотите выйти из группы?'
+)
+
+
+mscl_GroupPanel_WithGroupAdmin = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Хотите удалить группу?'
 )
 
 

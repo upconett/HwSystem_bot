@@ -51,8 +51,8 @@ async def group_callback_SelectGroup(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await db_psql_UserData(id=query.from_user.id)
-			if is_BotUser['username']:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				group_ids = loads(query.data.split('|')[1])
 				group_names = loads((query.data.split('|')[2]).replace("'", '"'))
 				groups = [group_ids, group_names]
@@ -101,8 +101,8 @@ async def group_callback_BindChatSettings(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await db_psql_UserData(id=query.from_user.id)
-			if is_BotUser['username']:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				group_id = int(query.data.split('|')[1])
 				group_name = query.data.split('|')[2]
 				reply_markup = await kb_inline_ChatSettings(
@@ -154,8 +154,8 @@ async def group_callback_BindGroup(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await db_psql_UserData(id=query.from_user.id)
-			if is_BotUser['username']:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				group_id = int(query.data.split('|')[1])
 				group_name = query.data.split('|')[2]
 				notifications = bool(query.data.split('|')[3])
@@ -232,8 +232,8 @@ async def group_callback_DeleteLink(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await db_psql_UserData(id=query.from_user.id)
-			if is_BotUser['username']:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				group_id = int(query.data.split('|')[1])
 				group_name = query.data.split('|')[2]
 				await psql.update(
@@ -292,8 +292,8 @@ async def group_callback_ReloadChat(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await db_psql_UserData(id=query.from_user.id)
-			if is_BotUser['username']:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				await bot.send_message(
 					chat_id=query.message.chat.id,
 					text=msgr_ChatReloaded
@@ -338,8 +338,8 @@ async def group_callback_UnlinkGroup(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await db_psql_UserData(id=query.from_user.id)
-			if is_BotUser['username']:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				group_id = int(query.data.split('|')[1])
 				group_name = query.data.split('|')[2]
 				await psql.delete(
@@ -394,8 +394,8 @@ async def group_callback_ContinueWithGroup(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await db_psql_UserData(id=query.from_user.id)
-			if is_BotUser['username']:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				group_id = int(query.data.split('|')[1])
 				group_name = query.data.split('|')[2]
 				link = await ut_EncodeLink(

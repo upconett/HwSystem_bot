@@ -35,10 +35,20 @@ async def client_callback_GroupPanel(query: types.CallbackQuery):
 	:return:
 	"""
 	try:
-		await bot.edit_message_text(
-			chat_id=query.message.chat.id,
-			message_id=query.message.message_id,
-		)
+		data = await db_psql_UserData(id=query.from_user.id)
+		if not data['group_id']:
+			await bot.edit_message_text(
+				chat_id=query.message.chat.id,
+				message_id=query.message.message_id,
+				text=mscl_GroupPanel_NoGroup,
+				reply_markup=kb_inline_GroupVars
+			)
+		else:
+			await bot.edit_message_text(
+				chat_id=query.message.chat.id,
+				message_id=query.message.message_id,
+				text=mscl_GroupPanel_WithGroupNoAdmin
+			)
 	except Exception as exception:
 		await ut_LogCreate(
 			id=query.from_user.id,
