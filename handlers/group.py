@@ -4,6 +4,10 @@ from aiogram.types import ContentType
 from aiogram.dispatcher.filters import Text
 
 
+# <---------- Импорт сторонних функций ---------->
+from json import loads
+
+
 # <---------- Импорт локальных функций ---------->
 from create_bot import bot, psql
 from data_base.db_psql import *
@@ -13,10 +17,6 @@ from utilities.ut_logger import ut_LogCreate
 from utilities.ut_security import ut_EncodeLink
 from utilities.ut_pyrogrambot import ut_GetChatMembers
 from data_base.operation import db_psql_InsertChat
-
-
-# <---------- Импорт локальных функций ---------->
-from json import loads
 
 
 # <---------- Переменные ---------->
