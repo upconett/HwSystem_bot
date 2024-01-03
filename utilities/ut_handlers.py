@@ -73,7 +73,7 @@ async def ut_ScheduleMessageToDict(text:str, mode:int) -> dict:
 		if len(result) < 5:
 			raise NotEnoughDays	
 	elif mode == 1:
-		print("Mode: 1", data)
+		# print("Mode: 1", data)
 		for num, line in enumerate(data):
 			if line.replace(' ', '') != '':
 				if len(line.split()) < 2:
