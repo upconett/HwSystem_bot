@@ -23,7 +23,6 @@ class PostgreSQL:
 		"""
 		self.conn = ps.connect(host=host, port=port, dbname=database, user=user, password=password)
 		self.conn.autocommit = True
-		#print('PSQL started OK!')
 
 	def createTables(self):
 		"""

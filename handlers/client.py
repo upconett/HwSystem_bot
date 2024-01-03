@@ -25,6 +25,19 @@ class FSMGroupRegister(StatesGroup):
 
 
 # <---------- Вспомогательные функции ---------->
+async def client_help_ChatIsGroup(message: types.Message):
+	if message.chat.type == 'supergroup' or message.chat.type == 'group':
+		await bot.send_message(
+			chat_id=message.from_user.id,
+			text=f'{message.text} можно использовать только в личных сообщениях!',
+			reply_markup=kb_reply_CommandStartOrHelp
+		)
+		await message.delete()
+		return True
+	else:
+		return False
+
+
 async def client_help_GroupPanel(id: int, chat_id: int, message_id: int = None):
 	"""
 	Used for callback and message handlers to display the group panel.
@@ -69,10 +82,25 @@ async def client_help_GroupPanel(id: int, chat_id: int, message_id: int = None):
 	return content
 
 
+async def client_help_RegisterGroupStart(id: int, chat_id: int, message_id: int):
+	await bot.delete_message(
+		chat_id=chat_id,
+		message_id=message_id
+	)
+	await bot.send_message(
+		chat_id=id,
+		text=mscl_RegisterGroupStart,
+		reply_markup=kb_reply_CancelRegistration
+	)
+	await FSMGroupRegister.name.set()
+	content = 'Started group registration.'
+	return content
+
+
 # <---------- Callback функции ---------->
 async def client_callback_GroupPanel(query: types.CallbackQuery):
 	"""
-	Open group panel for user.
+	Open group panel for user from callback button.
 	:param query:
 	:return:
 	"""
@@ -101,16 +129,22 @@ async def client_callback_GroupPanel(query: types.CallbackQuery):
 
 async def client_callback_RegisterGroupStart(query: types.CallbackQuery):
 	"""
-	Starts group registration FSM machine.
+	Starts group registration FSM machine from callback button.
 	:param query:
 	:return:
 	"""
 	try:
-		await bot.edit_message_text(
+		content = await client_help_RegisterGroupStart(
+			id=query.from_user.id,
 			chat_id=query.message.chat.id,
-			message_id=query.message.message_id,
-			text=mscl_RegisterGroupStart,
-			reply_markup=kb_reply_CancelRegistration
+			message_id=query.message.message_id
+		)
+		await ut_LogCreate(
+			id=query.from_user.id,
+			filename=filename,
+			function='client_callback_RegisterGroupStart',
+			exception='',
+			content=content
 		)
 	except Exception as exception:
 		await ut_LogCreate(
@@ -131,13 +165,7 @@ async def client_handler_CommandStartOrHelp(message: types.Message):
 	"""
 	try:
 		exception = ''
-		if message.chat.type == 'supergroup' or message.chat.type == 'group':
-			await bot.send_message(
-				chat_id=message.from_user.id,
-				text=f'{message.text} можно использовать только в личных сообщениях!',
-				reply_markup=kb_reply_CommandStartOrHelp
-			)
-			await message.delete()
+		if await client_help_ChatIsGroup(message=message):
 			content = 'No database operations.'
 			exception = 'Used from group.'
 		else:
@@ -162,8 +190,7 @@ async def client_handler_CommandStartOrHelp(message: types.Message):
 					content = 'Added to database.'
 				else:
 					content = 'Failed to add to database.'
-			await bot.send_message(
-				chat_id=message.from_user.id,
+			await message.answer(
 				text=text,
 				reply_markup=reply_markup,
 				disable_web_page_preview=True
@@ -187,21 +214,26 @@ async def client_handler_CommandStartOrHelp(message: types.Message):
 
 async def client_handler_GroupPanel(message: types.Message):
 	"""
-	Open group panel for user.
+	Open group panel for user from callback button.
 	:param message:
 	:return:
 	"""
 	try:
-		await message.delete()
-		content = await client_help_GroupPanel(
-			id=message.from_user.id,
-			chat_id=message.chat.id,
-		)
+		if await client_help_ChatIsGroup(message=message):
+			exception = 'Used from group.'
+			content = ''
+		else:
+			await message.delete()
+			exception = ''
+			content = await client_help_GroupPanel(
+				id=message.from_user.id,
+				chat_id=message.chat.id,
+			)
 		await ut_LogCreate(
 			id=message.from_user.id,
 			filename=filename,
 			function='client_handler_GroupPanel',
-			exception='',
+			exception=exception,
 			content=content
 		)
 	except Exception as exception:
@@ -214,12 +246,112 @@ async def client_handler_GroupPanel(message: types.Message):
 		)
 
 
+async def client_handler_RegisterGroupStart(message: types.Message):
+	"""
+	Starts group registration FSM machine.
+	:param message:
+	:return:
+	"""
+	try:
+		if await client_help_ChatIsGroup(message=message):
+			exception = 'Used from group.'
+			content = ''
+		else:
+			exception = ''
+			content = await client_help_RegisterGroupStart(
+				id=message.from_user.id,
+				chat_id=message.chat.id,
+				message_id=message.message_id
+			)
+		await ut_LogCreate(
+			id=message.from_user.id,
+			filename=filename,
+			function='client_handler_RegisterGroupStart',
+			exception=exception,
+			content=content
+		)
+	except Exception as exception:
+		await ut_LogCreate(
+			id=message.from_user.id,
+			filename=filename,
+			function='client_handler_RegisterGroupStart',
+			exception=exception,
+			content=''
+		)
+
+
+async def client_handler_CancelFSM(message: types.Message, state: FSMContext):
+	"""
+	Cancel active FSM machine.
+	:param message:
+	:param state:
+	:return:
+	"""
+	try:
+		if await client_help_ChatIsGroup(message=message):
+			exception = 'Used from group.'
+			content = ''
+		else:
+			current_state = await state.get_state()
+			if not current_state:
+				text = 'Нечего отменять 🤷'
+				exception = 'No active state.'
+				content = ''
+			else:
+				await state.finish()
+				text = 'Отменено 👍'
+				exception = ''
+				content = 'Register'
+			await message.answer(
+				text=text,
+				reply_markup=kb_reply_CommandStartOrHelp
+			)
+		await ut_LogCreate(
+			id=message.from_user.id,
+			filename=filename,
+			function='client_handler_RegisterGroupCancel',
+			exception=exception,
+			content=content
+		)
+	except Exception as exception:
+		await ut_LogCreate(
+			id=message.from_user.id,
+			filename=filename,
+			function='client_handler_RegisterGroupCancel',
+			exception=exception,
+			content=''
+		)
+
+
+async def client_handler_RegisterGroupName(message: types.Message, state: FSMContext):
+	"""
+	Set name for group.
+	:param message:
+	:param state:
+	:return:
+	"""
+	try:
+		pass
+	except Exception as exception:
+		await ut_LogCreate(
+			id=message.from_user.id,
+			filename=filename,
+			function='client_handler_RegisterGroupPassword',
+			exception=exception,
+			content=''
+		)
+
+
 def register_handlers_client(dp: Dispatcher):
 	"""
-	Регистрация всех message и callback хендлеров.
+	Registration of all message and callback handlers.
 	:param dp:
 	:return:
 	"""
 	dp.register_message_handler(client_handler_CommandStartOrHelp, Text(equals=msreg_StartOrHelp, ignore_case=True))
 	dp.register_message_handler(client_handler_GroupPanel, Text(equals=msreg_GroupPanelMessage, ignore_case=True))
 	dp.register_callback_query_handler(client_callback_GroupPanel, Text('GroupPanel'))
+
+	dp.register_callback_query_handler(client_callback_RegisterGroupStart, Text('CreateGroup'))
+	dp.register_message_handler(client_handler_RegisterGroupStart, Text(equals=msreg_RegistrationGroupStart, ignore_case=True))
+	dp.register_message_handler(client_handler_CancelFSM, Text(equals=msreg_CancelFSM, ignore_case=True), state='*')
