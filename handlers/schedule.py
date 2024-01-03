@@ -20,9 +20,8 @@ from utilities.ut_handlers import ut_filterForMDV2, ut_ScheduleMessageToDict,\
 from utilities.ut_logger import ut_LogCreate
 
 
-# <---------- Константы ---------->
+# <---------- Переменные ---------->
 filename = 'schedule.py'
-states = ['sc_monday', 'sc_tuesday', 'sc_wednesday', 'sc_thursday', 'sc_friday', 'sc_saturday']
 days_0 = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
 days_1 = ['Понедельник', 'Вторник', 'Среду', 'Четверг', 'Пятницу', 'Субботу']
 
@@ -30,18 +29,12 @@ days_1 = ['Понедельник', 'Вторник', 'Среду', 'Четве�
 # <---------- Машина состояний ---------->
 class UpdateMainScheduleDailyFSM(StatesGroup):
 	sc_days = State()
-	sc_monday = State()
-	sc_tuesday = State()
-	sc_wednesday = State()
-	sc_thursday = State()
-	sc_friday = State()
-	sc_saturday = State()
+	sc_weekday_input = State()	
 	sc_check = State()
 	sc_approve = State()
 
-all_states = [UpdateMainScheduleDailyFSM.sc_days, UpdateMainScheduleDailyFSM.sc_tuesday, 
-			  UpdateMainScheduleDailyFSM.sc_wednesday, UpdateMainScheduleDailyFSM.sc_thursday, UpdateMainScheduleDailyFSM.sc_friday, 
-			  UpdateMainScheduleDailyFSM.sc_saturday, UpdateMainScheduleDailyFSM.sc_check, UpdateMainScheduleDailyFSM.sc_approve]
+all_states = [UpdateMainScheduleDailyFSM.sc_days, UpdateMainScheduleDailyFSM.sc_weekday_input,\
+			  UpdateMainScheduleDailyFSM.sc_check, UpdateMainScheduleDailyFSM.sc_approve]
 
 
 # <---------- Вспомогательные функции ---------->
@@ -57,18 +50,17 @@ async def client_IsGroupMember(id:int) -> bool:
 	return False
 
 
-async def schedule_FormScheduleDict(days, data) -> dict:
-	result = {}
-	p_states = states
-	if days == 2:
-		p_states = p_states[:-1]
-	for i in range(len(p_states)):
-		result[days_0[i]] = data[i]
-	return result
-
-
 # <---------- Handler функции ---------->
-async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext, mode: int = 0):
+async def schedule_FSM_StopUpload(message: types.Message, state: FSMContext):
+	await message.delete()
+	await state.finish()
+	await message.answer(
+		'Обновление основного расписания отменено ⭕', 
+		reply_markup=kb_reply_CommandStartOrHelp
+		)
+
+
+async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 	"""
 	Simple one message schedule uploading.
 	:param message:
@@ -80,31 +72,22 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext, 
 				chat_id=message.from_user.id,
 				text=f'Устанавливать расписание можно только в личных сообщениях!\n',
 				reply_markup=kb_reply_CommandStartOrHelp
-				)
-			content = 'No database operations.'
+			)
 			exception = 'Used from group.'
 			await state.finish()
 		else:
-			if state.get_state() is not None:
-				mode = 1
 			user_data = await db_psql_UserData(message.from_id)
-			# print(user_data)
 			if user_data['group_id']:
 				if user_data['group_admin']:
-					if mode == 0:
-						if len(message.text.split('\n')) > 1:
-							schedule_dict = await ut_ScheduleMessageToDict(message.text, 0)
-							schedule_txt = await ut_ScheduleDictToMessage(schedule_dict, 0)
-							subjects = await ut_ScheduleEnumSubjects(schedule_dict, 0)
-						else:
-							return
-					elif mode == 1:
-						async with state.proxy as data:
-							schedule_dict = data['schedule_dict']
-							schedule_txt = await ut_ScheduleDictToMessage(schedule_dict, 0)
-							subjects = await ut_ScheduleEnumSubjects(schedule_dict, 0)
+					if await state.get_state() is None:
+						schedule_input = message.text
 					else:
-						raise ValueError('Mode can be [0,1]')
+						data = await state.get_data()
+						schedule_input = data['schedule_input']
+					print(schedule_input)
+					schedule_dict = await ut_ScheduleMessageToDict(schedule_input, 0)
+					schedule_txt = await ut_ScheduleDictToMessage(schedule_dict, 0)
+					subjects = await ut_ScheduleEnumSubjects(schedule_dict, 0)
 					text = (
 						'<b>Подтверждение расписания</b> 📋\n'
 						f'<b>В расписании {len(subjects)} предметов:</b>\n')
@@ -120,7 +103,7 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext, 
 			await message.answer(
 				text, 
 				reply_markup=kb_reply_MainSchedule_Cancel
-				)
+			)
 			await message.answer(
 				'<b>Подтвердить обновление основного расписания?</b>',
 				reply_markup=kb_inline_MainSchedule_Approve
@@ -147,12 +130,6 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext, 
 			'Если и правда так, <a href="https://t.me/SteePT">напишите нам</a>, мы всё исправим!\n'
 		)
 		await state.finish()
-	# except InvalidLesson as exception:
-		# await message.answer(
-			# 'Основное расписание не сохранено ❌\n'
-			# f'В строке <b>№{exception.num}</b> неправильно записан урок!\n'
-			# f'{exception.line}'	
-		# )
 	except NoLesson as exception:
 		await message.answer(
 			'Основное расписание не сохранено ❌\n'
@@ -232,7 +209,9 @@ async def schedule_FSM_StartUpload(message: types.Message):
 async def schedule_FSM_DayChoise(query: types.CallbackQuery, state: FSMContext):
 	async with state.proxy() as data:
 		data['days'] = int(query.data.replace('MainSchedule_Days', ''))
-	if data['days'] == 1:
+		data['current_day'] = 0
+		data['schedule_input'] = 'Основное расписание\n'
+	if data['days'] == 5:
 		text = 'С понедельника по субботу'
 	else:
 		text = 'С понедельника по пятницу'
@@ -242,7 +221,7 @@ async def schedule_FSM_DayChoise(query: types.CallbackQuery, state: FSMContext):
 		)
 	await UpdateMainScheduleDailyFSM.next()
 	await query.message.answer(
-		'Введите расписание на Понедельник 👇',
+		f'Введите расписание на {days_1[data["current_day"]]} 👇',
 		reply_markup=kb_reply_MainSchedule_Cancel
 		)
 	await query.answer()
@@ -250,23 +229,19 @@ async def schedule_FSM_DayChoise(query: types.CallbackQuery, state: FSMContext):
 
 async def schedule_FSM_WeekDayInput(message: types.Message, state: FSMContext):
 	try:
-		if message.text == 'Отмена ❌':
-			await schedule_FSM_StopUpload(message, state)
-			return
-		schedule_dict = await ut_ScheduleMessageToDict(message.text, 1)
-		str_state = await state.get_state()
-		str_state = str(str_state).replace('UpdateMainScheduleDailyFSM:', '')
-		print(str_state)
+		await ut_ScheduleMessageToDict(message.text, 1)
 		async with state.proxy() as data:
-			data[str_state] = schedule_dict
-			day = days_1[states.index(str_state)+1]
-			if data['days'] == 2:
-				if day == 'Субботу':
-					data['schedule_dict'] = await schedule_FormScheduleDict(data['days'], [data[x] for x in states[:-1]])
-					await schedule_ApproveUpload(message, state, 1)
-					return
-			await message.answer(f'Введите расписание на {day}. 👇')
-			await UpdateMainScheduleDailyFSM.next()
+			data['schedule_input'] += (
+				f'{days_0[data["current_day"]]}\n'
+				f'{message.text}\n'
+				)
+			data['current_day'] += 1 
+			if data['current_day'] == data['days']:
+				await UpdateMainScheduleDailyFSM.next()
+				print('check')
+			await message.answer(
+				f'Введите расписание на {days_1[data["current_day"]]} 👇'
+				)
 	except NoLesson as exception:
 		await message.answer(
 			'Основное расписание не сохранено ❌\n'
@@ -302,17 +277,14 @@ async def schedule_FSM_WeekDayInput(message: types.Message, state: FSMContext):
 	
 async def schedule_FSM_CheckUpload(message: types.Message, state: FSMContext):
 	try:
-		if message.text == 'Отмена ❌':
-			await schedule_FSM_StopUpload(message, state)
-			return
-		schedule_dict = await ut_ScheduleMessageToDict(message.text, 1)
-		str_state = await state.get_state()
-		str_state = str(str_state).replace('UpdateMainScheduleDailyFSM:', '')
-		print(str_state)
+		await ut_ScheduleMessageToDict(message.text, 1)
 		async with state.proxy() as data:
-			data[str_state] = schedule_dict
-			data['schedule_dict'] = await schedule_FormScheduleDict(data['days'], [data[x] for x in states])
-			await schedule_ApproveUpload(message, state, 1)
+			data['schedule_input'] += (
+				f'{days_0[data["current_day"]]}\n'
+				f'{message.text}\n'
+				)
+			print("check", data['schedule_input'])
+		await schedule_FSM_ApproveUpload(message, state)
 	except NoLesson as exception:
 		await message.answer(
 			'Основное расписание не сохранено ❌\n'
@@ -335,15 +307,15 @@ async def schedule_FSM_CheckUpload(message: types.Message, state: FSMContext):
 			f'> {await ut_filterForMDV2(exception.line)}',
 			parse_mode='MarkdownV2'
 		)
-	except Exception as exception:
-		await ut_LogCreate(
-			id=message.from_user.id,
-			filename=filename,
-			function='schedule_FSM_WeekDayInput',
-			exception=exception,
-			content=''
-		)
-		await state.finish()
+	# except Exception as exception:
+		# await ut_LogCreate(
+			# id=message.from_user.id,
+			# filename=filename,
+			# function='schedule_FSM_WeekDayInput',
+			# exception=exception,
+			# content=''
+		# )
+		# await state.finish()
 
 
 async def schedule_FSM_SubmitUpload(query: types.CallbackQuery, state: FSMContext):
@@ -392,15 +364,6 @@ async def schedule_FSM_ElseUpload(message: types.Message, state: FSMContext):
 		)
 
 
-async def schedule_FSM_StopUpload(message: types.Message, state: FSMContext):
-	await message.delete()
-	await state.finish()
-	await message.answer(
-		'Обновление основного расписания отменено ⭕', 
-		reply_markup=kb_reply_CommandStartOrHelp
-		)
-
-
 async def schedule_deleteButtons(query: types.CallbackQuery):
 	await query.message.edit_text(
 		text='Обновления расписания завершено...',
@@ -418,13 +381,11 @@ def register_handlers_schedule(dp: Dispatcher):
 	dp.register_callback_query_handler(schedule_FSM_DeclineUpload, Text('MainSchedule_Decline'), state=[UpdateMainScheduleDailyFSM.sc_approve])
 	dp.register_callback_query_handler(schedule_deleteButtons, Text(['MainSchedule_Submit','MainSchedule_Decline']))
 
-	dp.register_callback_query_handler(schedule_FSM_DayChoise, Text(['MainSchedule_Days1', 'MainSchedule_Days2']), state=UpdateMainScheduleDailyFSM.sc_days)
+	dp.register_callback_query_handler(schedule_FSM_DayChoise, Text(['MainSchedule_Days4', 'MainSchedule_Days5']), state=UpdateMainScheduleDailyFSM.sc_days)
 
 	dp.register_message_handler(schedule_FSM_ApproveUpload, Text(startswith='Основное расписание'))
-	dp.register_message_handler(schedule_FSM_ApproveUpload, Text(startswith='Основное расписание'), state=[UpdateMainScheduleDailyFSM.sc_approve])
+	dp.register_message_handler(schedule_FSM_CheckUpload, state=[UpdateMainScheduleDailyFSM.sc_check])
 	dp.register_message_handler(schedule_FSM_StartUpload, Text(['/update']))
-	dp.register_message_handler(schedule_FSM_WeekDayInput, state=[UpdateMainScheduleDailyFSM.sc_monday, UpdateMainScheduleDailyFSM.sc_tuesday, 
-		UpdateMainScheduleDailyFSM.sc_wednesday, UpdateMainScheduleDailyFSM.sc_thursday,
-		UpdateMainScheduleDailyFSM.sc_friday, UpdateMainScheduleDailyFSM.sc_saturday])
+	dp.register_message_handler(schedule_FSM_WeekDayInput, state=UpdateMainScheduleDailyFSM.sc_weekday_input)
 	dp.register_message_handler(schedule_FSM_StopUpload, Text('Отмена ❌'), state=all_states)
 	dp.register_message_handler(schedule_FSM_ElseUpload, state=all_states)
