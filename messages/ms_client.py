@@ -28,25 +28,25 @@ async def mscl_CommandStartOrHelp_NoRegister(first_name: str):
 	)
 
 
-mscl_GroupPanel_NoGroup = (
+mscl_GroupPanel_NoMember = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
 	'Хотите войти в группу или создать её?'
 )
 
 
-mscl_GroupPanel_WithGroupNoAdmin = (
+mscl_GroupPanel_Member = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
 	'Хотите выйти из группы?'
 )
 
 
-mscl_GroupPanel_WithGroupAdmin = (
+mscl_GroupPanel_Owner = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
-	'Хотите удалить группу?'
+	'Вы можете удалить группу, либо передать права управления ею.'
 )
 
 
-mscl_RegistergroupStart = (
+mscl_RegisterGroupStart = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
 	'Введите название вашей будущей группы\n'
 	'Не более 20 символов 👇'
