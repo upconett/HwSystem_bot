@@ -67,6 +67,7 @@ async def ut_ScheduleMessageToDict(text:str, mode:int) -> dict:
 						if int(lesson_num) not in range(0,11):
 							raise NotSuitableLessonNumber(num, line)
 						subject = " ".join([x for x in line.split()[1:]])
+						if subject == '-': subject = None
 						result[weekday][str(int(lesson_num))]['subject'] = subject
 				else:
 					raise InvalidWeekDay(num, line)
@@ -85,6 +86,7 @@ async def ut_ScheduleMessageToDict(text:str, mode:int) -> dict:
 					if int(lesson_num) not in range(0,11):
 						raise NotSuitableLessonNumber(num, line)
 					subject = " ".join([x for x in line.split()[1:]])
+					if subject == '-': subject = None
 					result[str(int(lesson_num))] = {'subject': subject}
 	else:
 		raise ValueError('Mode can be [0,1]')
