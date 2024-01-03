@@ -77,7 +77,6 @@ async def ut_ScheduleMessageToDict(text:str, mode:int) -> dict:
 		for num, line in enumerate(data):
 			if line.replace(' ', '') != '':
 				if len(line.split()) < 2:
-					print('ЖОПА')
 					raise NoLesson(num, line)
 				else:
 					lesson_num = line.split()[0].replace('.', '').replace(')', '')

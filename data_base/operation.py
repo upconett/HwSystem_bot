@@ -5,6 +5,7 @@ from create_bot import psql
 
 # <---------- Импорт сторонних функций ---------->
 from datetime import datetime
+import json
 
 
 # <---------- Переменные ---------->
@@ -113,3 +114,43 @@ async def db_psql_UserData(id: int, formatted: bool = False):
 				f' Является админом группы: {msreg_TrueOrFalseToRussian[response[4]]}'
 			)
 	return data
+
+
+async def db_psql_GetMainSchedule(user_id:int) -> dict:
+	try:
+		group_id = await psql.select(
+			'users', 
+			'group_id',
+			'id',
+			user_id
+		)
+		group_id = group_id[0]
+		schedule = await psql.select(
+			'groups', 
+			'default_lessons',
+			'group_id', 
+			group_id
+		)
+		return schedule[0]
+	except Exception as ex:
+		print(ex)
+		return None
+
+
+async def db_psql_UpdateMainSchedule(id:int, data:dict):
+	try:
+		group_id = await psql.select(
+			'users', 
+			'group_id', 
+			'id', id
+		)
+		group_id = group_id[0]
+		return await psql.update(
+			'groups',
+			'default_lessons',
+			data,
+			'group_id',
+			group_id
+		)
+	except Exception as ex:
+		print(ex)

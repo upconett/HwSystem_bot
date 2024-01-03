@@ -1,5 +1,6 @@
 # <---------- Импорт сторонних функций ---------->
 import psycopg2 as ps
+import json
 
 
 # <---------- Переменные ---------->
@@ -92,8 +93,10 @@ class PostgreSQL:
 		:return: True if OK or False if not OK
 		"""
 		try:
+			if type(what_value) is dict or what_value is list:
+				what_value = json.dumps(what_value, ensure_ascii=False)
 			with self.conn.cursor() as cursor:
-				cursor.execute(f"UPDATE {table} SET {what} = %s WHERE {where} = %s", (what_value, where_value,))
+				cursor.execute(f"UPDATE {table} SET {what} = %s WHERE {where} = %s", (what_value, where_value))
 			return True
 		except Exception as exception:
 			print(f'FILENAME="{filename}"; FUNCTION="PostgreSQL.update"; CONTENT=""; EXCEPTION="{exception}";')

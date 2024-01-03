@@ -10,7 +10,7 @@ from json import dumps
 
 # <---------- Импорт локальных функций ---------->
 from create_bot import bot
-from data_base.operation import db_psql_UserData
+from data_base.operation import db_psql_UserData, db_psql_GetMainSchedule, db_psql_UpdateMainSchedule
 from exceptions.ex_handlers import NotEnoughDays, InvalidWeekDay,\
     SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber	#InvalidLesson
 from keyboards.kb_client import *
@@ -84,7 +84,6 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 					else:
 						data = await state.get_data()
 						schedule_input = data['schedule_input']
-					print(schedule_input)
 					schedule_dict = await ut_ScheduleMessageToDict(schedule_input, 0)
 					schedule_txt = await ut_ScheduleDictToMessage(schedule_dict, 0)
 					subjects = await ut_ScheduleEnumSubjects(schedule_dict, 0)
@@ -104,8 +103,12 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 				text, 
 				reply_markup=kb_reply_MainSchedule_Cancel
 			)
+			if await db_psql_GetMainSchedule(message.from_id):
+				text = '<b>Обновить основное расписание?</b>'
+			else: 
+				text = '<b>Установить основное раписание?</b>'
 			await message.answer(
-				'<b>Подтвердить обновление основного расписания?</b>',
+				text,
 				reply_markup=kb_inline_MainSchedule_Approve
 			)
 
@@ -155,15 +158,15 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 			parse_mode='MarkdownV2'
 		)
 		await state.finish()
-	# except Exception as exception:
-	# 	await ut_LogCreate(
-	# 		id=message.from_user.id,
-	# 		filename=filename,
-	# 		function='schedule_FSM_ApproveUpload',
-	# 		exception=exception,
-	# 		content=''
-	# 	)
-	# 	await state.finish()
+	except Exception as exception:
+		await ut_LogCreate(
+			id=message.from_user.id,
+			filename=filename,
+			function='schedule_FSM_ApproveUpload',
+			exception=exception,
+			content=''
+		)
+		await state.finish()
 
 
 async def schedule_FSM_StartUpload(message: types.Message):
@@ -238,7 +241,6 @@ async def schedule_FSM_WeekDayInput(message: types.Message, state: FSMContext):
 			data['current_day'] += 1 
 			if data['current_day'] == data['days']:
 				await UpdateMainScheduleDailyFSM.next()
-				print('check')
 			await message.answer(
 				f'Введите расписание на {days_1[data["current_day"]]} 👇'
 				)
@@ -264,15 +266,15 @@ async def schedule_FSM_WeekDayInput(message: types.Message, state: FSMContext):
 			f'> {await ut_filterForMDV2(exception.line)}',
 			parse_mode='MarkdownV2'
 		)
-	# except Exception as exception:
-	# 	await ut_LogCreate(
-	# 		id=message.from_user.id,
-	# 		filename=filename,
-	# 		function='schedule_FSM_WeekDayInput',
-	# 		exception=exception,
-	# 		content=''
-	# 	)
-	# 	await state.finish()
+	except Exception as exception:
+		await ut_LogCreate(
+			id=message.from_user.id,
+			filename=filename,
+			function='schedule_FSM_WeekDayInput',
+			exception=exception,
+			content=''
+		)
+		await state.finish()
 
 	
 async def schedule_FSM_CheckUpload(message: types.Message, state: FSMContext):
@@ -283,7 +285,6 @@ async def schedule_FSM_CheckUpload(message: types.Message, state: FSMContext):
 				f'{days_0[data["current_day"]]}\n'
 				f'{message.text}\n'
 				)
-			print("check", data['schedule_input'])
 		await schedule_FSM_ApproveUpload(message, state)
 	except NoLesson as exception:
 		await message.answer(
@@ -307,24 +308,30 @@ async def schedule_FSM_CheckUpload(message: types.Message, state: FSMContext):
 			f'> {await ut_filterForMDV2(exception.line)}',
 			parse_mode='MarkdownV2'
 		)
-	# except Exception as exception:
-		# await ut_LogCreate(
-			# id=message.from_user.id,
-			# filename=filename,
-			# function='schedule_FSM_WeekDayInput',
-			# exception=exception,
-			# content=''
-		# )
-		# await state.finish()
+	except Exception as exception:
+		await ut_LogCreate(
+			id=message.from_user.id,
+			filename=filename,
+			function='schedule_FSM_WeekDayInput',
+			exception=exception,
+			content=''
+		)
+		await state.finish()
 
 
 async def schedule_FSM_SubmitUpload(query: types.CallbackQuery, state: FSMContext):
 	try:
+		await query.message.edit_reply_markup(reply_markup=None)
 		async with state.proxy() as data:
-			await query.message.answer(
-				'Подтверждено!\n\n'
-				f'{dumps(data["schedule_dict"], indent=2, ensure_ascii=False)}',
-				reply_markup=kb_reply_CommandStartOrHelp
+			if await db_psql_UpdateMainSchedule(query.from_user.id, data["schedule_dict"]):
+				await query.message.answer(
+					'Основное расписание установлено!',
+					reply_markup=kb_reply_CommandStartOrHelp
+				)
+			else:
+				await query.message.answer(
+					'Ошибка в установке расписания...',
+					reply_markup=kb_reply_CommandStartOrHelp
 				)
 		await state.finish()
 		await query.answer()
@@ -340,6 +347,7 @@ async def schedule_FSM_SubmitUpload(query: types.CallbackQuery, state: FSMContex
 
 async def schedule_FSM_DeclineUpload(query: types.CallbackQuery, state: FSMContext):
 	try:
+		await query.message.edit_reply_markup(reply_markup=None)
 		await query.message.answer(
 			'Обновление основного расписания отменено ⭕', 
 			reply_markup=kb_reply_CommandStartOrHelp
