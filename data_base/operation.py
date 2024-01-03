@@ -116,6 +116,94 @@ async def db_psql_UserData(id: int, formatted: bool = False):
 	return data
 
 
+async def db_psql_ChatData(id: int, formatted: bool = False):
+	"""
+	Return data about chat formatted or not.
+	:param id: Telegram chat ID
+	:param formatted: Dictionary for code or str for output
+	:return: Dictionary if formatted False or string if formatted True
+	"""
+	response = (await psql.select(
+		table='chats',
+		what='*',
+		where='id',
+		where_value=id
+	))
+	if not formatted:
+		if not response:
+			response = [id, '', '', '', '']
+		else:
+			response = [response[0][0], response[0][1], response[0][2], response[0][3], response[0][4]]
+			response[4] = response[4].strftime('%Y-%m-%d %H:%M:%S')
+		data = {
+			'id': response[0],
+			'title': response[1],
+			'notifications': response[2],
+			'group_id': response[3],
+			'date': response[4]
+		}
+	else:
+		if not response:
+			data = (
+				f'Чат не зарегистрирован в боте!\n'
+				f' Telegram chat ID: {id}'
+			)
+		else:
+			response = response[0]
+			data = (
+				f'Зарегистрирован: {response[4].strftime("%Y-%m-%d %H:%M:%S")}\n'
+				f' Telegram chat ID: {response[0]}\n'
+				f' Название: {response[1]}\n'
+				f' ID группы: {response[3]}\n'
+				f' Уведомления: {msreg_TrueOrFalseToRussian[response[2]]}'
+			)
+	return data
+
+
+async def db_psql_GroupData(group_id: int, formatted: bool = False):
+	"""
+	Return data about group formatted or not.
+	:param group_id: Group ID
+	:param formatted: Dictionary for code or str for output
+	:return: Dictionary if formatted False or string if formatted True
+	"""
+	response = (await psql.select(
+		table='groups',
+		what='*',
+		where='group_id',
+		where_value=group_id
+	))
+	if not formatted:
+		if not response:
+			response = [group_id, '', '', '', '']
+		else:
+			response = [response[0][0], response[0][1], response[0][3], response[0][4], response[0][7]]
+			response[4] = response[4].strftime('%Y-%m-%d %H:%M:%S')
+		data = {
+			'group_id': response[0],
+			'group_name': response[1],
+			'group_link': response[2],
+			'owner_id': response[3],
+			'date': response[4]
+		}
+	else:
+		if not response:
+			data = (
+				f'Группа не зарегистрирован в боте!\n'
+				f' Group ID: {group_id}'
+			)
+		else:
+			response = response[0]
+			data = (
+				f'Зарегистрирована: {response[7].strftime("%Y-%m-%d %H:%M:%S")}\n'
+				f' Group ID: {response[0]}\n'
+				f' Название: {response[1]}\n'
+				f' Telegram ID владельца: {response[4]}\n'
+				f' Ссылка на вступление: {response[3]}'
+			)
+	return data
+
+
 async def db_psql_GetMainSchedule(user_id:int) -> dict:
 	try:
 		group_id = await psql.select(

@@ -12,7 +12,7 @@ from messages.ms_configuration import *
 
 # <---------- Основные функции ---------->
 def ut_startupConfiguration():
-	exception_data = (0,0,0,0,0,0,0,0,0)
+	exception_data = (0, 0, 0, 0, 0, 0, 0, 0, 0)
 	if os.path.isfile('config.json'):
 		with open('config.json') as file:
 			data = json.load(file)

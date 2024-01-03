@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 # <---------- Импорт локальных функций ---------->
-from data_base.operation import db_psql_UserData
+from data_base.operation import db_psql_UserData, db_psql_ChatData, db_psql_GroupData
 
 
 # <---------- Переменные ---------->
@@ -40,23 +40,29 @@ def ut_LogStart():
 		return False
 
 
-async def ut_LogCreate(id: int, filename: str, function: str, exception, content: str):
+async def ut_LogCreate(id: int, filename: str, function: str, exception, content: str, chat_id: int = None):
 	"""
 	Creating new log.
-	:param id: User ID from telegram
+	:param id: Telegram ID of user
 	:param filename: File name
 	:param function: Function name
 	:param exception: Exception or str object
 	:param content:
+	:param chat_id: Telegram ID of chat
 	:return:
 	"""
 	if id == 00000000:
-		data = {
+		user = {
 			'username': 'bot',
 		}
 	else:
-		data = await db_psql_UserData(id=id)
+		user = await db_psql_UserData(id=id)
+	if chat_id:
+		chat = await db_psql_ChatData(id=chat_id)
+		group = await db_psql_GroupData(group_id=chat['group_id'])
+		log_message = f'USER={user}; CHAT={chat}; GROUP={group}; FILENAME="{filename}"; FUNCTION="{function}"; CONTENT="{content}"; EXCEPTION="{exception}";'
+	else:
+		log_message = f'USER={user}; FILENAME="{filename}"; FUNCTION="{function}"; CONTENT="{content}"; EXCEPTION="{exception}";'
 	date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-	log_message = f'DATA={data}; FILENAME="{filename}"; FUNCTION="{function}"; CONTENT="{content}"; EXCEPTION="{exception}";'
 	print(f'DATE="{date}"; {log_message}')
 	logger.info(log_message)

@@ -16,7 +16,11 @@ from keyboards.kb_group import *
 from utilities.ut_logger import ut_LogCreate
 from utilities.ut_security import ut_EncodeLink
 from utilities.ut_pyrogrambot import ut_GetChatMembers
-from data_base.operation import db_psql_InsertChat
+from data_base.operation import db_psql_InsertChat, db_psql_UserData
+
+
+# <---------- Импорт локальных функций ---------->
+from json import loads
 
 
 # <---------- Переменные ---------->
@@ -37,41 +41,6 @@ async def group_IsChatAdmin(chat_admins: list, id: int) -> bool:
 	return False
 
 
-async def group_IsBotUser(id: int) -> bool:
-	"""
-	Checks if the user in database.
-	:param id: Telegram ID of the user to check
-	:return:
-	"""
-	response = await psql.select(
-		table='users',
-		what='*',
-		where='id',
-		where_value=id
-	)
-	if response:
-		return True
-	return False
-
-
-async def group_IsGroupMember(group_id: int, id: int) -> bool:
-	"""
-	Checks if the user in group. Use only after group_IsBotUser().
-	:param group_id: ID of group
-	:param id: Telegram ID of the user to check
-	:return:
-	"""
-	response = await psql.select(
-		table='users',
-		what='group_id',
-		where='id',
-		where_value=id
-	)
-	if response[0][0] == group_id:
-		return True
-	return False
-
-
 # <---------- Callback функции ---------->
 async def group_callback_SelectGroup(query: types.CallbackQuery):
 	"""
@@ -86,8 +55,8 @@ async def group_callback_SelectGroup(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await group_IsBotUser(id=query.from_user.id)
-			if is_BotUser:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				group_ids = loads(query.data.split('|')[1])
 				group_names = loads((query.data.split('|')[2]).replace("'", '"'))
 				groups = [group_ids, group_names]
@@ -106,6 +75,7 @@ async def group_callback_SelectGroup(query: types.CallbackQuery):
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_SelectGroup',
 			exception='',
@@ -114,6 +84,7 @@ async def group_callback_SelectGroup(query: types.CallbackQuery):
 	except Exception as exception:
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_SelectGroup',
 			exception=exception,
@@ -134,8 +105,8 @@ async def group_callback_BindChatSettings(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await group_IsBotUser(id=query.from_user.id)
-			if is_BotUser:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				group_id = int(query.data.split('|')[1])
 				group_name = query.data.split('|')[2]
 				reply_markup = await kb_inline_ChatSettings(
@@ -157,6 +128,7 @@ async def group_callback_BindChatSettings(query: types.CallbackQuery):
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_BindChatSettings',
 			exception='',
@@ -165,6 +137,7 @@ async def group_callback_BindChatSettings(query: types.CallbackQuery):
 	except Exception as exception:
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_BindChatSettings',
 			exception=exception,
@@ -185,8 +158,8 @@ async def group_callback_BindGroup(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await group_IsBotUser(id=query.from_user.id)
-			if is_BotUser:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				group_id = int(query.data.split('|')[1])
 				group_name = query.data.split('|')[2]
 				notifications = bool(query.data.split('|')[3])
@@ -238,6 +211,7 @@ async def group_callback_BindGroup(query: types.CallbackQuery):
 			exception = ''
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_BindGroup',
 			content=content,
@@ -246,6 +220,7 @@ async def group_callback_BindGroup(query: types.CallbackQuery):
 	except Exception as exception:
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_BindGroup',
 			exception=exception,
@@ -261,8 +236,8 @@ async def group_callback_DeleteLink(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await group_IsBotUser(id=query.from_user.id)
-			if is_BotUser:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				group_id = int(query.data.split('|')[1])
 				group_name = query.data.split('|')[2]
 				await psql.update(
@@ -291,6 +266,7 @@ async def group_callback_DeleteLink(query: types.CallbackQuery):
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_BindGroup',
 			content=content,
@@ -299,6 +275,7 @@ async def group_callback_DeleteLink(query: types.CallbackQuery):
 	except Exception as exception:
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_DeleteLink',
 			exception=exception,
@@ -319,8 +296,8 @@ async def group_callback_ReloadChat(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await group_IsBotUser(id=query.from_user.id)
-			if is_BotUser:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				await bot.send_message(
 					chat_id=query.message.chat.id,
 					text=msgr_ChatReloaded
@@ -335,6 +312,7 @@ async def group_callback_ReloadChat(query: types.CallbackQuery):
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_ReloadChat',
 			exception='',
@@ -343,6 +321,7 @@ async def group_callback_ReloadChat(query: types.CallbackQuery):
 	except Exception as exception:
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_ReloadChat',
 			exception=exception,
@@ -363,8 +342,8 @@ async def group_callback_UnlinkGroup(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await group_IsBotUser(id=query.from_user.id)
-			if is_BotUser:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				group_id = int(query.data.split('|')[1])
 				group_name = query.data.split('|')[2]
 				await psql.delete(
@@ -389,6 +368,7 @@ async def group_callback_UnlinkGroup(query: types.CallbackQuery):
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_UnlinkGroup',
 			exception='',
@@ -397,6 +377,7 @@ async def group_callback_UnlinkGroup(query: types.CallbackQuery):
 	except Exception as exception:
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_UnlinkGroup',
 			exception=exception,
@@ -417,8 +398,8 @@ async def group_callback_ContinueWithGroup(query: types.CallbackQuery):
 			id=query.from_user.id
 		)
 		if is_admin:
-			is_BotUser = await group_IsBotUser(id=query.from_user.id)
-			if is_BotUser:
+			data = await db_psql_UserData(id=query.from_user.id)
+			if data['username']:
 				group_id = int(query.data.split('|')[1])
 				group_name = query.data.split('|')[2]
 				link = await ut_EncodeLink(
@@ -454,6 +435,7 @@ async def group_callback_ContinueWithGroup(query: types.CallbackQuery):
 			content = f'Tried to configure bot in chat with id={query.message.chat.id}, title={query.message.chat.title}.'
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_ContinueWithGroup',
 			exception='',
@@ -462,6 +444,7 @@ async def group_callback_ContinueWithGroup(query: types.CallbackQuery):
 	except Exception as exception:
 		await ut_LogCreate(
 			id=query.from_user.id,
+			chat_id=query.message.chat.id,
 			filename=filename,
 			function='group_callback_ContinueWithGroup',
 			exception=exception,
@@ -543,6 +526,7 @@ async def group_handler_ChatStart(message: types.Message):
 				)
 				await ut_LogCreate(
 					id=00000000,
+					chat_id=message.chat.id,
 					filename=filename,
 					function='group_handler_ChatStart',
 					exception='',
@@ -555,6 +539,7 @@ async def group_handler_ChatStart(message: types.Message):
 				)
 				await ut_LogCreate(
 					id=00000000,
+					chat_id=message.chat.id,
 					filename=filename,
 					function='group_handler_ChatStart',
 					exception='',
@@ -563,6 +548,7 @@ async def group_handler_ChatStart(message: types.Message):
 	except Exception as exception:
 		await ut_LogCreate(
 			id=00000000,
+			chat_id=message.chat.id,
 			filename=filename,
 			function='group_handler_ChatStart',
 			exception=exception,
