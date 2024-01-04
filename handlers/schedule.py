@@ -1,18 +1,15 @@
 # <---------- Импорт функций Aiogram ---------->
-from aiogram import Dispatcher, types
-# from aiogram.dispatcher.filters import Text
+from aiogram import Router, types, F
+from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-
-
-from json import dumps
 
 
 # <---------- Импорт локальных функций ---------->
 from create_bot import bot
 from data_base.operation import db_psql_UserData, db_psql_GetMainSchedule, db_psql_UpdateMainSchedule
 from exceptions.ex_handlers import NotEnoughDays, InvalidWeekDay,\
-    SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber	#InvalidLesson
+    SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber
 from keyboards.kb_client import *
 from keyboards.kb_schedule import *
 from utilities.ut_handlers import ut_filterForMDV2, ut_ScheduleMessageToDict,\
@@ -33,8 +30,10 @@ class UpdateMainScheduleDailyFSM(StatesGroup):
 	sc_check = State()
 	sc_approve = State()
 
-all_states = [UpdateMainScheduleDailyFSM.sc_days, UpdateMainScheduleDailyFSM.sc_weekday_input,\
-			  UpdateMainScheduleDailyFSM.sc_check, UpdateMainScheduleDailyFSM.sc_approve]
+
+# <---------- Роутер  ---------->
+router = Router()
+router.message()
 
 
 # <---------- Вспомогательные функции ---------->
@@ -379,21 +378,13 @@ async def schedule_deleteButtons(query: types.CallbackQuery):
 	)
 
 
-def register_handlers_schedule(dp: Dispatcher):
-	"""
-	Регистрация всех message и callback хендлеров для сценария: 'Изменение Основного Расписания'.
-	:param dp:
-	:return:
-	"""
-	# dp.register_callback_query_handler(schedule_FSM_SubmitUpload, Text('MainSchedule_Submit'), state=[UpdateMainScheduleDailyFSM.sc_approve])
-	# dp.register_callback_query_handler(schedule_FSM_DeclineUpload, Text('MainSchedule_Decline'), state=[UpdateMainScheduleDailyFSM.sc_approve])
-	# dp.register_callback_query_handler(schedule_deleteButtons, Text(['MainSchedule_Submit','MainSchedule_Decline']))
-
-	# dp.register_callback_query_handler(schedule_FSM_DayChoise, Text(['MainSchedule_Days4', 'MainSchedule_Days5']), state=UpdateMainScheduleDailyFSM.sc_days)
-
-	# dp.register_message_handler(schedule_FSM_ApproveUpload, Text(startswith='Основное расписание'))
-	# dp.register_message_handler(schedule_FSM_CheckUpload, state=[UpdateMainScheduleDailyFSM.sc_check])
-	# dp.register_message_handler(schedule_FSM_StartUpload, Text(['/update']))
-	# dp.register_message_handler(schedule_FSM_WeekDayInput, state=UpdateMainScheduleDailyFSM.sc_weekday_input)
-	# dp.register_message_handler(schedule_FSM_StopUpload, Text('Отмена ❌'), state=all_states)
-	# dp.register_message_handler(schedule_FSM_ElseUpload, state=all_states)
+router.callback_query.register(schedule_FSM_SubmitUpload, F.data == 'MainSchedule_Submit', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))
+router.callback_query.register(schedule_FSM_DeclineUpload, F.data == 'MainSchedule_Decline', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))
+# router.callback_query.register(schedule_deleteButtons, F.text in ['MainSchedule_Submit','MainSchedule_Decline'])
+# router.callback_query.register(schedule_FSM_DayChoise, F.text in ['MainSchedule_Days4', 'MainSchedule_Days5'], StateFilter(UpdateMainScheduleDailyFSM.sc_days))
+router.message.register(schedule_FSM_ApproveUpload, F.text.startswith('Основное расписание'))
+router.message.register(schedule_FSM_CheckUpload, StateFilter(UpdateMainScheduleDailyFSM.sc_check))
+router.message.register(schedule_FSM_StartUpload, Command('update'))
+router.message.register(schedule_FSM_WeekDayInput, StateFilter(UpdateMainScheduleDailyFSM.sc_weekday_input))
+router.message.register(schedule_FSM_StopUpload, F.text('Отмена ❌'))
+router.message.register(schedule_FSM_ElseUpload)
