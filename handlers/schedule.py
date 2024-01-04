@@ -378,19 +378,14 @@ async def schedule_deleteButtons(query: types.CallbackQuery):
 	)
 
 
-router.callback_query.register(schedule_FSM_SubmitUpload, F.data == 'MainSchedule_Submit', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))
-# router.callback_query.register(schedule_FSM_DeclineUpload, F.data == 'MainSchedule_Decline', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))
-
-
-
-router.callback_query.register(schedule_deleteButtons, F.text.in_({'MainSchedule_Submit','MainSchedule_Decline'}))
-
-
-
-router.callback_query.register(schedule_FSM_DayChoise, F.data.in_({'MainSchedule_Days4', 'MainSchedule_Days5'}), StateFilter(UpdateMainScheduleDailyFSM.sc_days))
-router.message.register(schedule_FSM_ApproveUpload, F.text.startswith('Основное расписание'))
-router.message.register(schedule_FSM_CheckUpload, StateFilter(UpdateMainScheduleDailyFSM.sc_check))
-router.message.register(schedule_FSM_StartUpload, Command('update'))
-router.message.register(schedule_FSM_WeekDayInput, StateFilter(UpdateMainScheduleDailyFSM.sc_weekday_input))
-router.message.register(schedule_FSM_StopUpload, F.text == 'Отмена ❌', StateFilter(UpdateMainScheduleDailyFSM))
-router.message.register(schedule_FSM_ElseUpload, StateFilter(UpdateMainScheduleDailyFSM))
+def register_handlers():
+	router.callback_query.register(schedule_FSM_SubmitUpload, F.data == 'MainSchedule_Submit', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))
+	router.callback_query.register(schedule_FSM_DeclineUpload, F.data == 'MainSchedule_Decline', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))
+	router.callback_query.register(schedule_deleteButtons, F.text.in_({'MainSchedule_Submit','MainSchedule_Decline'}))
+	router.callback_query.register(schedule_FSM_DayChoise, F.data.in_({'MainSchedule_Days4', 'MainSchedule_Days5'}), StateFilter(UpdateMainScheduleDailyFSM.sc_days))
+	router.message.register(schedule_FSM_ApproveUpload, F.text.startswith('Основное расписание'))
+	router.message.register(schedule_FSM_CheckUpload, StateFilter(UpdateMainScheduleDailyFSM.sc_check))
+	router.message.register(schedule_FSM_StartUpload, Command('update'))
+	router.message.register(schedule_FSM_WeekDayInput, StateFilter(UpdateMainScheduleDailyFSM.sc_weekday_input))
+	router.message.register(schedule_FSM_StopUpload, F.text == 'Отмена ❌', StateFilter(UpdateMainScheduleDailyFSM))
+	router.message.register(schedule_FSM_ElseUpload, StateFilter(UpdateMainScheduleDailyFSM))

@@ -37,20 +37,15 @@ async def on_shutdown():
 	print('Goodbye...')
 
 
-
-
-# <---------- Основные функции ---------->
-# schedule.register_handlers_schedule()
-dp.include_router(schedule.router)
-client.register_handlers_client(dp)
-group.register_handlers_group(dp)
-
-
 # <---------- Запуск бота ---------->
 async def main():
 	dp.startup.register(on_startup)
 	dp.shutdown.register(on_shutdown)
 	dp.include_routers(client.router, schedule.router)
+
+	client.register_handlers()
+	schedule.register_handlers()
+
 	await bot.delete_webhook(drop_pending_updates=True)
 	await dp.start_polling(bot)
 

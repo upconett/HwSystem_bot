@@ -345,7 +345,7 @@ async def client_handler_RegisterGroupName(message: types.Message, state: FSMCon
 		)
 
 
-def register_handlers_client(dp: Dispatcher):
+def register_handlers():
 	"""
 	Registration of all message and callback handlers.
 	:param dp:
