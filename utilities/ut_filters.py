@@ -29,5 +29,26 @@ class filter_UserInGroup(Filter):
         self.flag = flag
 
     async def __call__(self, message: Message) -> bool:
-        user_data = await db_psql_UserData(message.from_user.id)
-        return self.flag == user_data['group_id']
+        try:
+            user_data = await db_psql_UserData(message.from_user.id)
+            result = user_data['group_id'] is not None
+            return self.flag == result
+        except Exception as ex:
+            print(ex,'\nException - filter_UserInGroup')
+            return False
+    
+
+class filter_UserIsAdmin(Filter):
+    """
+    Check if user is admin.
+    """
+    def __init__(self, flag:bool=True) -> None:
+        self.flag = flag
+
+    async def __call__(self, message: Message) -> bool:
+        try:
+            user_data = await db_psql_UserData(message.from_user.id)
+            return self.flag == user_data['is_admin']
+        except Exception as ex:
+            print(ex,'\nException - filter_UserIsAdmin')
+            return False
