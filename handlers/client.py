@@ -1,8 +1,9 @@
 # <---------- Импорт функций Aiogram ---------->
 from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
-from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
+from aiogram.filters import Command
+from aiogram import F
+from aiogram.fsm.state import State, StatesGroup
 
 
 # <---------- Импорт локальных функций ---------->
@@ -348,10 +349,10 @@ def register_handlers_client(dp: Dispatcher):
 	:param dp:
 	:return:
 	"""
-	dp.register_message_handler(client_handler_CommandStartOrHelp, Text(equals=msreg_StartOrHelp, ignore_case=True))
-	dp.register_message_handler(client_handler_GroupPanel, Text(equals=msreg_GroupPanelMessage, ignore_case=True))
-	dp.register_callback_query_handler(client_callback_GroupPanel, Text('GroupPanel'))
+	dp.message.register(client_handler_CommandStartOrHelp, Command('start'))
+	# dp.register_message_handler(client_handler_GroupPanel, Text(equals=msreg_GroupPanelMessage, ignore_case=True))
+	# dp.register_callback_query_handler(client_callback_GroupPanel, Text('GroupPanel'))
 
-	dp.register_callback_query_handler(client_callback_RegisterGroupStart, Text('CreateGroup'))
-	dp.register_message_handler(client_handler_RegisterGroupStart, Text(equals=msreg_RegistrationGroupStart, ignore_case=True))
-	dp.register_message_handler(client_handler_CancelFSM, Text(equals=msreg_CancelFSM, ignore_case=True), state='*')
+	# dp.register_callback_query_handler(client_callback_RegisterGroupStart, Text('CreateGroup'))
+	# dp.register_message_handler(client_handler_RegisterGroupStart, Text(equals=msreg_RegistrationGroupStart, ignore_case=True))
+	# dp.register_message_handler(client_handler_CancelFSM, Text(equals=msreg_CancelFSM, ignore_case=True), state='*')

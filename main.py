@@ -1,9 +1,9 @@
-# <---------- Импорт функций Aiogram ---------->
-from aiogram.utils import executor
+# <---------- Импорт сторонних функций  ---------->
+import asyncio
 
 
 # <---------- Импорт локальных функций ---------->
-from create_bot import dp, psql, mndb
+from create_bot import dp, bot, psql, mndb
 from handlers import client, group, schedule
 from utilities.ut_logger import ut_LogStart
 
@@ -12,8 +12,8 @@ from utilities.ut_logger import ut_LogStart
 filename = 'main.py'
 
 
-# <---------- Функции on_startup и on_shutdown ---------->
-async def on_startup(_):
+# <---------- Функции on_startup, main и on_shutdown ---------->
+async def on_startup():
 	"""
 	Initializing all connections.
 	:param _:
@@ -29,8 +29,16 @@ async def on_startup(_):
 	print()
 
 
-async def on_shutdown(_):
-	pass
+async def main():
+	await bot.delete_webhook(drop_pending_updates=True)
+	await dp.start_polling(bot)
+
+
+async def on_shutdown():
+	print()
+	await psql.close()
+	await mndb.close()
+	print('Goodbye...')
 
 
 # <---------- Основные функции ---------->
@@ -39,4 +47,10 @@ client.register_handlers_client(dp)
 group.register_handlers_group(dp)
 
 
-executor.start_polling(dp, skip_updates=True, on_startup=on_startup, timeout=10)
+# <---------- Запуск бота ---------->
+if __name__ == '__main__':
+	try:
+		asyncio.run(on_startup())
+		asyncio.run(main())
+	except:
+		asyncio.run(on_shutdown())

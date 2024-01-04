@@ -1,5 +1,5 @@
 # <---------- Импорт функций Aiogram ---------->
-from aiogram.utils.deep_linking import decode_payload, get_start_link
+from aiogram.utils.deep_linking import decode_payload, create_start_link 
 
 
 # <---------- Импорт локальных функций ---------->
@@ -18,7 +18,7 @@ async def ut_EncodeLink(group_id: int, id: int):
 		group_id=group_id,
 		id=id
 	)
-	link = await get_start_link(pattern, encode=True)
+	link = await create_start_link(pattern, encode=True)
 	return link
 
 

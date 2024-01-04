@@ -1,8 +1,8 @@
 # <---------- Импорт функций Aiogram ---------->
 from aiogram import Dispatcher, types
-from aiogram.dispatcher.filters import Text
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
+# from aiogram.dispatcher.filters import Text
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 
 
 from json import dumps
@@ -385,15 +385,15 @@ def register_handlers_schedule(dp: Dispatcher):
 	:param dp:
 	:return:
 	"""
-	dp.register_callback_query_handler(schedule_FSM_SubmitUpload, Text('MainSchedule_Submit'), state=[UpdateMainScheduleDailyFSM.sc_approve])
-	dp.register_callback_query_handler(schedule_FSM_DeclineUpload, Text('MainSchedule_Decline'), state=[UpdateMainScheduleDailyFSM.sc_approve])
-	dp.register_callback_query_handler(schedule_deleteButtons, Text(['MainSchedule_Submit','MainSchedule_Decline']))
+	# dp.register_callback_query_handler(schedule_FSM_SubmitUpload, Text('MainSchedule_Submit'), state=[UpdateMainScheduleDailyFSM.sc_approve])
+	# dp.register_callback_query_handler(schedule_FSM_DeclineUpload, Text('MainSchedule_Decline'), state=[UpdateMainScheduleDailyFSM.sc_approve])
+	# dp.register_callback_query_handler(schedule_deleteButtons, Text(['MainSchedule_Submit','MainSchedule_Decline']))
 
-	dp.register_callback_query_handler(schedule_FSM_DayChoise, Text(['MainSchedule_Days4', 'MainSchedule_Days5']), state=UpdateMainScheduleDailyFSM.sc_days)
+	# dp.register_callback_query_handler(schedule_FSM_DayChoise, Text(['MainSchedule_Days4', 'MainSchedule_Days5']), state=UpdateMainScheduleDailyFSM.sc_days)
 
-	dp.register_message_handler(schedule_FSM_ApproveUpload, Text(startswith='Основное расписание'))
-	dp.register_message_handler(schedule_FSM_CheckUpload, state=[UpdateMainScheduleDailyFSM.sc_check])
-	dp.register_message_handler(schedule_FSM_StartUpload, Text(['/update']))
-	dp.register_message_handler(schedule_FSM_WeekDayInput, state=UpdateMainScheduleDailyFSM.sc_weekday_input)
-	dp.register_message_handler(schedule_FSM_StopUpload, Text('Отмена ❌'), state=all_states)
-	dp.register_message_handler(schedule_FSM_ElseUpload, state=all_states)
+	# dp.register_message_handler(schedule_FSM_ApproveUpload, Text(startswith='Основное расписание'))
+	# dp.register_message_handler(schedule_FSM_CheckUpload, state=[UpdateMainScheduleDailyFSM.sc_check])
+	# dp.register_message_handler(schedule_FSM_StartUpload, Text(['/update']))
+	# dp.register_message_handler(schedule_FSM_WeekDayInput, state=UpdateMainScheduleDailyFSM.sc_weekday_input)
+	# dp.register_message_handler(schedule_FSM_StopUpload, Text('Отмена ❌'), state=all_states)
+	# dp.register_message_handler(schedule_FSM_ElseUpload, state=all_states)

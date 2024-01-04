@@ -14,5 +14,10 @@ class MongoDB:
 		:param database: Database name
 		:param port: Port to connect
 		"""
-		self.db = MongoClient(f"mongodb://{user}:{password}@{host}:{port}/{database}?authMechanism=SCRAM-SHA-256")
-		self.db = self.db.get_database(database)
+		self.conn = MongoClient(f"mongodb://{user}:{password}@{host}:{port}/{database}?authMechanism=SCRAM-SHA-256")
+		self.db = self.conn.get_database(database)
+
+
+	async def close(self):
+		self.conn.close()
+		print('MongoDB connection closed')

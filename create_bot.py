@@ -1,7 +1,6 @@
 # <---------- Импорт функций Aiogram ---------->
-from aiogram import Bot
-from aiogram.dispatcher import Dispatcher
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
 
 
 # <---------- Импорт локальных функций ---------->
@@ -24,4 +23,4 @@ psql = PostgreSQL(host=db_host, user=db_user, password=db_password, database=db_
 mndb = MongoDB(host=db_host, user=db_user, password=db_password, database=db_name)
 
 bot = Bot(token=MAIN_TOKEN, parse_mode='html', disable_web_page_preview=True)
-dp = Dispatcher(bot, storage=storage)
+dp = Dispatcher(storage=storage)

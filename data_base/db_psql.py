@@ -116,3 +116,8 @@ class PostgreSQL:
 		except Exception as exception:
 			print(f'FILENAME="{filename}"; FUNCTION="PostgreSQL.delete"; CONTENT=""; EXCEPTION="{exception}";')
 			return False
+
+
+	async def close(self):
+		self.conn.close()
+		print('PostgreSQL connection closed')
