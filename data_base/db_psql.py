@@ -120,4 +120,4 @@ class PostgreSQL:
 
 	async def close(self):
 		self.conn.close()
-		print('PostgreSQL connection closed')
+		print('PostgreSQL connection closed.')

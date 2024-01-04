@@ -12,7 +12,7 @@ from utilities.ut_logger import ut_LogStart
 filename = 'main.py'
 
 
-# <---------- Функции on_startup, main и on_shutdown ---------->
+# <---------- Функции on_startup и on_shutdown ---------->
 async def on_startup():
 	"""
 	Initializing all connections.
@@ -23,15 +23,10 @@ async def on_startup():
 	if ut_LogStart():
 		print('Logger started OK!')
 	if psql:
-		print('PostgreSQL started OK!')
+		print('PostgreSQL connection OK!')
 	if mndb:
-		print('MongoDB started OK!')
+		print('MongoDB connection OK!')
 	print()
-
-
-async def main():
-	await bot.delete_webhook(drop_pending_updates=True)
-	await dp.start_polling(bot)
 
 
 async def on_shutdown():
@@ -41,6 +36,8 @@ async def on_shutdown():
 	print('Goodbye...')
 
 
+
+
 # <---------- Основные функции ---------->
 schedule.register_handlers_schedule(dp)
 client.register_handlers_client(dp)
@@ -48,9 +45,14 @@ group.register_handlers_group(dp)
 
 
 # <---------- Запуск бота ---------->
+async def main():
+	dp.startup.register(on_startup)
+	dp.shutdown.register(on_shutdown)
+	await bot.delete_webhook(drop_pending_updates=True)
+	await dp.start_polling(bot)
+
 if __name__ == '__main__':
 	try:
-		asyncio.run(on_startup())
 		asyncio.run(main())
-	except:
-		asyncio.run(on_shutdown())
+	except KeyboardInterrupt:
+		pass

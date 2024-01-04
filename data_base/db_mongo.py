@@ -20,4 +20,4 @@ class MongoDB:
 
 	async def close(self):
 		self.conn.close()
-		print('MongoDB connection closed')
+		print('MongoDB connection closed.')
