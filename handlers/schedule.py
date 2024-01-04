@@ -50,15 +50,6 @@ async def client_IsGroupMember(id:int) -> bool:
 
 
 # <---------- Handler функции ---------->
-async def schedule_FSM_StopUpload(message: types.Message, state: FSMContext):
-	await message.delete()
-	await state.finish()
-	await message.answer(
-		'Обновление основного расписания отменено ⭕', 
-		reply_markup=kb_reply_CommandStartOrHelp
-		)
-
-
 async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 	"""
 	Simple one message schedule uploading.
@@ -73,9 +64,9 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 				reply_markup=kb_reply_CommandStartOrHelp
 			)
 			exception = 'Used from group.'
-			await state.finish()
+			await state.clear()
 		else:
-			user_data = await db_psql_UserData(message.from_id)
+			user_data = await db_psql_UserData(message.from_user.id)
 			if user_data['group_id']:
 				if user_data['group_admin']:
 					if await state.get_state() is None:
@@ -95,14 +86,14 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 							text += ','
 						if num % 2 != 0: text += '\n'
 					text += f'\n\n<b>Расписание будет записано так:</b>\n\n{schedule_txt}'
-					await UpdateMainScheduleDailyFSM.sc_approve.set()
+					await state.set_state(UpdateMainScheduleDailyFSM.sc_approve)
 					async with state.proxy() as data:
 						data['schedule_dict'] = schedule_dict
 			await message.answer(
 				text, 
 				reply_markup=kb_reply_MainSchedule_Cancel
 			)
-			if await db_psql_GetMainSchedule(message.from_id):
+			if await db_psql_GetMainSchedule(message.from_user.id):
 				text = '<b>Обновить основное расписание?</b>'
 			else: 
 				text = '<b>Установить основное раписание?</b>'
@@ -116,7 +107,7 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 			'Основное расписание не сохранено ❌\n'
 			'В расписании должно быть не менее <b>5 дней</b>!\n'
 			)
-		await state.finish()
+		await state.clear()
 	except InvalidWeekDay as exception:
 		await message.answer(
 			'Основное расписание не сохранено ❌\n'
@@ -124,14 +115,14 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 			f'> {await ut_filterForMDV2(exception.line)}',
 			parse_mode='MarkdownV2'
 		)
-		await state.finish()
+		await state.clear()
 	except SundayException as exception:
 		await message.answer(
 			'Основное расписание не сохранено ❌\n'
 			'Вы что учитесь по воскресеньям? 😶‍🌫️\n'
 			'Если и правда так, <a href="https://t.me/SteePT">напишите нам</a>, мы всё исправим!\n'
 		)
-		await state.finish()
+		await state.clear()
 	except NoLesson as exception:
 		await message.answer(
 			'Основное расписание не сохранено ❌\n'
@@ -139,7 +130,7 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 			f'> {await ut_filterForMDV2(exception.line)}',
 			parse_mode='MarkdownV2'
 		)
-		await state.finish()
+		await state.clear()
 	except InvalidLessonNumber as exception:
 		await message.answer(
 			'Основное расписание не сохранено ❌\n'
@@ -147,7 +138,7 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 			f'> {await ut_filterForMDV2(exception.line)}',
 			parse_mode='MarkdownV2'
 		)
-		await state.finish()
+		await state.clear()
 	except NotSuitableLessonNumber as exception:
 		await message.answer(
 			'Основное расписание не сохранено ❌\n'
@@ -156,7 +147,7 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 			f'> {await ut_filterForMDV2(exception.line)}',
 			parse_mode='MarkdownV2'
 		)
-		await state.finish()
+		await state.clear()
 	except Exception as exception:
 		await ut_LogCreate(
 			id=message.from_user.id,
@@ -165,10 +156,10 @@ async def schedule_FSM_ApproveUpload(message: types.Message, state: FSMContext):
 			exception=exception,
 			content=''
 		)
-		await state.finish()
+		await state.clear()
 
 
-async def schedule_FSM_StartUpload(message: types.Message):
+async def schedule_FSM_StartUpload(message: types.Message, state: FSMContext):
 	"""
 	Triggered by '/update' - TEST
 	:param message:
@@ -185,7 +176,7 @@ async def schedule_FSM_StartUpload(message: types.Message):
 			content = 'No database operations.'
 			exception = 'Used from group.'
 		else:
-			if await client_IsGroupMember(message.from_id):
+			if await client_IsGroupMember(message.from_user.id):
 				await message.answer(
 					'*Изменение основного расписания ✏️*\n',
 					parse_mode='Markdown',
@@ -195,7 +186,7 @@ async def schedule_FSM_StartUpload(message: types.Message):
 					'В какие дни вы учитесь? ✍️',
 					reply_markup=kb_inline_MainSchedule_Days
 					)
-				await UpdateMainScheduleDailyFSM.sc_days.set()
+				await state.set_state(UpdateMainScheduleDailyFSM.sc_days)
 			else:
 				await message.answer('Вы не состоите в группе. ❌\n')
 	except Exception as exception:
@@ -273,7 +264,7 @@ async def schedule_FSM_WeekDayInput(message: types.Message, state: FSMContext):
 			exception=exception,
 			content=''
 		)
-		await state.finish()
+		await state.clear()
 
 	
 async def schedule_FSM_CheckUpload(message: types.Message, state: FSMContext):
@@ -315,7 +306,7 @@ async def schedule_FSM_CheckUpload(message: types.Message, state: FSMContext):
 			exception=exception,
 			content=''
 		)
-		await state.finish()
+		await state.clear()
 
 
 async def schedule_FSM_SubmitUpload(query: types.CallbackQuery, state: FSMContext):
@@ -332,7 +323,7 @@ async def schedule_FSM_SubmitUpload(query: types.CallbackQuery, state: FSMContex
 					'Ошибка в установке расписания...',
 					reply_markup=kb_reply_CommandStartOrHelp
 				)
-		await state.finish()
+		await state.clear()
 		await query.answer()
 	except Exception as exception:
 		await ut_LogCreate(
@@ -351,7 +342,7 @@ async def schedule_FSM_DeclineUpload(query: types.CallbackQuery, state: FSMConte
 			'Обновление основного расписания отменено ⭕', 
 			reply_markup=kb_reply_CommandStartOrHelp
 		)
-		await state.finish()
+		await state.clear()
 		await query.answer()
 	except Exception as exception:
 		await ut_LogCreate(
@@ -363,7 +354,16 @@ async def schedule_FSM_DeclineUpload(query: types.CallbackQuery, state: FSMConte
 		)
 
 
-async def schedule_FSM_ElseUpload(message: types.Message, state: FSMContext):
+async def schedule_FSM_StopUpload(message: types.Message, state: FSMContext):
+	await message.delete()
+	await state.clear()
+	await message.answer(
+		'Обновление основного расписания отменено ⭕', 
+		reply_markup=kb_reply_CommandStartOrHelp
+		)
+
+
+async def schedule_FSM_ElseUpload(message: types.Message):
 	await message.delete()
 	await message.answer(
 		'Вы не можете использовать другие функции!\n'
@@ -379,12 +379,18 @@ async def schedule_deleteButtons(query: types.CallbackQuery):
 
 
 router.callback_query.register(schedule_FSM_SubmitUpload, F.data == 'MainSchedule_Submit', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))
-router.callback_query.register(schedule_FSM_DeclineUpload, F.data == 'MainSchedule_Decline', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))
-# router.callback_query.register(schedule_deleteButtons, F.text in ['MainSchedule_Submit','MainSchedule_Decline'])
-# router.callback_query.register(schedule_FSM_DayChoise, F.text in ['MainSchedule_Days4', 'MainSchedule_Days5'], StateFilter(UpdateMainScheduleDailyFSM.sc_days))
+# router.callback_query.register(schedule_FSM_DeclineUpload, F.data == 'MainSchedule_Decline', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))
+
+
+
+router.callback_query.register(schedule_deleteButtons, F.text.in_({'MainSchedule_Submit','MainSchedule_Decline'}))
+
+
+
+router.callback_query.register(schedule_FSM_DayChoise, F.data.in_({'MainSchedule_Days4', 'MainSchedule_Days5'}), StateFilter(UpdateMainScheduleDailyFSM.sc_days))
 router.message.register(schedule_FSM_ApproveUpload, F.text.startswith('Основное расписание'))
 router.message.register(schedule_FSM_CheckUpload, StateFilter(UpdateMainScheduleDailyFSM.sc_check))
 router.message.register(schedule_FSM_StartUpload, Command('update'))
 router.message.register(schedule_FSM_WeekDayInput, StateFilter(UpdateMainScheduleDailyFSM.sc_weekday_input))
-router.message.register(schedule_FSM_StopUpload, F.text('Отмена ❌'))
-router.message.register(schedule_FSM_ElseUpload)
+router.message.register(schedule_FSM_StopUpload, F.text == 'Отмена ❌', StateFilter(UpdateMainScheduleDailyFSM))
+router.message.register(schedule_FSM_ElseUpload, StateFilter(UpdateMainScheduleDailyFSM))
