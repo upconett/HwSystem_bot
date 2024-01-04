@@ -1,8 +1,9 @@
 # <---------- Импорт функций Aiogram ---------->
-from aiogram import Dispatcher, types
+from aiogram import Dispatcher, types, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 from aiogram import F
+from aiogram.filters import BaseFilter
 from aiogram.fsm.state import State, StatesGroup
 
 
@@ -13,9 +14,11 @@ from messages.ms_client import *
 from messages.ms_regular import *
 from keyboards.kb_client import *
 from utilities.ut_logger import ut_LogCreate
+from utilities.ut_filters import filter_ChatType
 
 
 # <---------- Переменные ---------->
+router = Router()
 filename = 'client.py'
 
 
@@ -349,7 +352,8 @@ def register_handlers_client(dp: Dispatcher):
 	:param dp:
 	:return:
 	"""
-	dp.message.register(client_handler_CommandStartOrHelp, Command('start'))
+	router.message.register(client_handler_CommandStartOrHelp, Command('start'), filter_ChatType(chat_types=['private']))
+	router.message.register(client_handler_GroupPanel, filter_ChatType(chat_types=['private']))
 	# dp.register_message_handler(client_handler_GroupPanel, Text(equals=msreg_GroupPanelMessage, ignore_case=True))
 	# dp.register_callback_query_handler(client_callback_GroupPanel, Text('GroupPanel'))
 
