@@ -3,7 +3,6 @@ from aiogram import Dispatcher, types, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 from aiogram import F
-from aiogram.filters import BaseFilter
 from aiogram.fsm.state import State, StatesGroup
 
 
@@ -353,7 +352,7 @@ def register_handlers_client(dp: Dispatcher):
 	:return:
 	"""
 	router.message.register(client_handler_CommandStartOrHelp, Command('start'), filter_ChatType(chat_types=['private']))
-	router.message.register(client_handler_GroupPanel, filter_ChatType(chat_types=['private']))
+	router.message.register(client_handler_GroupPanel, F.text == msreg_GroupPanelMessage, filter_ChatType(chat_types=['private']))
 	# dp.register_message_handler(client_handler_GroupPanel, Text(equals=msreg_GroupPanelMessage, ignore_case=True))
 	# dp.register_callback_query_handler(client_callback_GroupPanel, Text('GroupPanel'))
 
