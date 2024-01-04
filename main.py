@@ -4,9 +4,11 @@ import asyncio
 
 # <---------- Импорт локальных функций ---------->
 from create_bot import dp, bot, psql, mndb
-from handlers import client, group, schedule
+from handlers.routers import *
+from handlers.private import schedule, client
+from handlers.group import group
 from utilities.ut_logger import ut_LogStart
-from handlers import client
+from handlers.private import client
 
 
 # <---------- Переменные ---------->
@@ -41,10 +43,10 @@ async def on_shutdown():
 async def main():
 	dp.startup.register(on_startup)
 	dp.shutdown.register(on_shutdown)
-	dp.include_routers(client.router, schedule.router)
+	dp.include_routers(router_registered, router_unregistered)
 
-	client.register_handlers()
-	schedule.register_handlers()
+	client.register_handlers(router_private)
+	schedule.register_handlers(router_private_admin)
 
 	await bot.delete_webhook(drop_pending_updates=True)
 	await dp.start_polling(bot)

@@ -345,14 +345,14 @@ async def client_handler_RegisterGroupName(message: types.Message, state: FSMCon
 		)
 
 
-def register_handlers():
+def register_handlers(router: Router):
 	"""
 	Registration of all message and callback handlers.
 	:param dp:
 	:return:
 	"""
-	router.message.register(client_handler_CommandStartOrHelp, Command('start'), filter_ChatType(chat_types=['private']))
-	router.message.register(client_handler_GroupPanel, F.text == msreg_GroupPanelMessage, filter_ChatType(chat_types=['private']))
+	router.message.register(client_handler_CommandStartOrHelp, Command('start'))
+	router.message.register(client_handler_GroupPanel, F.text == msreg_GroupPanelMessage)
 	# dp.register_message_handler(client_handler_GroupPanel, Text(equals=msreg_GroupPanelMessage, ignore_case=True))
 	# dp.register_callback_query_handler(client_callback_GroupPanel, Text('GroupPanel'))
 
