@@ -41,7 +41,6 @@ async def on_shutdown():
 
 # <---------- Основные функции ---------->
 # schedule.register_handlers_schedule()
-dp.include_router(schedule.router)
 client.register_handlers_client(dp)
 group.register_handlers_group(dp)
 
