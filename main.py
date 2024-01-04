@@ -6,6 +6,7 @@ import asyncio
 from create_bot import dp, bot, psql, mndb
 from handlers import client, group, schedule
 from utilities.ut_logger import ut_LogStart
+from handlers import client
 
 
 # <---------- Переменные ---------->
@@ -49,6 +50,7 @@ group.register_handlers_group(dp)
 async def main():
 	dp.startup.register(on_startup)
 	dp.shutdown.register(on_shutdown)
+	dp.include_routers(client.router, schedule.router)
 	await bot.delete_webhook(drop_pending_updates=True)
 	await dp.start_polling(bot)
 
