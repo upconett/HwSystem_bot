@@ -204,13 +204,13 @@ async def db_psql_GroupData(group_id: int, formatted: bool = False):
 	return data
 
 
-async def db_psql_GetMainSchedule(user_id:int) -> dict:
+async def db_psql_GetMainSchedule(id: int) -> dict:
 	try:
 		group_id = await psql.select(
 			'users', 
 			'group_id',
 			'id',
-			user_id
+			id
 		)
 		group_id = group_id[0]
 		schedule = await psql.select(
@@ -225,7 +225,7 @@ async def db_psql_GetMainSchedule(user_id:int) -> dict:
 		return None
 
 
-async def db_psql_UpdateMainSchedule(id:int, data:dict):
+async def db_psql_SetMainSchedule(id: int, data: dict):
 	try:
 		group_id = await psql.select(
 			'users', 
@@ -241,4 +241,5 @@ async def db_psql_UpdateMainSchedule(id:int, data:dict):
 			group_id
 		)
 	except Exception as ex:
+		return False
 		print(ex)

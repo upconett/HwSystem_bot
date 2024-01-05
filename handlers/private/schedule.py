@@ -7,7 +7,7 @@ from aiogram.fsm.state import State, StatesGroup
 
 # <---------- Импорт локальных функций ---------->
 from create_bot import bot
-from data_base.operation import db_psql_UserData, db_psql_GetMainSchedule, db_psql_UpdateMainSchedule
+from data_base.operation import db_psql_UserData, db_psql_GetMainSchedule, db_psql_SetMainSchedule
 from exceptions.ex_handlers import NotEnoughDays, InvalidWeekDay,\
     SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber
 from keyboards.kb_client import *
@@ -286,7 +286,7 @@ async def schedule_FSM_SubmitUpload(query: types.CallbackQuery, state: FSMContex
 	try:
 		await query.message.edit_reply_markup(reply_markup=None)
 		data = await state.get_data()
-		if await db_psql_UpdateMainSchedule(query.from_user.id, data["schedule_dict"]):
+		if await db_psql_SetMainSchedule(query.from_user.id, data["schedule_dict"]):
 			await query.message.answer(
 				'Основное расписание установлено!',
 				reply_markup=kb_reply_CommandStartOrHelp
@@ -351,6 +351,7 @@ async def schedule_deleteButtons(query: types.CallbackQuery):
 	)
 
 
+# <---------- Регистрация обработчиков ---------->
 def register_handlers(router: Router):
 	router.callback_query.register(schedule_FSM_SubmitUpload, F.data == 'MainSchedule_Submit', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))
 	router.callback_query.register(schedule_FSM_DeclineUpload, F.data == 'MainSchedule_Decline', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))

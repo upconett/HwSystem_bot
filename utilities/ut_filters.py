@@ -52,3 +52,4 @@ class filter_UserIsAdmin(Filter):
         except Exception as ex:
             print(ex,'\nException - filter_UserIsAdmin')
             return False
+        

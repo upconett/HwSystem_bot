@@ -5,8 +5,10 @@ import asyncio
 # <---------- Импорт локальных функций ---------->
 from create_bot import dp, bot, psql, mndb
 from handlers.routers import *
-from handlers.private import schedule, client
+
+from handlers.private import client, schedule
 from handlers.group import group
+
 from utilities.ut_logger import ut_LogStart
 from handlers.private import client
 
@@ -19,8 +21,6 @@ filename = 'main.py'
 async def on_startup():
 	"""
 	Initializing all connections.
-	:param _:
-	:return:
 	"""
 	print('\n- - - HomeWorker is online - - -')
 	if ut_LogStart():
@@ -33,6 +33,9 @@ async def on_startup():
 
 
 async def on_shutdown():
+	"""
+	Closing all connections.
+	"""
 	print()
 	await psql.close()
 	await mndb.close()
@@ -41,8 +44,15 @@ async def on_shutdown():
 
 # <---------- Запуск бота ---------->
 async def main():
+	"""
+	- StartUp/ShutDown.
+	- Router registration.
+	- Delete WebHook.
+	- Start polling.
+	"""
 	dp.startup.register(on_startup)
 	dp.shutdown.register(on_shutdown)
+
 	dp.include_routers(router_registered, router_unregistered)
 
 	client.register_handlers(router_private)
@@ -50,6 +60,7 @@ async def main():
 
 	await bot.delete_webhook(drop_pending_updates=True)
 	await dp.start_polling(bot)
+
 
 if __name__ == '__main__':
 	try:
