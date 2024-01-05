@@ -46,12 +46,12 @@ async def main():
 	dp.startup.register(on_startup)
 	dp.shutdown.register(on_shutdown)
 
-	dp.include_routers(router_base, router_private, router_chat, router_private_groupAdmin, router_unregistered)
+	dp.include_routers(router_private_groupAdmin, router_private, router_chat, router_unregistered, router_base)
 
-	group.register_handlers(router=router_base)
 	commands.register_handlers(router=router_private)
-	default_schedule_upload.register_handlers(router=router_private_groupAdmin)
+	group.register_handlers(router=router_base)
 	group_create.register_handlers(router=router_private)
+	default_schedule_upload.register_handlers(router=router_private_groupAdmin)
 
 	await bot.delete_webhook(drop_pending_updates=True)
 	await dp.start_polling(bot)
