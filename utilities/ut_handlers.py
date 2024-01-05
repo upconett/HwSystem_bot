@@ -1,43 +1,14 @@
-# <---------- Импорт сторонних функций ---------->
-from json import dumps
+# <---------- Local modules ---------->
+from exceptions.ex_handlers import NotEnoughDays, InvalidWeekDay, SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber
+from messages import ms_regular
 
 
-# <---------- Импорт локальных функций ---------->
-from exceptions.ex_handlers import NotEnoughDays, InvalidWeekDay,\
-	SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber #InvalidLesson
-
-
-# <---------- Константы ---------->
-valid_days = [
-	'понедельник', 'вторник', 'среда', 'четверг', 
-	'пятница', 'суббота', 'воскресенье'
-	]
-# valid_lessons = [
-	# 'алгебра', 'геометрия', 'русский', 'английский', 
-	# 'литература', 'биология', 'вероятность', 'география',
-	# 'информатика', 'история', 'обж', 'обществознание',
-	# 'физика', 'физкультура', 'химия'
-	# ]
-filter_chars = r'/.,!;:@#$%^&*()-_=+{[]}`~<>?'
-
-
-# <---------- Основные функции ---------->
-async def ut_filterForMDV2(text:str) -> str:
-	"""
-	Formats the string to prevent MarkdownV2 from screving everything up.
-	:param text: Text for formatting 
-	:return: Formatted text
-	"""
-	for char in filter_chars:
-		if char in text:
-			text = text.replace(char, f'\{char}')
-	return text
-	
-
-async def ut_ScheduleMessageToDict(text:str, mode:int) -> dict:
+# <---------- Main handlers ---------->
+async def scheduleMessageToDict(text: str, mode: int) -> dict:
 	"""
 	Formats dict structure from text schedule.
 	:param text: Schedule as String
+	:param mode:
 	:raises NotEnoughDays:
 	:raises InvalidWeekDay:
 	:raises SundayException:
@@ -48,8 +19,9 @@ async def ut_ScheduleMessageToDict(text:str, mode:int) -> dict:
 	if mode == 0:
 		weekday = None
 		for num, line in enumerate(data):
-			if num == 0: continue
-			if line.replace(' ','').lower() in valid_days:
+			if num == 0:
+				continue
+			if line.replace(' ', '').lower() in ms_regular.weekdays:
 				if line.lower() == 'воскресенье':
 					raise SundayException
 				weekday = line.capitalize()
@@ -62,12 +34,15 @@ async def ut_ScheduleMessageToDict(text:str, mode:int) -> dict:
 						raise NoLesson(num, line)
 					else:
 						lesson_num = line.split()[0].replace('.', '').replace(')', '')
-						try: int(lesson_num)
-						except: raise InvalidLessonNumber(num, line)
-						if int(lesson_num) not in range(0,11):
+						try:
+							int(lesson_num)
+						except:
+							raise InvalidLessonNumber(num, line)
+						if int(lesson_num) not in range(0, 11):
 							raise NotSuitableLessonNumber(num, line)
 						subject = " ".join([x for x in line.split()[1:]])
-						if subject == '-': subject = None
+						if subject == '-':
+							subject = None
 						result[weekday][str(int(lesson_num))]['subject'] = subject
 				else:
 					raise InvalidWeekDay(num, line)
@@ -81,19 +56,22 @@ async def ut_ScheduleMessageToDict(text:str, mode:int) -> dict:
 					raise NoLesson(num, line)
 				else:
 					lesson_num = line.split()[0].replace('.', '').replace(')', '')
-					try: int(lesson_num)
-					except: raise InvalidLessonNumber(num, line)
-					if int(lesson_num) not in range(0,11):
+					try:
+						int(lesson_num)
+					except:
+						raise InvalidLessonNumber(num, line)
+					if int(lesson_num) not in range(0, 11):
 						raise NotSuitableLessonNumber(num, line)
 					subject = " ".join([x for x in line.split()[1:]])
-					if subject == '-': subject = None
+					if subject == '-':
+						subject = None
 					result[str(int(lesson_num))] = {'subject': subject}
 	else:
 		raise ValueError('Mode can be [0,1]')
 	return result
 
 
-async def ut_ScheduleDictToMessage(schedule:dict, mode:int) -> str:
+async def scheduleDictToMessage(schedule: dict, mode: int) -> str:
 	"""
 	Formats text from dict schedule.\n
 	mode [0,1]:\n
@@ -107,7 +85,8 @@ async def ut_ScheduleDictToMessage(schedule:dict, mode:int) -> str:
 	if mode == 0:
 		for day in schedule:
 			lesson_nums = [x for x in schedule[day] if schedule[day][x]['subject'] is not None]
-			for i, j in enumerate(lesson_nums): lesson_nums[i] = int(j)
+			for i, j in enumerate(lesson_nums):
+				lesson_nums[i] = int(j)
 			end = max(lesson_nums)
 			result += f'<b>{day}</b>\n'
 			for lesson in schedule[day]:
@@ -120,24 +99,27 @@ async def ut_ScheduleDictToMessage(schedule:dict, mode:int) -> str:
 					result += f' {lesson}. {subject}\n'
 			result += '\n'
 	elif mode == 1:
-		lesson_nums = map(int(), [x for x in schedule[day] if schedule[x]['subject'] is not None])
-		for i, j in enumerate(lesson_nums): lesson_nums[i] = int(j)
-		end = max(lesson_nums)
-		result += f'<b>{day}</b>\n'
-		for lesson in schedule:
-			if int(lesson) in range(0, end+1):
-				subject = schedule[lesson]['subject']
-				if lesson == '0' and subject is None:
-					continue
-				if subject is None:
-					subject = '-'
-				result += f' {lesson}. {subject}\n'
-		result += '\n'
-	else: raise ValueError('Mode can be [0,1]')
+		for day in schedule:
+			lesson_nums = map(int(), [x for x in schedule[day] if schedule[x]['subject'] is not None])
+			for i, j in enumerate(lesson_nums):
+				lesson_nums[i] = int(j)
+			end = max(lesson_nums)
+			result += f'<b>{day}</b>\n'
+			for lesson in schedule:
+				if int(lesson) in range(0, end+1):
+					subject = schedule[lesson]['subject']
+					if lesson == '0' and subject is None:
+						continue
+					if subject is None:
+						subject = '-'
+					result += f' {lesson}. {subject}\n'
+			result += '\n'
+	else:
+		raise ValueError('Mode can be [0,1]')
 	return result
 
 
-async def ut_ScheduleEnumSubjects(schedule:dict, mode:int) -> list[str]:
+async def scheduleEnumSubjects(schedule: dict, mode: int) -> list[str]:
 	"""
 	Enumerates all subjects in schedule.\n
 	mode [0,1]:\n
@@ -160,5 +142,6 @@ async def ut_ScheduleEnumSubjects(schedule:dict, mode:int) -> list[str]:
 			subject = schedule[lesson]['subject']
 			if subject is not None and subject not in result:
 				result.append(subject)
-	else: raise ValueError('Mode can be [0,1]')
+	else:
+		raise ValueError('Mode can be [0,1]')
 	return result

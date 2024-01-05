@@ -1,19 +1,19 @@
-# <---------- Импорт функций Aiogram ---------->
+# <---------- Python modules ---------->
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
 
-# <---------- Импорт локальных функций ---------->
-from utilities.ut_configuration import ut_startupConfiguration
+# <---------- Local modules ---------->
+from utilities import ut_configuration
 from data_base.db_psql import PostgreSQL
 from data_base.db_mongo import MongoDB
 
 
-# <---------- Основные функции ---------->
+# <---------- Main ---------->
 storage = MemoryStorage()
 exception_data = (0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-config = ut_startupConfiguration()
+config = ut_configuration.startupConfiguration()
 if config != exception_data:
     MAIN_TOKEN, LOG_TOKEN, creators, api_hash, api_id, db_host, db_user, db_password, db_name = config
 else:

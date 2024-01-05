@@ -1,4 +1,4 @@
-# <---------- Импорт сторонних функций ---------->
+# <---------- Python modules ---------->
 import logging
 
 from datetime import datetime
@@ -6,16 +6,16 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 
-# <---------- Импорт локальных функций ---------->
-from data_base.operation import db_psql_UserData, db_psql_ChatData, db_psql_GroupData
+# <---------- Local modules ---------->
+from data_base import operations
 
 
-# <---------- Переменные ---------->
+# <---------- Variables ---------->
 logger = None
 
 
-# <---------- Основные функции ---------->
-def ut_LogStart():
+# <---------- Interoperability with logger ---------->
+def start_logger():
 	"""
 	Creating logger object.
 	:return: True or False based on the result of creating the logger
@@ -40,7 +40,7 @@ def ut_LogStart():
 		return False
 
 
-async def ut_LogCreate(id: int, filename: str, function: str, exception, content: str, chat_id: int = None):
+async def create_log(id: int, filename: str, function: str, exception, content: str, chat_id: int = None):
 	"""
 	Creating new log.
 	:param id: Telegram ID of user
@@ -56,10 +56,13 @@ async def ut_LogCreate(id: int, filename: str, function: str, exception, content
 			'username': 'bot',
 		}
 	else:
-		user = await db_psql_UserData(id=id)
+		user = await operations.userData(id=id)
 	if chat_id:
-		chat = await db_psql_ChatData(id=chat_id)
-		group = await db_psql_GroupData(group_id=chat['group_id'])
+		chat = await operations.chatData(id=chat_id)
+		if chat['group_id']:
+			group = await operations.groupData(group_id=chat['group_id'])
+		else:
+			group = {}
 		log_message = f'USER={user}; CHAT={chat}; GROUP={group}; FILENAME="{filename}"; FUNCTION="{function}"; CONTENT="{content}"; EXCEPTION="{exception}";'
 	else:
 		log_message = f'USER={user}; FILENAME="{filename}"; FUNCTION="{function}"; CONTENT="{content}"; EXCEPTION="{exception}";'

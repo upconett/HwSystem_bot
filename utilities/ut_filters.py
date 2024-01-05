@@ -1,55 +1,192 @@
-# <---------- Импорт функций Aiogram ---------->
+# <---------- Python modules ---------->
 from aiogram.filters import Filter
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
 
 
-# <---------- Импорт локальных функций ---------->
-from data_base.operation import *
+# <---------- Local modules ---------->
+from data_base import operations
+from create_bot import psql
 
 
-# <---------- Основные классы ---------->
-class filter_ChatType(Filter):
+# <---------- Variables ---------->
+filename = 'ut_filters.py'
+
+
+# <---------- Filter classes ---------->
+class ChatType(Filter):
     """
-    Check chat type.
+    Check if chat type from message in given chat types list.
     """
     def __init__(self, chat_types: list[str]) -> None:
+        """
+
+        :param chat_types: Group, Supergroup, Channel or Private
+        """
         self.chat_types = chat_types
 
     async def __call__(self, message: Message) -> bool:
-        for chat_type in self.chat_types:
-            if message.chat.type == chat_type:
+        """
+
+        :param message: Aiogram message object
+        :return: True if chat type correct
+        """
+        if message.chat.type in self.chat_types:
+            return True
+
+
+class BotIsAdministrator(Filter):
+    """
+    Check if chat type from message in given chat types list.
+    """
+    def __init__(self, flag: bool) -> None:
+        """
+
+        :param flag:
+        """
+        self.flag = flag
+
+    async def __call__(self, message: Message) -> bool:
+        """
+
+        :param message: Aiogram message object
+        :return: True if chat type correct
+        """
+        return (await message.from_user.bot.get_me()).can_read_all_group_messages == self.flag
+
+
+class TextEquals(Filter):
+    """
+    Checks if message.text matches one of the elements of the given list.
+    """
+    def __init__(self, list_ms: list[str]) -> None:
+        """
+
+        :param list_ms: List of messages
+        """
+        self.list_ms = list_ms
+
+    async def __call__(self, message: Message) -> bool:
+        """
+
+        :param message: Aiogram message object
+        :return: True if message.text in given list
+        """
+        if message.text:
+            if message.text.lower() in self.list_ms:
                 return True
 
 
-class filter_UserInGroup(Filter):
+class UserRegister(Filter):
     """
-    Check if user has group.
+    Checks the presence of a user in a group or vice versa.
     """
-    def __init__(self, flag:bool=True) -> None:
+    def __init__(self, flag: bool) -> None:
+        """
+
+        :param flag: True (check if user in group) or False (check if user not in group)
+        """
         self.flag = flag
 
     async def __call__(self, message: Message) -> bool:
+        """
+
+        :param message: Aiogram message object
+        :return: True if the specified condition is met
+        """
         try:
-            user_data = await db_psql_UserData(message.from_user.id)
-            result = user_data['group_id'] is not None
+            data = await operations.userData(id=message.from_user.id)
+            result = data['username'] is not None
             return self.flag == result
-        except Exception as ex:
-            print(ex,'\nException - filter_UserInGroup')
+        except Exception as exception:
+            print(f'FILENAME="{filename}"; CLASS="UserRegister"; CONTENT=""; EXCEPTION="{exception}";')
+            return False
+
+
+class UserPresenceInGroup(Filter):
+    """
+    Checks the presence of a user in a group or vice versa.
+    """
+    def __init__(self, flag: bool) -> None:
+        """
+
+        :param flag: True (check if user in group) or False (check if user not in group)
+        """
+        self.flag = flag
+
+    async def __call__(self, message: Message) -> bool:
+        """
+
+        :param message: Aiogram message object
+        :return: True if the specified condition is met
+        """
+        try:
+            data = await operations.userData(id=message.from_user.id)
+            result = data['group_id'] is not None
+            return self.flag == result
+        except Exception as exception:
+            print(f'FILENAME="{filename}"; CLASS="UserPresenceInGroup"; CONTENT=""; EXCEPTION="{exception}";')
             return False
     
 
-class filter_UserIsAdmin(Filter):
+class UserIsGroupAdmin(Filter):
     """
-    Check if user is admin.
+    Check if user is group admin or vice versa.
     """
-    def __init__(self, flag:bool=True) -> None:
+    def __init__(self, flag: bool) -> None:
+        """
+
+        :param flag: True (check if user in group) or False (check if user not in group)
+        """
+        self.flag = flag
+
+    async def __call__(self, message: Message) -> bool:
+        """
+
+        :param message: Aiogram message object
+        :return: True if the specified condition is met
+        """
+        try:
+            data = await operations.userData(id=message.from_user.id)
+            return self.flag == data['is_admin']
+        except Exception as exception:
+            print(f'FILENAME="{filename}"; CLASS="UserIsGroupAdmin"; CONTENT=""; EXCEPTION="{exception}";')
+            return False
+
+
+class UserIsGroupOwner(Filter):
+    """
+    Check if user is group owner or vice versa.
+    """
+    def __init__(self, flag: bool) -> None:
         self.flag = flag
 
     async def __call__(self, message: Message) -> bool:
         try:
-            user_data = await db_psql_UserData(message.from_user.id)
-            return self.flag == user_data['is_admin']
-        except Exception as ex:
-            print(ex,'\nException - filter_UserIsAdmin')
+            response = (await psql.select(
+                table='groups',
+                what='group_id',
+                where='owner_id',
+                where_value=message.from_user.id
+            ))[0][0]
+            return response == self.flag
+        except Exception as exception:
+            print(f'FILENAME="{filename}"; CLASS="UserIsGroupOwner"; CONTENT=""; EXCEPTION="{exception}";')
             return False
-        
+
+
+class UserIsChatAdmin(Filter):
+    """
+    Check if user is chat admin with a lot of rights (not like a role) or vice versa.
+    """
+    def __init__(self, flag: bool) -> None:
+        self.flag = flag
+
+    async def __call__(self, message: Message) -> bool:
+        try:
+            chat_admins = await message.chat.get_administrators()
+            for user in range(len(chat_admins)):
+                if ((message.from_user.id == chat_admins[user]['user']['id']) and chat_admins[user]['can_delete_messages'] and chat_admins[user]['can_restrict_members']) == self.flag:
+                    return True
+        except Exception as exception:
+            print(f'FILENAME="{filename}"; CLASS="UserIsChatAdmin"; CONTENT=""; EXCEPTION="{exception}";')
+            return False

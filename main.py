@@ -1,29 +1,22 @@
-# <---------- Импорт сторонних функций  ---------->
+# <---------- Python modules  ---------->
 import asyncio
 
 
-# <---------- Импорт локальных функций ---------->
+# <---------- Local modules ---------->
 from create_bot import dp, bot, psql, mndb
 from handlers.routers import *
-
-from handlers.private import client, schedule
+from handlers.private import commands, default_schedule_upload, group_create
 from handlers.group import group
-
-from utilities.ut_logger import ut_LogStart
-from handlers.private import client
+from utilities import ut_logger
 
 
-# <---------- Переменные ---------->
-filename = 'main.py'
-
-
-# <---------- Функции on_startup и on_shutdown ---------->
+# <---------- on_startup & on_shutdown functions ---------->
 async def on_startup():
 	"""
 	Initializing all connections.
 	"""
 	print('\n- - - HomeWorker is online - - -')
-	if ut_LogStart():
+	if ut_logger.start_logger():
 		print('Logger started OK!')
 	if psql:
 		print('PostgreSQL connection OK!')
@@ -42,7 +35,7 @@ async def on_shutdown():
 	print('Goodbye...')
 
 
-# <---------- Запуск бота ---------->
+# <---------- Bot start ---------->
 async def main():
 	"""
 	- StartUp/ShutDown.
@@ -53,10 +46,12 @@ async def main():
 	dp.startup.register(on_startup)
 	dp.shutdown.register(on_shutdown)
 
-	dp.include_routers(router_registered, router_unregistered)
+	dp.include_routers(router_base, router_private, router_chat, router_private_groupAdmin, router_unregistered)
 
-	client.register_handlers(router_private)
-	schedule.register_handlers(router_private_admin)
+	group.register_handlers(router=router_base)
+	commands.register_handlers(router=router_private)
+	default_schedule_upload.register_handlers(router=router_private_groupAdmin)
+	group_create.register_handlers(router=router_private)
 
 	await bot.delete_webhook(drop_pending_updates=True)
 	await dp.start_polling(bot)

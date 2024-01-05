@@ -1,32 +1,37 @@
-# <---------- Импорт функций Aiogram ---------->
+# <---------- Python modules ---------->
 from aiogram.utils.deep_linking import decode_payload, create_start_link 
 
 
-# <---------- Импорт локальных функций ---------->
-from config import pattern_EncodeDecode
+# <---------- Local modules ---------->
+from config import pattern_encodeDecode
+from create_bot import bot
 
 
-# <---------- Основные функции ---------->
-async def ut_EncodeLink(group_id: int, id: int):
+# <---------- Encode/decode functions ---------->
+async def encodeLink(group_id: int, id: int):
 	"""
 	Encoding unique link for enter group.
 	:param group_id: Group ID from database
 	:param id: Telegram ID of user who added bot in chat
 	:return: link
 	"""
-	pattern = pattern_EncodeDecode(
+	pattern = pattern_encodeDecode(
 		group_id=group_id,
 		id=id
 	)
-	link = await create_start_link(pattern, encode=True)
+	link = await create_start_link(
+		bot=bot,
+		payload=pattern,
+		encode=True
+	)
 	return link
 
 
-async def ut_DecodeLink(argument):
+async def decodeLink(argument):
 	"""
-	Decode unique link to group_id and
-	:param argument:
+	Decode unique link to group_id and creator id.
+	:param argument: link
 	:return:
 	"""
-	parameter = decode_payload(argument)
+	parameter = decode_payload(payload=argument)
 	return parameter

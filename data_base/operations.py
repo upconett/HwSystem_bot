@@ -1,19 +1,19 @@
-# <---------- Импорт локальных функций ---------->
-from messages.ms_regular import msreg_TrueOrFalseToRussian
+# <---------- Local modules ---------->
+from messages.ms_regular import boolToRussian
 from create_bot import psql
 
 
-# <---------- Импорт сторонних функций ---------->
+# <---------- Python modules ---------->
 from datetime import datetime
-import json
 
 
-# <---------- Переменные ---------->
-filename = 'operation.py'
+# <---------- Variables ---------->
+filename = 'operations.py'
+__all__ = ['insertUser', 'insertChat', 'userData', 'chatData', 'groupData', 'insertGroup', 'getMainSchedule', 'setMainSchedule']
 
 
-# <---------- Основные функции ---------->
-async def db_psql_InsertUser(id: int, username: str, full_name: str):
+# <---------- Interoperability with PostgreSQL ---------->
+async def insertUser(id: int, username: str, full_name: str):
 	"""
 	Insert new user in users table.
 	:param id: Telegram id
@@ -31,7 +31,7 @@ async def db_psql_InsertUser(id: int, username: str, full_name: str):
 		return False
 
 
-async def db_psql_InsertGroup(group_name: str, group_password: str, owner_id: int, default_lessons: dict = '', default_breaks: dict = ''):
+async def insertGroup(group_name: str, group_password: str, owner_id: int, default_lessons: dict = '', default_breaks: dict = ''):
 	"""
 	Insert new group in groups table.
 	:param group_name:
@@ -51,7 +51,7 @@ async def db_psql_InsertGroup(group_name: str, group_password: str, owner_id: in
 		return False
 
 
-async def db_psql_InsertChat(id: int, title: str, group_id: int, notifications: bool):
+async def insertChat(id: int, title: str, group_id: int, notifications: bool):
 	"""
 	Insert new chat in chats table.
 	:param id: Telegram chat id
@@ -70,7 +70,7 @@ async def db_psql_InsertChat(id: int, title: str, group_id: int, notifications: 
 		return False
 
 
-async def db_psql_UserData(id: int, formatted: bool = False):
+async def userData(id: int, formatted: bool = False):
 	"""
 	Return data about user formatted or not.
 	:param id: Telegram ID
@@ -111,12 +111,12 @@ async def db_psql_UserData(id: int, formatted: bool = False):
 				f' Аккаунт: {response[1]}\n'
 				f' Полное имя: {response[2]}\n'
 				f' ID группы: {response[3]}\n'
-				f' Является админом группы: {msreg_TrueOrFalseToRussian[response[4]]}'
+				f' Является админом группы: {boolToRussian[response[4]]}'
 			)
 	return data
 
 
-async def db_psql_ChatData(id: int, formatted: bool = False):
+async def chatData(id: int, formatted: bool = False):
 	"""
 	Return data about chat formatted or not.
 	:param id: Telegram chat ID
@@ -155,12 +155,12 @@ async def db_psql_ChatData(id: int, formatted: bool = False):
 				f' Telegram chat ID: {response[0]}\n'
 				f' Название: {response[1]}\n'
 				f' ID группы: {response[3]}\n'
-				f' Уведомления: {msreg_TrueOrFalseToRussian[response[2]]}'
+				f' Уведомления: {boolToRussian[response[2]]}'
 			)
 	return data
 
 
-async def db_psql_GroupData(group_id: int, formatted: bool = False):
+async def groupData(group_id: int, formatted: bool = False):
 	"""
 	Return data about group formatted or not.
 	:param group_id: Group ID
@@ -204,42 +204,53 @@ async def db_psql_GroupData(group_id: int, formatted: bool = False):
 	return data
 
 
-async def db_psql_GetMainSchedule(id: int) -> dict:
+async def getMainSchedule(id: int):
+	"""
+	Get default schedule from database.
+	:param id: Telegram ID of user
+	:return:
+	"""
 	try:
-		group_id = await psql.select(
-			'users', 
-			'group_id',
-			'id',
-			id
-		)
-		group_id = group_id[0]
-		schedule = await psql.select(
-			'groups', 
-			'default_lessons',
-			'group_id', 
-			group_id
-		)
-		return schedule[0]
-	except Exception as ex:
-		print(ex)
-		return None
-
-
-async def db_psql_SetMainSchedule(id: int, data: dict):
-	try:
-		group_id = await psql.select(
-			'users', 
-			'group_id', 
-			'id', id
-		)
-		group_id = group_id[0]
-		return await psql.update(
-			'groups',
-			'default_lessons',
-			data,
-			'group_id',
-			group_id
-		)
-	except Exception as ex:
+		group_id = (await psql.select(
+			table='users',
+			what='group_id',
+			where='id',
+			where_value=id
+		))[0]
+		schedule = (await psql.select(
+			table='groups',
+			what='default_lessons',
+			where='group_id',
+			where_value=group_id
+		))[0]
+		return schedule
+	except Exception as exception:
+		print(f'FILENAME="{filename}"; FUNCTION="db_psql_InsertChat"; CONTENT=""; EXCEPTION="{exception}";')
 		return False
-		print(ex)
+
+
+async def setMainSchedule(id: int, data: dict):
+	"""
+	Set default schedule in database.
+	:param id: Telegram ID of user.
+	:param data: Schedule
+	:return:
+	"""
+	try:
+		group_id = (await psql.select(
+			table='users',
+			what='group_id',
+			where='id',
+			where_value=id
+		))[0]
+		update = await psql.update(
+			table='groups',
+			what='default_lessons',
+			what_value=data,
+			where='group_id',
+			where_value=group_id
+		)
+		return update
+	except Exception as exception:
+		print(f'FILENAME="{filename}"; FUNCTION="db_psql_InsertChat"; CONTENT=""; EXCEPTION="{exception}";')
+		return False

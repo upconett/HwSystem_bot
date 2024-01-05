@@ -1,17 +1,17 @@
-# <---------- Импорт сторонних функций ---------->
+# <---------- Python modules ---------->
 import os.path
 import json
 
 
-# <---------- Импорт локальных функций ---------->
+# <---------- Local modules ---------->
 from data_base.db_psql import PostgreSQL
 from data_base.db_mongo import MongoDB
 
-from messages.ms_configuration import *
+from messages import ms_configuration
 
 
-# <---------- Основные функции ---------->
-def ut_startupConfiguration():
+# <---------- Configurator ---------->
+def startupConfiguration():
 	exception_data = (0, 0, 0, 0, 0, 0, 0, 0, 0)
 	if os.path.isfile('config.json'):
 		with open('config.json') as file:
@@ -79,14 +79,14 @@ def validate_input(argument: str, message: str):
 	output = input(message)
 	if argument in ['MAIN_TOKEN', 'LOG_TOKEN']:
 		while len(output) != 46:
-			print(mscf_ErrorMainToken)
+			print(ms_configuration.errorMainToken)
 			output = input(message)
 	elif argument == 'creators':
 		while True:
 			try:
 				output = int(output)
 			except ValueError:
-				print(mscf_ErrorCreators)
+				print(ms_configuration.errorCreators)
 				output = input(message)
 				continue
 			break
@@ -95,35 +95,35 @@ def validate_input(argument: str, message: str):
 			try:
 				output = int(output)
 			except ValueError:
-				print(mscf_ErrorApiId)
+				print(ms_configuration.errorApiId)
 				output = input(message)
 				continue
 			break
 	elif argument == 'db_host':
 		while not (output == 'localhost' or output.count('.') == 3):
-			print(mscf_ErrorDBHost)
+			print(ms_configuration.errorDBHost)
 			output = input(message)
 	return output
 
 
 def first_configuration():
-	print(mscf_MainToken)
+	print(ms_configuration.mainToken)
 	MAIN_TOKEN = validate_input('MAIN_TOKEN', 'Type in the [TOKEN] for your bot: ')
 	
-	print(mscf_LogToken)
+	print(ms_configuration.logToken)
 	LOG_TOKEN = validate_input('LOG_TOKEN', 'Now type in the [TOKEN] for logger bot: ')
 
-	print(mscf_Creators)
+	print(ms_configuration.creators)
 	number = int(input('Type in the number of creators: '))
 	creators = []
 	for i in range(number):
 		creators.append(validate_input('creators', f'Type in {i+1} creator [id]: '))
 
-	print(mscf_ApiHashId)
+	print(ms_configuration.apiHashId)
 	api_hash = input('Type [api_hash] first: ')
 	api_id = validate_input('api_id', 'Here type [api_id]: ')
 
-	print(mscf_DBProperties)
+	print(ms_configuration.DBProperties)
 	db_host = validate_input('db_host', "Type in [db_host] ('localhost' if db's are set on that machine): ")
 	db_user = input('Now type in [db_user] (it has to be created in advance!): ')
 	db_password = input('Type in [db_password] for the user: ')

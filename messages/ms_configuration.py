@@ -1,30 +1,30 @@
 # <---------- Configuration Messages ---------->
-mscf_MainToken = (
+mainToken = (
 	'\n<1/5>\n'
 	'Bot [TOKEN] is required to work with TelegramAPI.\n'
 	'You can get it from: https://t.me/BotFather.'
 )
 
-mscf_LogToken = (
+logToken = (
 	'\n<2/5>\n'
 	'Logger is minimal bot that outputs runtime info of your main bot.\n'
 	'Get another [TOKEN] for this one.'
 )
 
-mscf_Creators = (
+creators = (
 	'\n<3/5>\n'
 	'Bots need to know who their creators are!\n'
 	'You need to provide [user_ids] (a sequence of numbers).\n'
 	'You can learn your [id] from: https://t.me/getmyid_bot.'
 )
 
-mscf_ApiHashId = (
+apiHashId = (
 	'\n<4/5>\n'
 	'For certain bot functions to work properly you need to provide [api_hash] and [api_id]\n'
 	'To get these follow the guide: https://core.telegram.org/api/obtaining_api_id'
 )
 
-mscf_DBProperties = (
+DBProperties = (
 	'\n<5/5>\n'
 	'Now it\'s time to initialize databases!\n'
 	'The bot uses PostgreSQL and MongoDB so you need to set them running on your host.\n'
@@ -33,15 +33,13 @@ mscf_DBProperties = (
 )
 
 # <---------- Error Messages ---------->
-mscf_ErrorMainToken = (
+errorMainToken = (
 	'\nERROR > [TOKEN] should be 46 chars long and looking like this:\n'
 	'6933313572:dde6NYrts2jVfgpUdmEWynxliSdMnsVkfLM'
 )
 
-mscf_ErrorCreators = '\nERROR > Your [id] should look like this: 3815494825'
+errorCreators = '\nERROR > Your [id] should look like this: 3815494825'
 
-mscf_ErrorApiId = '\nERROR > [api_id] should look like this: 12306494'
+errorApiId = '\nERROR > [api_id] should look like this: 12306494'
 
-mscf_ErrorDBHost = (
-	'\nERROR > [db_host] has to look like this:\n'
-)
+errorDBHost = '\nERROR > [db_host] has to look like this:\n'

@@ -1,46 +1,36 @@
-# <---------- Импорт функций Aiogram ---------->
+# <---------- Python modules ---------->
 from aiogram import Router
 
 
-# <---------- Импорт локальных функций ---------->
+# <---------- Local modules ---------->
 from utilities.ut_filters import *
 
 
-# <---------- Описание Роутеров ---------->
-router_private_member = Router()
-router_private_member.message(filter_UserIsAdmin(False))
+# <---------- Base router ---------->
+router_base = Router()
 
-router_private_admin = Router()
-router_private_admin.message(filter_UserIsAdmin())
 
+# <---------- Private routers ---------->
+#     <- Router for private chat ->
 router_private = Router()
-router_private.message(filter_ChatType(['private']))
-router_private.include_routers(
-	router_private_member,
-	router_private_admin
-)
+router_private.message(ChatType(['private']))
+
+#     <- Router for private chat and group admin ->
+router_private_groupAdmin = Router()
+router_private_groupAdmin.message(ChatType(['private']), UserIsGroupAdmin(flag=True))
 
 
-router_group_member = Router()
-router_group_member.message(filter_UserIsAdmin(False))
-
-router_group_admin = Router()
-router_group_admin.message(filter_UserIsAdmin())
-
-router_group = Router()
-router_group.message(filter_ChatType(['group', 'supergroup']))
-router_group.include_routers(
-	router_group_member,
-	router_group_admin
-)
+# <---------- Group/supergroup routers ---------->
+#     <- Router for private chat ->
+router_chat = Router()
+router_chat.message(ChatType(['group', 'supergroup']))
 
 
+# <---------- Reg/unreg routers ---------->
+#     <- Router for registered users ->
 router_registered = Router()
-router_registered.message(filter_UserInGroup())
-router_registered.include_routers(
-	router_private,
-	router_group
-)
+router_registered.message(UserRegister(flag=True))
 
+#     <- Router for unregistered users ->
 router_unregistered = Router()
-router_unregistered.message(filter_UserInGroup(False))
+router_unregistered.message(UserRegister(flag=False))
