@@ -169,6 +169,6 @@ def register_handlers(router: Router):
 	:param router:
 	:return:
 	"""
-	router.message.register(message_commandStartOrHelp, ut_filters.TextEquals(list_ms=ms_regular.startOrHelp))
+	router.message.register(message_commandStartOrHelp, ut_filters.TextEquals(list_ms=ms_regular.startOrHelp, data_type='message'))
 	router.callback_query.register(callback_query_groupPanel, F.data == 'GroupPanel')
-	router.message.register(message_groupPanel, ut_filters.TextEquals(list_ms=ms_regular.groupPanel))
+	router.message.register(message_groupPanel, ut_filters.TextEquals(list_ms=ms_regular.groupPanel, data_type='message'))

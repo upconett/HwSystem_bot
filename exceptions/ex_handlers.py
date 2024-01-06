@@ -103,6 +103,7 @@ class NotSuitableLessonNumber(Exception):
 			f'Номер урока не может быть меньше *0* или больше *10*\!\n'
 			f'> {self.line}'
 		)
+		self.exc = 'Not suitable lesson number at line {exception.num}.'
 
 
 class SundayException(Exception):

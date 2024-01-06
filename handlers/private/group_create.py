@@ -156,6 +156,6 @@ def register_handlers(router: Router):
 	:return:
 	"""
 	router.callback_query.register(callback_query_registerGroupStart, F.data == 'CreateGroup')
-	router.message.register(message_registerGroupStart, ut_filters.TextEquals(list_ms=ms_regular.groupRegistration))
-	router.message.register(FSM_message_cancel, ut_filters.TextEquals(list_ms=ms_regular.FSM_cancel), StateFilter(None))
+	router.message.register(message_registerGroupStart, ut_filters.TextEquals(list_ms=ms_regular.groupRegistration, data_type='message'))
+	router.message.register(FSM_message_cancel, ut_filters.TextEquals(list_ms=ms_regular.FSM_cancel, data_type='message'), StateFilter(None))
 	router.message.register(FSM_message_registerGroupName, FSMGroupRegister.name)
