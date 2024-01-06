@@ -186,7 +186,6 @@ class UserIsChatAdmin(Filter):
     async def __call__(self, message: Message) -> bool:
         try:
             chat_admins = await message.chat.get_administrators()
-            await message.answer(str(chat_admins), parse_mode=None)
             for user in range(len(chat_admins)):
                 if (message.from_user.id == chat_admins[user].user.id) == self.flag:
                     if chat_admins[user].status == 'creator':

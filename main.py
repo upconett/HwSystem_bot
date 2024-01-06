@@ -60,7 +60,7 @@ async def main():
 		router0=router_chat,
 		router1=router_private_complex
 	)
-	group_create.register_handlers(router=router_private)
+	# group_create.register_handlers(router=router_private)
 	default_schedule_upload.register_handlers(router=router_private_groupAdmin)
 
 	await bot.delete_webhook(drop_pending_updates=True)
