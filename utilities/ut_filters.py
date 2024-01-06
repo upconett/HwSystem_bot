@@ -32,6 +32,8 @@ class ChatType(Filter):
         """
         if message.chat.type in self.chat_types:
             return True
+        else:
+            return True
 
 
 class BotIsAdministrator(Filter):
@@ -147,7 +149,7 @@ class UserIsGroupAdmin(Filter):
         """
         try:
             data = await operations.userData(id=message.from_user.id)
-            return self.flag == data['is_admin']
+            return self.flag == data['group_admin']
         except Exception as exception:
             print(f'FILENAME="{filename}"; CLASS="UserIsGroupAdmin"; CONTENT=""; EXCEPTION="{exception}";')
             return False
@@ -184,9 +186,14 @@ class UserIsChatAdmin(Filter):
     async def __call__(self, message: Message) -> bool:
         try:
             chat_admins = await message.chat.get_administrators()
+            await message.answer(str(chat_admins), parse_mode=None)
             for user in range(len(chat_admins)):
-                if ((message.from_user.id == chat_admins[user]['user']['id']) and chat_admins[user]['can_delete_messages'] and chat_admins[user]['can_restrict_members']) == self.flag:
-                    return True
+                if (message.from_user.id == chat_admins[user].user.id) == self.flag:
+                    if chat_admins[user].status == 'creator':
+                        return True
+                    elif chat_admins[user].can_delete_messages and chat_admins[user].can_restrict_members:
+                        return True
+            return False
         except Exception as exception:
             print(f'FILENAME="{filename}"; CLASS="UserIsChatAdmin"; CONTENT=""; EXCEPTION="{exception}";')
             return False

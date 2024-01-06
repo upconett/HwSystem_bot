@@ -52,7 +52,7 @@ async def main():
 		router_private,
 		router_chat,
 		router_unregistered,
-		router_base,
+		router_base
 	)
 
 	commands.register_handlers(router=router_private)
