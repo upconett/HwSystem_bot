@@ -43,21 +43,18 @@ async def FSM_message_startUpload(message: types.Message, state: FSMContext):
 			reply_markup=kb_private.inline_mainScheduleDays
 		)
 		await state.set_state(state=UpdateMainScheduleDailyFSM.sc_days)
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_startUpload',
-			exception='',
-			content='Start default schedule upload.'
-		)
-	except Exception as exception:
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_startUpload',
-			exception=exception,
-			content=''
-		)
+		exception = ''
+		content = 'Start default schedule upload.'	
+	except Exception as exc:
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=message.from_user.id,
+		filename=filename,
+		function='FSM_message_startUpload',
+		exception=exception,
+		content=content
+	)
 
 
 async def FSM_callback_query_dayChoice(callback_query: types.CallbackQuery, state: FSMContext):
@@ -82,21 +79,18 @@ async def FSM_callback_query_dayChoice(callback_query: types.CallbackQuery, stat
 			text=text,
 			reply_markup=kb_private.reply_cancel
 		)
-		await ut_logger.create_log(
-			id=callback_query.from_user.id,
-			filename=filename,
-			function='FSM_callback_query_dayChoice',
-			exception='',
-			content=f'Chosen schedule for {data["days"] + 1} days.'
-		)
-	except Exception as exception:
-		await ut_logger.create_log(
-			id=callback_query.from_user.id,
-			filename=filename,
-			function='FSM_callback_query_dayChoice',
-			exception=exception,
-			content=''
-		)
+		exception = ''
+		content = f'Chosen schedule for {data["days"] + 1} days.'
+	except Exception as exc:
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=callback_query.from_user.id,
+		filename=filename,
+		function='FSM_callback_query_dayChoice',
+		exception=exception,
+		content=content
+	)
 
 
 async def FSM_message_weekDayInput(message: types.Message, state: FSMContext):
@@ -107,63 +101,46 @@ async def FSM_message_weekDayInput(message: types.Message, state: FSMContext):
 			f'{ms_regular.weekdays[data["current_day"]].capitalize()}\n'
 			f'{message.text}\n'
 		)
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_weekDayInput',
-			exception='',
-			content=f'Set schedule for {ms_regular.weekdays_accusativeCase[data["current_day"]].capitalize()}.'
-		)
 		data['current_day'] += 1
 		if data['current_day'] == data['days']:
 			await state.set_state(UpdateMainScheduleDailyFSM.sc_check)
 		await message.answer(text=await ms_private.currentDaySchedule_accusativeCase(current_day=ms_regular.weekdays_accusativeCase[data["current_day"]].capitalize()))
 		await state.set_data(data)
-	except NoLesson as exception:
+		exception = ''
+		content = f'Set schedule for {ms_regular.weekdays_accusativeCase[data["current_day"]].capitalize()}.'
+	except NoLesson as exc:
 		await message.answer(
-			text=exception.text,
+			text=exc.text,
 			parse_mode='MarkdownV2'
 		)
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_weekDayInput',
-			exception=f'No lesson at line {exception.num}.',
-			content=''
-		)
-	except InvalidLessonNumber as exception:
+		exception = f'No lesson at line {exc.num}.'
+		content = ''
+	except InvalidLessonNumber as exc:
 		await message.answer(
-			text=exception.text,
+			text=exc.text,
 			parse_mode='MarkdownV2'
 		)
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_weekDayInput',
-			exception=f'Invalid lesson number at line {exception.num}.',
-			content=''
-		)
-	except NotSuitableLessonNumber as exception:
+		exception =f'Invalid lesson number at line {exc.num}.'
+		content = ''
+	except NotSuitableLessonNumber as exc:
 		await message.answer(
-			text=exception.text,
+			text=exc.text,
 			parse_mode='MarkdownV2'
 		)
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_weekDayInput',
-			exception=f'Not suitable lesson number at line {exception.num}.',
-			content=''
-		)
-	except Exception as exception:
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_weekDayInput',
-			exception=exception,
-			content=''
-		)
+		exception = f'Not suitable lesson number at line {exc.num}.'
+		content=''
+	except Exception as exc:
+		exception = exc
+		content = '' 
 		await state.clear()
+
+	await ut_logger.create_log(
+		id=message.from_user.id,
+		filename=filename,
+		function='FSM_message_weekDayInput',
+		exception=exception,
+		content=content
+	)
 
 
 async def FSM_message_checkUpload(message: types.Message, state: FSMContext):
@@ -176,58 +153,40 @@ async def FSM_message_checkUpload(message: types.Message, state: FSMContext):
 		)
 		await state.set_data(data)
 		await FSM_message_approveUpload(message, state)
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_checkUpload',
-			exception='',
-			content='i don`t know what this damn function does'
-		)
-	except NoLesson as exception:
+		exception = ''
+		content = 'Schedule upload checked, appoval TOGO.'
+	except NoLesson as exc:
 		await message.answer(
-			text=exception.text,
+			text=exc.text,
 			parse_mode='MarkdownV2'
 		)
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_checkUpload',
-			exception=f'No lesson at line {exception.num}.',
-			content=''
-		)
-	except InvalidLessonNumber as exception:
+		exception = f'No lesson at line {exc.num}.',
+		content=''
+	except InvalidLessonNumber as exc:
 		await message.answer(
-			text=exception.text,
+			text=exc.text,
 			parse_mode='MarkdownV2'
 		)
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_checkUpload',
-			exception=f'Invalid lesson number at line {exception.num}.',
-			content=''
-		)
-	except NotSuitableLessonNumber as exception:
+		exception = f'Invalid lesson number at line {exc.num}.',
+		content=''	
+	except NotSuitableLessonNumber as exc:
 		await message.answer(
-			text=exception.text,
+			text=exc.text,
 			parse_mode='MarkdownV2'
 		)
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_checkUpload',
-			exception=f'Not suitable lesson number at line {exception.num}.',
-			content=''
-		)
-	except Exception as exception:
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_checkUpload',
-			exception=exception,
-			content=''
-		)
+		exception = f'Not suitable lesson number at line {exc.num}.',
+		content=''
+	except Exception as exc:
+		exception = exc,
+		content=''
 		await state.clear()
+	await ut_logger.create_log(
+		id=message.from_user.id,
+		filename=filename,
+		function='FSM_message_checkUpload',
+		exception=exception,
+		content=content
+	)
 
 
 async def FSM_message_approveUpload(message: types.Message, state: FSMContext):
@@ -257,8 +216,8 @@ async def FSM_message_approveUpload(message: types.Message, state: FSMContext):
 		await state.set_state(UpdateMainScheduleDailyFSM.sc_approve)
 		data['schedule_dict'] = schedule_dict
 		await message.answer(
-			text=text,
-			reply_markup=kb_private.reply_cancel
+			text = text,
+			reply_markup = kb_private.reply_cancel
 		)
 		if await operations.getMainSchedule(id=message.from_user.id):
 			text = ms_private.scheduleUpdate
@@ -269,88 +228,60 @@ async def FSM_message_approveUpload(message: types.Message, state: FSMContext):
 			reply_markup=kb_private.inline_mainScheduleApprove
 		)
 		await state.set_data(data)
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_approveUpload',
-			exception='',
-			content='Schedule approved.'
-		)
-	except NotEnoughDays as exception:
-		await message.answer(text=exception.text)
+		exception = '',
+		content = 'Schedule approved.'
+	except NotEnoughDays as exc:
+		await message.answer(text=exc.text)
 		await state.clear()
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_approveUpload',
-			exception='Not enough days.',
-			content=''
-		)
-	except InvalidWeekDay as exception:
+		exception = 'Not enough days.',
+		content = ''
+	except InvalidWeekDay as exc:
 		await message.answer(
-			text=exception.text,
+			text=exc.text,
 			parse_mode='MarkdownV2'
 		)
 		await state.clear()
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_approveUpload',
-			exception=f'Invalid week day at line {exception.num}.',
-			content=''
-		)
-	except SundayException as exception:
-		await message.answer(text=exception.text)
+		exception = f'Invalid week day at line {exc.num}.',
+		content = ''
+	except SundayException as exc:
+		await message.answer(text=exc.text)
 		await state.clear()
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_approveUpload',
-			exception='Sunday in schedule.',
-			content=''
-		)
-	except NoLesson as exception:
+		exception = 'Sunday in schedule.',
+		content = ''
+	except NoLesson as exc:
 		await message.answer(
-			text=exception.text,
+			text=exc.text,
 			parse_mode='MarkdownV2'
 		)
 		await state.clear()
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_approveUpload',
-			exception=f'No lesson at line {exception.num}.',
-			content=''
-		)
-	except InvalidLessonNumber as exception:
+		exception = f'No lesson at line {exc.num}.',
+		content = ''
+	except InvalidLessonNumber as exc:
 		await message.answer(
-			text=exception.text,
+			text=exc.text,
 			parse_mode='MarkdownV2'
 		)
 		await state.clear()
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_approveUpload',
-			exception='Invalid lesson number at line {exception.num}.',
-			content=''
-		)
-	except NotSuitableLessonNumber as exception:
+		exception = f'Invalid lesson number at line {exc.num}.',
+		content = ''
+	except NotSuitableLessonNumber as exc:
 		await message.answer(
-			text=exception.text,
+			text=exc.text,
 			parse_mode='MarkdownV2'
 		)
 		await state.clear()
-		exc = exception.exc
-	except Exception as exception:
+		exception = f'Not suitable lesson number at line {exc.num}.',
+		content = ''
+	except Exception as exc:
+		exception = exc
+		content = ''
 		await state.clear()
-		exc = exception
 	await ut_logger.create_log(
 		id=message.from_user.id,
 		filename=filename,
 		function='FSM_message_approveUpload',
-		exception=exc,
-		content=''
+		exception=exception,
+		content=content
 	)
 
 
@@ -368,21 +299,18 @@ async def FSM_callback_query_submitUpload(callback_query: types.CallbackQuery, s
 			reply_markup=kb_private.reply_commandStartOrHelp
 		)
 		await state.clear()
-		await ut_logger.create_log(
-			id=callback_query.from_user.id,
-			filename=filename,
-			function='FSM_callback_query_submitUpload',
-			exception='',
-			content='Upload submitted.'
-		)
-	except Exception as exception:
-		await ut_logger.create_log(
-			id=callback_query.from_user.id,
-			filename=filename,
-			function='FSM_callback_query_submitUpload',
-			exception=exception,
-			content=''
-		)
+		exception = '',
+		content = 'Upload submitted.'
+	except Exception as exc:
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=callback_query.from_user.id,
+		filename=filename,
+		function='FSM_callback_query_submitUpload',
+		exception=exception,
+		content=content
+	)
 
 
 async def FSM_callback_query_declineUpload(callback_query: types.CallbackQuery, state: FSMContext):
@@ -394,21 +322,18 @@ async def FSM_callback_query_declineUpload(callback_query: types.CallbackQuery, 
 			reply_markup=kb_private.reply_commandStartOrHelp
 		)
 		await state.clear()
-		await ut_logger.create_log(
-			id=callback_query.from_user.id,
-			filename=filename,
-			function='FSM_callback_query_declineUpload',
-			exception='',
-			content='Upload declined.'
-		)
-	except Exception as exception:
-		await ut_logger.create_log(
-			id=callback_query.from_user.id,
-			filename=filename,
-			function='FSM_callback_query_declineUpload',
-			exception=exception,
-			content=''
-		)
+		exception = ''
+		content = 'Upload declined.'	
+	except Exception as exc:
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=callback_query.from_user.id,
+		filename=filename,
+		function='FSM_callback_query_declineUpload',
+		exception=exception,
+		content=content
+	)
 
 
 async def FSM_message_stopUpload(message: types.Message, state: FSMContext):
@@ -419,28 +344,34 @@ async def FSM_message_stopUpload(message: types.Message, state: FSMContext):
 			text=ms_private.scheduleLoadDecline,
 			reply_markup=kb_private.reply_commandStartOrHelp
 		)
-	except Exception as exception:
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_stopUpload',
-			exception=exception,
-			content=''
-		)
+		exception = ''
+		content = 'Schedule uploading stopped.'
+	except Exception as exc:
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=message.from_user.id,
+		filename=filename,
+		function='FSM_message_stopUpload',
+		exception=exception,
+		content=content
+	)
 
 
 async def FSM_message_elseUpload(message: types.Message):
 	try:
 		await message.delete()
 		await message.answer(text=ms_private.scheduleElseUpload)
-	except Exception as exception:
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_elseUpload',
-			exception=exception,
-			content=''
-		)
+	except Exception as exc:
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=message.from_user.id,
+		filename=filename,
+		function='FSM_message_elseUpload',
+		exception=exception,
+		content=content
+	)
 
 
 async def callback_query_deleteButtons(callback_query: types.CallbackQuery):
@@ -449,14 +380,16 @@ async def callback_query_deleteButtons(callback_query: types.CallbackQuery):
 			text=ms_private.scheduleUpdateFinish,
 			reply_markup=None
 		)
-	except Exception as exception:
-		await ut_logger.create_log(
-			id=callback_query.message.from_user.id,
-			filename=filename,
-			function='message_deleteButtons',
-			exception=exception,
-			content=''
-		)
+	except Exception as exc:
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=callback_query.message.from_user.id,
+		filename=filename,
+		function='message_deleteButtons',
+		exception=exception,
+		content=content
+	)
 
 
 # <---------- Registration handlers ---------->
@@ -474,6 +407,6 @@ def register_handlers(router: Router):
 	router.message.register(FSM_message_approveUpload, F.text.startswith('Основное расписание'))
 	router.message.register(FSM_message_checkUpload, StateFilter(UpdateMainScheduleDailyFSM.sc_check))
 	router.message.register(FSM_message_startUpload, Command('update'))
-	router.message.register(FSM_message_stopUpload, ut_filters.TextEquals(list_ms=ms_regular.FSM_cancel, data_type='message'), StateFilter(UpdateMainScheduleDailyFSM))
+	router.message.register(FSM_message_stopUpload, ut_filters.TextEquals(ms_regular.FSM_cancel), StateFilter(UpdateMainScheduleDailyFSM))
 	router.message.register(FSM_message_weekDayInput, StateFilter(UpdateMainScheduleDailyFSM.sc_weekday_input))
 	router.message.register(FSM_message_elseUpload, StateFilter(UpdateMainScheduleDailyFSM))
