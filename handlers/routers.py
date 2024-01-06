@@ -19,6 +19,15 @@ router_private.message(ChatType(['private']))
 router_private_groupAdmin = Router()
 router_private_groupAdmin.message(ChatType(['private']), UserIsGroupAdmin(flag=True))
 
+#     <- Router for private chat and group admin, chat admin if bot is admin ->
+router_private_complex = Router()
+router_private_complex.message(
+	ChatType(chat_types=['group', 'supergroup']),
+	UserIsChatAdmin(flag=True),
+	UserPresenceInGroup(flag=True),
+	BotIsAdministrator(flag=True)
+)
+
 
 # <---------- Group/supergroup routers ---------->
 #     <- Router for private chat ->
