@@ -33,7 +33,7 @@ class ChatType(Filter):
         if message.chat.type in self.chat_types:
             return True
         else:
-            return True
+            return False
 
 
 class BotIsAdministrator(Filter):
