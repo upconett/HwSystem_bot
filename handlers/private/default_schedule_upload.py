@@ -392,7 +392,7 @@ async def callback_query_deleteButtons(callback_query: types.CallbackQuery):
 	)
 
 
-# <---------- Registration handlers ---------->
+# <---------- Handlers registration ---------->
 def register_handlers(router: Router):
 	"""
 	Registration of all message and callback handlers.
