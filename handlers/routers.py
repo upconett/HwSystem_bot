@@ -19,20 +19,20 @@ router_private.message.filter(ChatType(['private']))
 router_private_groupAdmin = Router()
 router_private_groupAdmin.message.filter(ChatType(['private']), UserIsGroupAdmin(flag=True))
 
-#     <- Router for private chat and group admin, chat admin if bot is admin ->
-router_private_complex = Router()
-router_private_complex.message.filter(
-	ChatType(chat_types=['group', 'supergroup']),
-	UserIsChatAdmin(flag=True),
-	UserPresenceInGroup(flag=True),
-	BotIsAdministrator(flag=True)
-)
-
 
 # <---------- Group/supergroup routers ---------->
 #     <- Router for private chat ->
 router_chat = Router()
 router_chat.message.filter(ChatType(['group', 'supergroup']))
+
+#     <- Router for private chat and group admin, chat admin if bot is admin ->
+router_chat_complex = Router()
+router_chat_complex.message.filter(
+	ChatType(chat_types=['group', 'supergroup']),
+	UserIsChatAdmin(flag=True),
+	UserPresenceInGroup(flag=True),
+	BotIsAdministrator(flag=True)
+)
 
 
 # <---------- Reg/unreg routers ---------->
