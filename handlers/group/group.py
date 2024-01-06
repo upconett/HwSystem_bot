@@ -52,6 +52,7 @@ async def callback_query_chatStart(callback_query: types.CallbackQuery):
 	:return:
 	"""
 	try:
+		await callback_query.answer()
 		if callback_query.from_user.bot.id == (await bot.get_me()).id:
 			bound_group_id = await psql.select(
 				table='chats',
@@ -109,7 +110,7 @@ async def callback_query_chatStart(callback_query: types.CallbackQuery):
 					group_id=bound_group_id,
 					group_name=bound_group_name
 				)
-				content = f'Bot entered chat which already linked with group.'
+				content = f'Bot started chat which already linked with group.'
 			await bot.send_message(
 				chat_id=callback_query.message.chat.id,
 				text=text,
@@ -460,25 +461,28 @@ async def callback_query_reloadChat(callback_query: types.CallbackQuery):
 		)
 
 
-def register_handlers(router: Router):
+def register_handlers(router0: Router, router1: Router):
 	"""
 	Registration of all message and callback handlers.
-	Use router with filter ChatType(chat_types=['group', 'supergroup'])
-	:param router:
+	:param router0: Use router with filter ChatType(chat_types=['group', 'supergroup'])
+	:param router1: Use router with filter ChatType(chat_types=['group', 'supergroup']),
+					UserIsChatAdmin(flag=True),
+					UserPresenceInGroup(flag=True),
+					BotIsAdministrator(flag=True)
 	:return:
 	"""
-	router.my_chat_member.register(message_chatStart, ChatMemberUpdatedFilter(IS_NOT_MEMBER >> IS_MEMBER))
+	router0.my_chat_member.register(message_chatStart, ChatMemberUpdatedFilter(IS_NOT_MEMBER >> IS_MEMBER))
 
-	router.message(ut_filters.BotIsAdministrator(flag=True))
+	# router.message(ut_filters.BotIsAdministrator(flag=True))
 
-	router.callback_query.register(callback_query_chatStart, F.data == 'StartChat')
+	router1.callback_query.register(callback_query_chatStart, F.data == 'StartChat')
 
-	router.message(ut_filters.UserIsChatAdmin(flag=True), ut_filters.UserPresenceInGroup(flag=True), ut_filters.ChatType(['group', 'supergroup']))
+	# router.message(ut_filters.UserIsChatAdmin(flag=True), ut_filters.UserPresenceInGroup(flag=True), ut_filters.ChatType(['group', 'supergroup']))
 
-	router.callback_query.register(callback_query_unlinkGroup, F.data.startswith('UnlinkGroup'))
-	router.callback_query.register(callback_query_continueWithGroup, F.data.startswith('ContinueWithGroup'))
-	router.callback_query.register(callback_query_selectGroup, F.data.startswith('Groups'))
-	router.callback_query.register(callback_query_bindChatSettings, F.data.startswith('BindGroup'))
-	router.callback_query.register(callback_query_bindGroup, F.data.startswith('ChatSettings'))
-	router.callback_query.register(callback_query_deleteLink, F.data.startswith('DeleteLink'))
-	router.callback_query.register(callback_query_reloadChat, F.data.startswith('ReloadChat'))
+	router1.callback_query.register(callback_query_unlinkGroup, F.data.startswith('UnlinkGroup'))
+	router1.callback_query.register(callback_query_continueWithGroup, F.data.startswith('ContinueWithGroup'))
+	router1.callback_query.register(callback_query_selectGroup, F.data.startswith('Groups'))
+	router1.callback_query.register(callback_query_bindChatSettings, F.data.startswith('BindGroup'))
+	router1.callback_query.register(callback_query_bindGroup, F.data.startswith('ChatSettings'))
+	router1.callback_query.register(callback_query_deleteLink, F.data.startswith('DeleteLink'))
+	router1.callback_query.register(callback_query_reloadChat, F.data.startswith('ReloadChat'))

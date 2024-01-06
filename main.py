@@ -46,10 +46,20 @@ async def main():
 	dp.startup.register(on_startup)
 	dp.shutdown.register(on_shutdown)
 
-	dp.include_routers(router_private_groupAdmin, router_private, router_chat, router_unregistered, router_base)
+	dp.include_routers(
+		router_private_complex,
+		router_private_groupAdmin,
+		router_private,
+		router_chat,
+		router_unregistered,
+		router_base,
+	)
 
 	commands.register_handlers(router=router_private)
-	group.register_handlers(router=router_base)
+	group.register_handlers(
+		router0=router_chat,
+		router1=router_private_complex
+	)
 	group_create.register_handlers(router=router_private)
 	default_schedule_upload.register_handlers(router=router_private_groupAdmin)
 
