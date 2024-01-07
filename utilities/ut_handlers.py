@@ -13,6 +13,18 @@ from difflib import SequenceMatcher
 
 
 # <---------- Main handlers ---------->
+async def ut_filterForMDV2(text: str) -> str:
+	"""
+	Formats the string to prevent MarkdownV2 from screwing everything up.
+	:param text: Text for formatting
+	:return: Formatted text
+	"""
+	for char in ms_regular.filter_chars:
+		if char in text:
+			text = text.replace(char, f'\{char}')
+	return text
+
+
 async def scheduleMessageToDict(text: str, mode: int) -> dict:
 	"""
 	Formats dict structure from text schedule.

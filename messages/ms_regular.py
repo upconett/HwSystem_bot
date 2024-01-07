@@ -22,3 +22,5 @@ hw_keywords = ('Домашнее задание', 'Домашка по', 'Зад
 mainScheduleApprove = ['MainSchedule_Submit', 'MainSchedule_Decline']
 
 mainScheduleDays = ['MainSchedule_Days4', 'MainSchedule_Days5']
+
+filter_chars = r'/.,!;:@#$%^&*()-_=+{[]}`~<>?'

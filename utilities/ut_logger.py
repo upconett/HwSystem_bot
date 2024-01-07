@@ -8,6 +8,7 @@ from pathlib import Path
 
 # <---------- Local modules ---------->
 from data_base import operations
+from create_bot import psql
 
 
 # <---------- Variables ---------->
@@ -63,9 +64,13 @@ async def create_log(id: int, filename: str, function: str, exception, content: 
 			group = await operations.groupData(group_id=chat['group_id'])
 		else:
 			group = {}
-		log_message = f'USER={user}; CHAT={chat}; GROUP={group}; FILENAME="{filename}"; FUNCTION="{function}"; CONTENT="{content}"; EXCEPTION="{exception}";'
+		log_message = f'USER={user}; CHAT={chat}; GROUP_IN_CHAT={group}; FILENAME="{filename}"; FUNCTION="{function}"; CONTENT="{content}"; EXCEPTION="{exception}";'
 	else:
-		log_message = f'USER={user}; FILENAME="{filename}"; FUNCTION="{function}"; CONTENT="{content}"; EXCEPTION="{exception}";'
+		if id != 00000000 and user['group_id']:
+			group = await operations.groupData(group_id=user['group_id'])
+		else:
+			group = {}
+		log_message = f'USER={user}; GROUP={group}; FILENAME="{filename}"; FUNCTION="{function}"; CONTENT="{content}"; EXCEPTION="{exception}";'
 	date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	print(f'DATE="{date}"; {log_message}')
 	logger.info(log_message)

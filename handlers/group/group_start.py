@@ -1,6 +1,6 @@
 # <---------- Python modules ---------->
 from aiogram import Router, types, F
-from aiogram.filters import ChatMemberUpdatedFilter, IS_MEMBER, IS_NOT_MEMBER
+from aiogram.filters import ChatMemberUpdatedFilter, JOIN_TRANSITION
 from json import loads
 
 
@@ -8,12 +8,12 @@ from json import loads
 from create_bot import bot, psql
 from messages import ms_group
 from keyboards import kb_group
-from utilities import ut_logger, ut_security, ut_pyrogrambot, ut_filters
+from utilities import ut_logger, ut_security, ut_pyrogrambot
 from data_base import operations
 
 
 # <---------- Variables ---------->
-filename = 'group.py'
+filename = 'group_start.py'
 
 
 # <---------- Chat start ---------->
@@ -71,10 +71,17 @@ async def callback_query_chatStart(callback_query: types.CallbackQuery):
 	:return:
 	"""
 	try:
-		await callback_query.message.edit_text(
-			text=ms_group.chatFirstMessageEdited,
-			reply_markup=None
-		)
+		await callback_query.answer()
+		if callback_query.data.startswith('UnlinkGroup'):
+			await bot.delete_message(
+				chat_id=callback_query.message.chat.id,
+				message_id=callback_query.message.message_id
+			)
+		else:
+			await callback_query.message.edit_text(
+				text=ms_group.chatFirstMessageEdited,
+				reply_markup=None
+			)
 		bound_group_id = await psql.select(
 			table='chats',
 			what='group_id',
@@ -168,7 +175,6 @@ async def callback_query_unlinkGroup(callback_query: types.CallbackQuery):
 			chat_id=callback_query.message.chat.id,
 			message_id=callback_query.message.message_id
 		)
-		await callback_query_chatStart(callback_query=callback_query)
 		await ut_logger.create_log(
 			id=callback_query.from_user.id,
 			chat_id=callback_query.message.chat.id,
@@ -182,6 +188,7 @@ async def callback_query_unlinkGroup(callback_query: types.CallbackQuery):
 			where='group_id',
 			where_value=group_id
 		)
+		await callback_query_chatStart(callback_query=callback_query)
 	except Exception as exc:
 		await ut_logger.create_log(
 			id=callback_query.from_user.id,
@@ -450,7 +457,7 @@ def register_handlers(router0: Router, router1: Router):
 					BotIsAdministrator(flag=True)
 	:return:
 	"""
-	router0.my_chat_member.register(message_chatStart, ChatMemberUpdatedFilter(IS_NOT_MEMBER >> IS_MEMBER))
+	router0.my_chat_member.register(message_chatStart, ChatMemberUpdatedFilter(JOIN_TRANSITION))
 
 	router1.callback_query.register(callback_query_chatStart, F.data == 'StartChat')
 	router1.callback_query.register(callback_query_unlinkGroup, F.data.startswith('UnlinkGroup'))

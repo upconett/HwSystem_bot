@@ -6,7 +6,7 @@ import asyncio
 from create_bot import dp, bot, psql, mndb
 from handlers.routers import *
 from handlers.private import commands, default_schedule_upload, group_create
-from handlers.group import group, homework_upload
+from handlers.group import group_start, homework_upload
 from utilities import ut_logger
 
 
@@ -56,7 +56,7 @@ async def main():
 	)
 
 	commands.register_handlers(router=router_private)
-	group.register_handlers(
+	group_start.register_handlers(
 		router0=router_chat,
 		router1=router_chat_complex
 	)

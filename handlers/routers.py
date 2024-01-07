@@ -17,7 +17,7 @@ router_private.message.filter(ChatType(chat_types=['private'], data_type='messag
 
 #     <- Router for private chat and group admin ->
 router_private_groupAdmin = Router()
-router_private_groupAdmin.message.filter(ChatType(chat_types=['private'], data_type='message'), UserIsGroupAdmin(flag=True))
+router_private_groupAdmin.message.filter(ChatType(chat_types=['private'], data_type='message'), UserIsGroupAdmin())
 
 
 # <---------- Group/supergroup routers ---------->
@@ -29,11 +29,11 @@ router_chat.callback_query.filter(ChatType(chat_types=['group', 'supergroup'], d
 
 #     <- Router for group chat and group admin, chat admin if bot is admin ->
 router_chat_complex = Router()
-router_chat_complex.callback_query.filter(
+router_chat_complex.callback_query.filter(	
 	ChatType(chat_types=['group', 'supergroup'], data_type='callback_query'),
-	BotIsAdministrator(flag=True, data_type='callback_query'),
-	UserIsChatAdmin(flag=True, data_type='callback_query'),
-	UserPresenceInGroup(flag=True)
+	BotIsAdministrator(data_type='callback_query'),
+	UserIsChatAdmin(data_type='callback_query'),
+	UserPresenceInGroup()
 )
 
 #	  <- Router for group chat, registered, in_group ->
@@ -46,8 +46,8 @@ router_chat.include_router(router_chat_in_group)
 # <---------- Reg/unreg routers ---------->
 #     <- Router for registered users ->
 router_registered = Router()
-router_registered.message.filter(UserRegister(flag=True))
+router_registered.message.filter(UserRegister())
 
 #     <- Router for unregistered users ->
 router_unregistered = Router()
-router_unregistered.message.filter(UserRegister(flag=False))
+router_unregistered.message.filter(~UserRegister())

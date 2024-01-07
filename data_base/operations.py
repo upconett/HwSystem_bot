@@ -33,7 +33,7 @@ async def insertUser(id: int, username: str, full_name: str):
 		return False
 
 
-async def insertGroup(group_name: str, group_password: str, owner_id: int, default_lessons: dict = '', default_breaks: dict = ''):
+async def insertGroup(group_name: str, group_password: str, owner_id: int, default_lessons: str = '{}', default_breaks: str = '{}'):
 	"""
 	Insert new group in groups table.
 	:param group_name:
@@ -46,7 +46,7 @@ async def insertGroup(group_name: str, group_password: str, owner_id: int, defau
 	try:
 		date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		with psql.conn.cursor() as cursor:
-			cursor.execute(f'INSERT INTO users (group_id, group_name, group_password, group_link, owner_id, default_lessons, default_breaks, date) VALUES (%s, %s, %s, %s, %s, %s)', (None, group_name, group_password, None, owner_id, default_lessons, default_breaks, date))
+			cursor.execute(f'INSERT INTO groups (group_name, group_password, group_link, owner_id, default_lessons, default_breaks, date) VALUES (%s, %s, %s, %s, %s, %s, %s)', (group_name, group_password, None, owner_id, default_lessons, default_breaks, date))
 		return True
 	except Exception as exception:
 		print(f'FILENAME="{filename}"; FUNCTION="db_psql_InsertGroup"; CONTENT=""; EXCEPTION="{exception}";')
@@ -72,7 +72,7 @@ async def insertChat(id: int, title: str, group_id: int, notifications: bool):
 		return False
 
 
-async def userData(id: int, formatted: bool = False):
+async def userData(id: int, formatted: bool = False) -> dict:
 	"""
 	Return data about user formatted or not.
 	:param id: Telegram ID
@@ -118,7 +118,7 @@ async def userData(id: int, formatted: bool = False):
 	return data
 
 
-async def chatData(id: int, formatted: bool = False):
+async def chatData(id: int, formatted: bool = False) -> dict:
 	"""
 	Return data about chat formatted or not.
 	:param id: Telegram chat ID
@@ -162,7 +162,7 @@ async def chatData(id: int, formatted: bool = False):
 	return data
 
 
-async def groupData(group_id: int, formatted: bool = False):
+async def groupData(group_id: int, formatted: bool = False) -> dict:
 	"""
 	Return data about group formatted or not.
 	:param group_id: Group ID

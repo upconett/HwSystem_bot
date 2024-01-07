@@ -1,9 +1,6 @@
 # <---------- Local modules ---------->
+from messages import ms_regular
 from keyboards.kb_group import inline_HomeworkApprove
-
-
-# <---------- Variables ---------->
-filter_chars = r'/.,!;:@#$%^&*()-_=+{[]}`~<>?'
 
 
 # <---------- Exception classes ---------->
@@ -26,7 +23,7 @@ class InvalidWeekDay(Exception):
 	"""
 	def __init__(self, num: int, line: str):
 		self.num = num
-		for char in filter_chars:
+		for char in ms_regular.filter_chars:
 			if char in line:
 				line = line.replace(char, f'\{char}')
 		self.line = line
@@ -59,7 +56,7 @@ class NoLesson(Exception):
 	"""
 	def __init__(self, num: int, line: str):
 		self.num = num
-		for char in filter_chars:
+		for char in ms_regular.filter_chars:
 			if char in line:
 				line = line.replace(char, f'\{char}')
 		self.line = line
@@ -78,7 +75,7 @@ class InvalidLessonNumber(Exception):
 	"""
 	def __init__(self, num: int, line: str):
 		self.num = num
-		for char in filter_chars:
+		for char in ms_regular.filter_chars:
 			if char in line:
 				line = line.replace(char, f'\{char}')
 		self.line = line
@@ -97,7 +94,7 @@ class NotSuitableLessonNumber(Exception):
 	"""
 	def __init__(self, num: int, line: str):
 		self.num = num
-		for char in filter_chars:
+		for char in ms_regular.filter_chars:
 			if char in line:
 				line = line.replace(char, f'\{char}')
 		self.line = line
@@ -187,7 +184,7 @@ class InvalidDate(Exception):
 		Raised when written date string can't be parsed.\n
 		#### MarkdowV2 required!
 		"""
-		for char in filter_chars:
+		for char in ms_regular.filter_chars:
 			if char in date:
 				date = date.replace(char, f'\{char}')
 		self.text = (
@@ -206,7 +203,7 @@ class TimeTravel(Exception):
 		Raised when written date is in past.
 		#### MarkdowV2 required!
 		"""
-		for char in filter_chars:
+		for char in ms_regular.filter_chars:
 			if char in date:
 				date = date.replace(char, f'\{char}')
 		self.text = (
