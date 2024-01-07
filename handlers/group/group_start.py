@@ -8,12 +8,12 @@ from json import loads
 from create_bot import bot, psql
 from messages import ms_group
 from keyboards import kb_group
-from utilities import ut_logger, ut_security, ut_pyrogrambot, ut_filters
+from utilities import ut_logger, ut_security, ut_pyrogrambot
 from data_base import operations
 
 
 # <---------- Variables ---------->
-filename = 'group.py'
+filename = 'group_start.py'
 
 
 # <---------- Chat start ---------->
@@ -72,10 +72,16 @@ async def callback_query_chatStart(callback_query: types.CallbackQuery):
 	"""
 	try:
 		await callback_query.answer()
-		await callback_query.message.edit_text(
-			text=ms_group.chatFirstMessageEdited,
-			reply_markup=None
-		)
+		if callback_query.data.startswith('UnlinkGroup'):
+			await bot.delete_message(
+				chat_id=callback_query.message.chat.id,
+				message_id=callback_query.message.message_id
+			)
+		else:
+			await callback_query.message.edit_text(
+				text=ms_group.chatFirstMessageEdited,
+				reply_markup=None
+			)
 		bound_group_id = await psql.select(
 			table='chats',
 			what='group_id',
@@ -169,7 +175,6 @@ async def callback_query_unlinkGroup(callback_query: types.CallbackQuery):
 			chat_id=callback_query.message.chat.id,
 			message_id=callback_query.message.message_id
 		)
-		await callback_query_chatStart(callback_query=callback_query)
 		await ut_logger.create_log(
 			id=callback_query.from_user.id,
 			chat_id=callback_query.message.chat.id,
@@ -183,6 +188,7 @@ async def callback_query_unlinkGroup(callback_query: types.CallbackQuery):
 			where='group_id',
 			where_value=group_id
 		)
+		await callback_query_chatStart(callback_query=callback_query)
 	except Exception as exc:
 		await ut_logger.create_log(
 			id=callback_query.from_user.id,
