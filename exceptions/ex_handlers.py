@@ -1,9 +1,5 @@
 # <---------- Local modules ---------->
-from utilities import ut_handlers
-
-
-# <---------- Variables ---------->
-filter_chars = r'/.,!;:@#$%^&*()-_=+{[]}`~<>?'
+from messages import ms_regular
 
 
 # <---------- Exception classes ---------->
@@ -25,7 +21,7 @@ class InvalidWeekDay(Exception):
 	"""
 	def __init__(self, num: int, line: str):
 		self.num = num
-		for char in filter_chars:
+		for char in ms_regular.filter_chars:
 			if char in line:
 				line = line.replace(char, f'\{char}')
 		self.line = line
@@ -57,7 +53,7 @@ class NoLesson(Exception):
 	"""
 	def __init__(self, num: int, line: str):
 		self.num = num
-		for char in filter_chars:
+		for char in ms_regular.filter_chars:
 			if char in line:
 				line = line.replace(char, f'\{char}')
 		self.line = line
@@ -75,7 +71,7 @@ class InvalidLessonNumber(Exception):
 	"""
 	def __init__(self, num: int, line: str):
 		self.num = num
-		for char in filter_chars:
+		for char in ms_regular.filter_chars:
 			if char in line:
 				line = line.replace(char, f'\{char}')
 		self.line = line
@@ -93,7 +89,7 @@ class NotSuitableLessonNumber(Exception):
 	"""
 	def __init__(self, num: int, line: str):
 		self.num = num
-		for char in filter_chars:
+		for char in ms_regular.filter_chars:
 			if char in line:
 				line = line.replace(char, f'\{char}')
 		self.line = line

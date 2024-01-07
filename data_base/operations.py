@@ -70,7 +70,7 @@ async def insertChat(id: int, title: str, group_id: int, notifications: bool):
 		return False
 
 
-async def userData(id: int, formatted: bool = False):
+async def userData(id: int, formatted: bool = False) -> dict:
 	"""
 	Return data about user formatted or not.
 	:param id: Telegram ID
@@ -116,7 +116,7 @@ async def userData(id: int, formatted: bool = False):
 	return data
 
 
-async def chatData(id: int, formatted: bool = False):
+async def chatData(id: int, formatted: bool = False) -> dict:
 	"""
 	Return data about chat formatted or not.
 	:param id: Telegram chat ID
@@ -160,7 +160,7 @@ async def chatData(id: int, formatted: bool = False):
 	return data
 
 
-async def groupData(group_id: int, formatted: bool = False):
+async def groupData(group_id: int, formatted: bool = False) -> dict:
 	"""
 	Return data about group formatted or not.
 	:param group_id: Group ID

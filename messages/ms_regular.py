@@ -20,3 +20,5 @@ weekdays_accusativeCase = ['понедельник', 'вторник', 'сред
 mainScheduleApprove = ['MainSchedule_Submit', 'MainSchedule_Decline']
 
 mainScheduleDays = ['MainSchedule_Days4', 'MainSchedule_Days5']
+
+filter_chars = r'/.,!;:@#$%^&*()-_=+{[]}`~<>?'
