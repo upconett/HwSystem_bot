@@ -1,5 +1,5 @@
 # <---------- Python modules ---------->
-from aiogram.filters import Filter
+from aiogram.filters import BaseFilter
 from aiogram.types import Message, CallbackQuery
 
 
@@ -13,7 +13,7 @@ filename = 'ut_filters.py'
 
 
 # <---------- Filter classes ---------->
-class ChatType(Filter):
+class ChatType(BaseFilter):
     """
     Check if chat type from message in given chat types list.
     """
@@ -32,29 +32,28 @@ class ChatType(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if chat type correct
         """
-        print('a')
+        result = False
         if self.data_type == 'message':
+            result = False
             if data.chat.type in self.chat_types:
-                return True
-            return False
+                result = True
         elif self.data_type == 'callback_query':
+            result = False
             if data.message.chat.type in self.chat_types:
-                return True
-            return False
-        return False
+                result = True
+        print(f'ChatType in {self.chat_types} >> {result}')
+        return result
 
 
-class BotIsAdministrator(Filter):
+class BotIsAdministrator(BaseFilter):
     """
     Check if bot chat administrator.
     """
-    def __init__(self, flag: bool, data_type: str) -> None:
+    def __init__(self, data_type: str) -> None:
         """
 
-        :param flag: True (check if bot is admin) or False (check if bot is not admin)
         :param data_type: message, callback_query
         """
-        self.flag = flag
         self.data_type = data_type
 
     async def __call__(self, data: Message or CallbackQuery) -> bool:
@@ -63,15 +62,28 @@ class BotIsAdministrator(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if chat type correct
         """
-        print('b')
         if self.data_type == 'message':
-            return (await data.from_user.bot.get_me()).can_read_all_group_messages == self.flag
+            chat_admins = await data.chat.get_administrators()
         elif self.data_type == 'callback_query':
-            return (await data.message.from_user.bot.get_me()).can_read_all_group_messages == self.flag
-        return False
+            chat_admins = await data.message.chat.get_administrators()
+        else:
+            print('BotIsAdministrator >> False (incorrect data_type)')
+            return False
+        result = False
+        for user in range(len(chat_admins)):
+            if chat_admins[user].status == 'creator':
+                continue
+            result = False
+            if (await data.from_user.bot.get_me()).id == chat_admins[user].user.id:
+                result = False
+                if chat_admins[user].can_delete_messages and chat_admins[user].can_restrict_members:
+                    result = True
+                    break
+        print(f'BotIsAdministrator >> {result}')
+        return result
 
 
-class TextEquals(Filter):
+class TextEquals(BaseFilter):
     """
     Checks if message.text matches one of the elements of the given list.
     """
@@ -90,28 +102,23 @@ class TextEquals(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if message.text in given list
         """
-        print('c')
+        result = False
         if self.data_type == 'message':
+            result = False
             if data.text.lower() in self.list_ms:
-                return True
-            return False
+                result = True
         elif self.data_type == 'callback_query':
+            result = False
             if data.data.lower() in self.list_ms:
-                return True
-            return False
-        return False
+                result = True
+        print(f'TextEquals to {self.list_ms} >> {result}')
+        return result
 
 
-class UserRegister(Filter):
+class UserRegister(BaseFilter):
     """
     Checks the presence of a user in a group or vice versa.
     """
-    def __init__(self, flag: bool) -> None:
-        """
-
-        :param flag: True (check if user in group) or False (check if user not in group)
-        """
-        self.flag = flag
 
     async def __call__(self, data: Message or CallbackQuery) -> bool:
         """
@@ -119,26 +126,20 @@ class UserRegister(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if the specified condition is met
         """
-        print('d')
         try:
             response = await operations.userData(id=data.from_user.id)
             result = response['username'] is not None
-            return self.flag == result
+            print(f'UserRegister {data.from_user.id} >> {result}')
+            return result
         except Exception as exception:
             print(f'FILENAME="{filename}"; CLASS="UserRegister"; CONTENT=""; EXCEPTION="{exception}";')
             return False
 
 
-class UserPresenceInGroup(Filter):
+class UserPresenceInGroup(BaseFilter):
     """
     Checks the presence of a user in a group or vice versa.
     """
-    def __init__(self, flag: bool) -> None:
-        """
-
-        :param flag: True (check if user in group) or False (check if user not in group)
-        """
-        self.flag = flag
 
     async def __call__(self, data: Message or CallbackQuery) -> bool:
         """
@@ -146,48 +147,39 @@ class UserPresenceInGroup(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if the specified condition is met
         """
-        print('e')
         try:
             response = await operations.userData(id=data.from_user.id)
             result = response['group_id'] is not None
-            return self.flag == result
+            print(f'UserPresenceInGroup {data.from_user.id} >> {result}')
+            return result
         except Exception as exception:
             print(f'FILENAME="{filename}"; CLASS="UserPresenceInGroup"; CONTENT=""; EXCEPTION="{exception}";')
             return False
     
 
-class UserIsGroupAdmin(Filter):
+class UserIsGroupAdmin(BaseFilter):
     """
     Check if user is group admin or vice versa.
     """
-    def __init__(self, flag: bool) -> None:
-        """
-
-        :param flag: True (check if user in group) or False (check if user not in group)
-        """
-        self.flag = flag
-
     async def __call__(self, data: Message or CallbackQuery) -> bool:
         """
 
         :param data: Aiogram message or callback_query object
         :return: True if the specified condition is met
         """
-        print('f')
         try:
             response = await operations.userData(id=data.from_user.id)
-            return self.flag == response['group_admin']
+            print(f'UserIsGroupAdmin {data.from_user.id} >> {response}')
+            return response['group_admin']
         except Exception as exception:
             print(f'FILENAME="{filename}"; CLASS="UserIsGroupAdmin"; CONTENT=""; EXCEPTION="{exception}";')
             return False
 
 
-class UserIsGroupOwner(Filter):
+class UserIsGroupOwner(BaseFilter):
     """
     Check if user is group owner or vice versa.
     """
-    def __init__(self, flag: bool) -> None:
-        self.flag = flag
 
     async def __call__(self, data: Message) -> bool:
         """
@@ -195,7 +187,6 @@ class UserIsGroupOwner(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if the specified condition is met
         """
-        print('g')
         try:
             response = (await psql.select(
                 table='groups',
@@ -203,23 +194,22 @@ class UserIsGroupOwner(Filter):
                 where='owner_id',
                 where_value=data.from_user.id
             ))[0][0]
-            return response == self.flag
+            print(f'UserIsGroupOwner {data.from_user.id} >> {response}')
+            return response
         except Exception as exception:
             print(f'FILENAME="{filename}"; CLASS="UserIsGroupOwner"; CONTENT=""; EXCEPTION="{exception}";')
             return False
 
 
-class UserIsChatAdmin(Filter):
+class UserIsChatAdmin(BaseFilter):
     """
     Check if user is chat admin with a lot of rights (not like a role) or vice versa.
     """
-    def __init__(self, flag: bool, data_type: str) -> None:
+    def __init__(self, data_type: str) -> None:
         """
 
-        :param flag: True (check if user is chat admin) or False (check if user is not chat admin)
         :param data_type: message, callback_query
         """
-        self.flag = flag
         self.data_type = data_type
 
     async def __call__(self, data: Message or CallbackQuery) -> bool:
@@ -228,21 +218,27 @@ class UserIsChatAdmin(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if the specified condition is met
         """
-        print('h')
         try:
             if self.data_type == 'message':
                 chat_admins = await data.chat.get_administrators()
             elif self.data_type == 'callback_query':
                 chat_admins = await data.message.chat.get_administrators()
             else:
+                print('UserIsChatAdmin >> False (incorrect data_type)')
                 return False
+            result = False
             for user in range(len(chat_admins)):
-                if (data.from_user.id == chat_admins[user].user.id) == self.flag:
+                result = False
+                if data.from_user.id == chat_admins[user].user.id:
+                    result = False
                     if chat_admins[user].status == 'creator':
-                        return True
+                        result = True
+                        break
                     elif chat_admins[user].can_delete_messages and chat_admins[user].can_restrict_members:
-                        return True
-            return False
+                        result = True
+                        break
+            print(f'UserIsChatAdmin {data.from_user.id} >> {result}')
+            return result
         except Exception as exception:
             print(f'FILENAME="{filename}"; CLASS="UserIsChatAdmin"; CONTENT=""; EXCEPTION="{exception}";')
             return False

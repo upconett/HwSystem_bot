@@ -407,6 +407,6 @@ def register_handlers(router: Router):
 	router.message.register(FSM_message_approveUpload, F.text.startswith('Основное расписание'))
 	router.message.register(FSM_message_checkUpload, StateFilter(UpdateMainScheduleDailyFSM.sc_check))
 	router.message.register(FSM_message_startUpload, Command('update'))
-	router.message.register(FSM_message_stopUpload, ut_filters.TextEquals(ms_regular.FSM_cancel), StateFilter(UpdateMainScheduleDailyFSM))
+	router.message.register(FSM_message_stopUpload, ut_filters.TextEquals(list_ms=ms_regular.FSM_cancel, data_type='message'), StateFilter(UpdateMainScheduleDailyFSM))
 	router.message.register(FSM_message_weekDayInput, StateFilter(UpdateMainScheduleDailyFSM.sc_weekday_input))
 	router.message.register(FSM_message_elseUpload, StateFilter(UpdateMainScheduleDailyFSM))

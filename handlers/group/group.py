@@ -1,6 +1,6 @@
 # <---------- Python modules ---------->
 from aiogram import Router, types, F
-from aiogram.filters import ChatMemberUpdatedFilter, IS_MEMBER, IS_NOT_MEMBER
+from aiogram.filters import ChatMemberUpdatedFilter, JOIN_TRANSITION
 from json import loads
 
 
@@ -71,6 +71,7 @@ async def callback_query_chatStart(callback_query: types.CallbackQuery):
 	:return:
 	"""
 	try:
+		await callback_query.answer()
 		await callback_query.message.edit_text(
 			text=ms_group.chatFirstMessageEdited,
 			reply_markup=None
@@ -450,7 +451,7 @@ def register_handlers(router0: Router, router1: Router):
 					BotIsAdministrator(flag=True)
 	:return:
 	"""
-	router0.my_chat_member.register(message_chatStart, ChatMemberUpdatedFilter(IS_NOT_MEMBER >> IS_MEMBER))
+	router0.my_chat_member.register(message_chatStart, ChatMemberUpdatedFilter(JOIN_TRANSITION))
 
 	router1.callback_query.register(callback_query_chatStart, F.data == 'StartChat')
 	router1.callback_query.register(callback_query_unlinkGroup, F.data.startswith('UnlinkGroup'))
