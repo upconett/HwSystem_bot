@@ -17,6 +17,8 @@ FSM_cancel = ['отмена', '❌ отмена', 'стоп', 'хватит', '/
 weekdays = ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота']
 weekdays_accusativeCase = ['понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу']
 
+hw_keywords = ('Домашнее задание', 'Домашка по', 'Задание по', 'Дз')
+
 mainScheduleApprove = ['MainSchedule_Submit', 'MainSchedule_Decline']
 
 mainScheduleDays = ['MainSchedule_Days4', 'MainSchedule_Days5']

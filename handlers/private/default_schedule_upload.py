@@ -4,6 +4,8 @@ from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
+import json
+
 
 # <---------- Local modules ---------->
 from messages import ms_regular, ms_private
@@ -18,7 +20,7 @@ filename = 'default_schedule_upload.py'
 
 
 # <---------- FSM machine ---------->
-class UpdateMainScheduleDailyFSM(StatesGroup):
+class MainScheduleFSM(StatesGroup):
 	sc_days = State()
 	sc_weekday_input = State()
 	sc_check = State()
@@ -42,7 +44,7 @@ async def FSM_message_startUpload(message: types.Message, state: FSMContext):
 			text=ms_private.studyDays,
 			reply_markup=kb_private.inline_mainScheduleDays
 		)
-		await state.set_state(state=UpdateMainScheduleDailyFSM.sc_days)
+		await state.set_state(state=MainScheduleFSM.sc_days)
 		exception = ''
 		content = 'Start default schedule upload.'	
 	except Exception as exc:
@@ -73,7 +75,7 @@ async def FSM_callback_query_dayChoice(callback_query: types.CallbackQuery, stat
 			reply_markup=None
 		)
 		await state.set_data(data=data)
-		await state.set_state(state=UpdateMainScheduleDailyFSM.sc_weekday_input)
+		await state.set_state(state=MainScheduleFSM.sc_weekday_input)
 		text = await ms_private.currentDaySchedule_accusativeCase(current_day=ms_regular.weekdays_accusativeCase[data["current_day"]].capitalize())
 		await callback_query.message.answer(
 			text=text,
@@ -103,7 +105,7 @@ async def FSM_message_weekDayInput(message: types.Message, state: FSMContext):
 		)
 		data['current_day'] += 1
 		if data['current_day'] == data['days']:
-			await state.set_state(UpdateMainScheduleDailyFSM.sc_check)
+			await state.set_state(MainScheduleFSM.sc_check)
 		await message.answer(text=await ms_private.currentDaySchedule_accusativeCase(current_day=ms_regular.weekdays_accusativeCase[data["current_day"]].capitalize()))
 		await state.set_data(data)
 		exception = ''
@@ -203,17 +205,18 @@ async def FSM_message_approveUpload(message: types.Message, state: FSMContext):
 		else:
 			schedule_input = data['schedule_input']
 		schedule_dict = await ut_handlers.scheduleMessageToDict(schedule_input, 0)
+		# print(json.dumps(schedule_dict, indent=3, ensure_ascii=False))
 		schedule_text = await ut_handlers.scheduleDictToMessage(schedule_dict, 0)
 		subjects = await ut_handlers.scheduleEnumSubjects(schedule_dict, 0)
 		text = await ms_private.scheduleApprove(len_subjects=len(subjects))
 		for num, subject in enumerate(subjects):
-			text += '  ' + subject
+			text += '  ' + subject.capitalize()
 			if subject != subjects[-1]:
 				text += ','
 			if num % 2 != 0:
 				text += '\n'
 		text += await ms_private.scheduleAppearance(schedule=schedule_text)
-		await state.set_state(UpdateMainScheduleDailyFSM.sc_approve)
+		await state.set_state(MainScheduleFSM.sc_approve)
 		data['schedule_dict'] = schedule_dict
 		await message.answer(
 			text = text,
@@ -294,6 +297,7 @@ async def FSM_callback_query_submitUpload(callback_query: types.CallbackQuery, s
 			id=callback_query.from_user.id,
 			data=data["schedule_dict"]
 		)
+		print(json.dumps(data['schedule_dict'], indent=3, ensure_ascii=False))
 		await callback_query.message.answer(
 			text=ms_private.scheduleLoaded,
 			reply_markup=kb_private.reply_commandStartOrHelp
@@ -400,13 +404,13 @@ def register_handlers(router: Router):
 	:param router:
 	:return:
 	"""
-	router.callback_query.register(FSM_callback_query_submitUpload, F.data == 'MainSchedule_Submit', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))
-	router.callback_query.register(FSM_callback_query_declineUpload, F.data == 'MainSchedule_Decline', StateFilter(UpdateMainScheduleDailyFSM.sc_approve))
+	router.callback_query.register(FSM_callback_query_submitUpload, F.data == 'MainSchedule_Submit', StateFilter(MainScheduleFSM.sc_approve))
+	router.callback_query.register(FSM_callback_query_declineUpload, F.data == 'MainSchedule_Decline', StateFilter(MainScheduleFSM.sc_approve))
 	router.callback_query.register(callback_query_deleteButtons, F.data.in_({'MainSchedule_Submit', 'MainSchedule_Decline'}))
-	router.callback_query.register(FSM_callback_query_dayChoice, F.data.in_({'MainSchedule_Days4', 'MainSchedule_Days5'}), StateFilter(UpdateMainScheduleDailyFSM.sc_days))
+	router.callback_query.register(FSM_callback_query_dayChoice, F.data.in_({'MainSchedule_Days4', 'MainSchedule_Days5'}), StateFilter(MainScheduleFSM.sc_days))
 	router.message.register(FSM_message_approveUpload, F.text.startswith('Основное расписание'))
-	router.message.register(FSM_message_checkUpload, StateFilter(UpdateMainScheduleDailyFSM.sc_check))
+	router.message.register(FSM_message_checkUpload, StateFilter(MainScheduleFSM.sc_check))
 	router.message.register(FSM_message_startUpload, Command('update'))
-	router.message.register(FSM_message_stopUpload, ut_filters.TextEquals(ms_regular.FSM_cancel), StateFilter(UpdateMainScheduleDailyFSM))
-	router.message.register(FSM_message_weekDayInput, StateFilter(UpdateMainScheduleDailyFSM.sc_weekday_input))
-	router.message.register(FSM_message_elseUpload, StateFilter(UpdateMainScheduleDailyFSM))
+	router.message.register(FSM_message_stopUpload, F.text == ms_regular.FSM_cancel, StateFilter(MainScheduleFSM))
+	router.message.register(FSM_message_weekDayInput, StateFilter(MainScheduleFSM.sc_weekday_input))
+	router.message.register(FSM_message_elseUpload, StateFilter(MainScheduleFSM))

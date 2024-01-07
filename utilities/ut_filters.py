@@ -32,7 +32,7 @@ class ChatType(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if chat type correct
         """
-        print('a')
+        # print('a', self.data_type, data.chat.type)
         if self.data_type == 'message':
             if data.chat.type in self.chat_types:
                 return True
@@ -63,7 +63,7 @@ class BotIsAdministrator(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if chat type correct
         """
-        print('b')
+        # print('b')
         if self.data_type == 'message':
             return (await data.from_user.bot.get_me()).can_read_all_group_messages == self.flag
         elif self.data_type == 'callback_query':
@@ -90,7 +90,7 @@ class TextEquals(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if message.text in given list
         """
-        print('c')
+        # print('c')
         if self.data_type == 'message':
             if data.text.lower() in self.list_ms:
                 return True
@@ -106,7 +106,7 @@ class UserRegister(Filter):
     """
     Checks the presence of a user in a group or vice versa.
     """
-    def __init__(self, flag: bool) -> None:
+    def __init__(self, flag: bool = True) -> None:
         """
 
         :param flag: True (check if user in group) or False (check if user not in group)
@@ -119,7 +119,7 @@ class UserRegister(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if the specified condition is met
         """
-        print('d')
+        # print('d')
         try:
             response = await operations.userData(id=data.from_user.id)
             result = response['username'] is not None
@@ -133,7 +133,7 @@ class UserPresenceInGroup(Filter):
     """
     Checks the presence of a user in a group or vice versa.
     """
-    def __init__(self, flag: bool) -> None:
+    def __init__(self, flag: bool = True) -> None:
         """
 
         :param flag: True (check if user in group) or False (check if user not in group)
@@ -146,7 +146,7 @@ class UserPresenceInGroup(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if the specified condition is met
         """
-        print('e')
+        # print('e')
         try:
             response = await operations.userData(id=data.from_user.id)
             result = response['group_id'] is not None
@@ -173,7 +173,7 @@ class UserIsGroupAdmin(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if the specified condition is met
         """
-        print('f')
+        # print('f')
         try:
             response = await operations.userData(id=data.from_user.id)
             return self.flag == response['group_admin']
@@ -195,7 +195,7 @@ class UserIsGroupOwner(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if the specified condition is met
         """
-        print('g')
+        # print('g')
         try:
             response = (await psql.select(
                 table='groups',
@@ -228,7 +228,7 @@ class UserIsChatAdmin(Filter):
         :param data: Aiogram message or callback_query object
         :return: True if the specified condition is met
         """
-        print('h')
+        # print('h')
         try:
             if self.data_type == 'message':
                 chat_admins = await data.chat.get_administrators()

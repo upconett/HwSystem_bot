@@ -1,10 +1,12 @@
 # <---------- Local modules ---------->
 from messages.ms_regular import boolToRussian
 from create_bot import psql
-
+from create_bot import mndb
+from exceptions.ex_handlers import SundayException, NoLessonAtWeekday
 
 # <---------- Python modules ---------->
 from datetime import datetime
+from datetime import timedelta
 
 
 # <---------- Variables ---------->
@@ -204,7 +206,7 @@ async def groupData(group_id: int, formatted: bool = False):
 	return data
 
 
-async def getMainSchedule(id: int):
+async def getMainSchedule(id: int) -> dict:
 	"""
 	Get default schedule from database.
 	:param id: Telegram ID of user
@@ -223,9 +225,9 @@ async def getMainSchedule(id: int):
 			where='group_id',
 			where_value=group_id
 		))[0]
-		return schedule
+		return schedule[0]
 	except Exception as exception:
-		print(f'FILENAME="{filename}"; FUNCTION="db_psql_InsertChat"; CONTENT=""; EXCEPTION="{exception}";')
+		print(f'FILENAME="{filename}"; FUNCTION="getMainSchedule"; CONTENT=""; EXCEPTION="{exception}";')
 		return False
 
 
@@ -254,3 +256,84 @@ async def setMainSchedule(id: int, data: dict):
 	except Exception as exception:
 		print(f'FILENAME="{filename}"; FUNCTION="db_psql_InsertChat"; CONTENT=""; EXCEPTION="{exception}";')
 		return False
+
+
+async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: str = None) -> dict[datetime, int]:
+	"""
+	Finds next lesson in MainSchedule.
+	:param id: User id
+	:param subject: Subject to find
+	:param date_str: Date when to seek
+	:return: Dict with date and lesson num
+	"""
+	date_now = datetime.now()
+	result = {
+		'date': None,
+		'weekday': None,
+		'lesson': None
+	}
+	schedule = await getMainSchedule(id)
+	weekdays = schedule.keys()
+	if date:
+		wd = date.weekday()
+		if wd == 6:
+			raise SundayException
+		day = list(weekdays)[wd]
+		for lesson in schedule[day]:
+			if schedule[day][lesson]['subject'] == subject:
+				result['date'] = date
+				result['weekday'] = wd
+				result['lesson'] = int(lesson)
+				return result
+		else:
+			raise NoLessonAtWeekday(day, subject)
+	if weekday:
+		weekday = weekday.capitalize()
+		wd = list(weekdays).index(weekday)
+		wd_now = datetime.now().weekday()
+		if wd == wd_now:
+			date = datetime.now()
+		else:
+			if wd > wd_now:
+				date = datetime.now() + timedelta(days = (wd - wd_now))
+			else:
+				date = datetime.now() + timedelta(days = ((6 - wd_now) + wd))
+		for lesson in schedule[weekday]:
+			if schedule[weekday][lesson]['subject'] == subject:
+				result['date'] = date
+				result['weekday'] = wd
+				result['lesson'] = int(lesson)
+				return result
+		else:
+			raise NoLessonAtWeekday(weekday, subject)
+	else:
+		date = date_now + timedelta(days = 1)
+		wd = date.weekday()
+		if wd == 6:
+			wd == 0
+		for i in range(2):
+			for day in list(weekdays)[wd:]:
+				for lesson in schedule[day]:
+					if schedule[day][lesson]['subject'] == subject:
+						result['date'] = date
+						result['weekday'] = date.weekday()
+						result['lesson'] = int(lesson)
+						return result
+				date = date + timedelta(days = 1)
+			date = date + timedelta(days = 1)
+			wd = date.weekday()
+	return result
+
+
+async def getHomework(id: int, date: datetime = None, weekday: str = None):
+	group_id = (psql.select(
+		'users',
+		'group_id',
+		'id', id
+	))[0]
+	group_name = (psql.select(
+		'groups',
+		'group_name',
+		'group_id', group_id
+	))[0]
+	# mndb.db.get_collection(group_name)

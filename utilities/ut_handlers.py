@@ -1,6 +1,15 @@
+# <---------- Python modules ---------->
+from datetime import datetime
+from dateutil.parser import parse
+from dateutil.parser._parser import ParserError
+
 # <---------- Local modules ---------->
-from exceptions.ex_handlers import NotEnoughDays, InvalidWeekDay, SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber
+from exceptions.ex_handlers import NotEnoughDays, InvalidWeekDay, \
+	SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber, \
+	NoTask, NoMainSchedule, InvalidSubject, InvalidDate, TimeTravel
 from messages import ms_regular
+from data_base.operations import getMainSchedule
+from difflib import SequenceMatcher
 
 
 # <---------- Main handlers ---------->
@@ -40,7 +49,7 @@ async def scheduleMessageToDict(text: str, mode: int) -> dict:
 							raise InvalidLessonNumber(num, line)
 						if int(lesson_num) not in range(0, 11):
 							raise NotSuitableLessonNumber(num, line)
-						subject = " ".join([x for x in line.split()[1:]])
+						subject = " ".join([x for x in line.split()[1:]]).lower()
 						if subject == '-':
 							subject = None
 						result[weekday][str(int(lesson_num))]['subject'] = subject
@@ -62,7 +71,7 @@ async def scheduleMessageToDict(text: str, mode: int) -> dict:
 						raise InvalidLessonNumber(num, line)
 					if int(lesson_num) not in range(0, 11):
 						raise NotSuitableLessonNumber(num, line)
-					subject = " ".join([x for x in line.split()[1:]])
+					subject = " ".join([x for x in line.split()[1:]]).lover()
 					if subject == '-':
 						subject = None
 					result[str(int(lesson_num))] = {'subject': subject}
@@ -96,7 +105,7 @@ async def scheduleDictToMessage(schedule: dict, mode: int) -> str:
 						continue
 					if subject is None:
 						subject = '-'
-					result += f' {lesson}. {subject}\n'
+					result += f' {lesson}. {subject.capitalize()}\n'
 			result += '\n'
 	elif mode == 1:
 		for day in schedule:
@@ -145,3 +154,77 @@ async def scheduleEnumSubjects(schedule: dict, mode: int) -> list[str]:
 	else:
 		raise ValueError('Mode can be [0,1]')
 	return result
+
+
+async def homeworkExtractData(id: int, text: str) -> tuple():
+	"""
+	Read users message and find 'subject', 'task', and 'weekday'/'date'.
+	:param id: User id
+	:param text: User message.text
+	:return tuple: subject, task, weekday, date
+	"""
+	subject = None
+	subject_invalid = None
+	task = None
+	weekday = None
+	date = None
+
+	if len(text.split('\n')) < 2:
+		raise NoTask
+	first = text.split('\n')[0]
+	task = "\n".join(text.split('\n')[1:])
+	for w in ms_regular.hw_keywords:
+		if w in first: first = first.replace(w, '')
+	first = first.split()
+
+	standart_schedule = await getMainSchedule(id)
+	# print(standart_schedule)
+	if standart_schedule is None:
+		raise NoMainSchedule
+	subjects = await scheduleEnumSubjects(standart_schedule, 0)
+
+	l = len(first)
+	for i in range(l):
+		subject = " ".join(first[:i+1]).lower()
+		if subject in subjects:
+			offset = i
+			break
+	else:
+		max_similarity = 0
+		best_subject = None
+		for sub in subjects:
+			sim = SequenceMatcher(None, sub, first[0].lower()).ratio()
+			if sim > max_similarity:
+				max_similarity = sim
+				best_subject = sub
+		subject = best_subject
+		subject_invalid = first[0]
+
+	if subject_invalid:
+		raise InvalidSubject(
+			subject_invalid = subject_invalid,
+			task = task,
+			subject = subject,
+			weekday = weekday,
+			date = date
+		)
+
+	if offset < l-1:
+		if first[offset+1].lower() == 'воскресенье':
+			raise SundayException()
+		if first[offset+1].lower() in ms_regular.weekdays:
+			weekday = first[offset+1]
+		else:
+			try:
+				date = parse(first[offset+1])
+				print(date.date(), datetime.now().date(), date.date() < datetime.now().date())
+				if date.date() < datetime.now().date():
+					raise TimeTravel(first[offset+1])
+			except ParserError:
+				raise InvalidDate(first[offset+1])
+
+	return (subject, task, weekday, date)
+
+
+async def homeworkFindSubject():
+	pass

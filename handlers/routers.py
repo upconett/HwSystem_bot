@@ -21,18 +21,26 @@ router_private_groupAdmin.message.filter(ChatType(chat_types=['private'], data_t
 
 
 # <---------- Group/supergroup routers ---------->
-#     <- Router for private chat ->
+#     <- Router for group chat ->
 router_chat = Router()
-# router_chat.my_chat_member.filter(ChatType(chat_types=['group', 'supergroup'], data_type='message'))
+router_chat.my_chat_member.filter(ChatType(chat_types=['group', 'supergroup'], data_type='message'))
+router_chat.message.filter(ChatType(chat_types=['group', 'supergroup'], data_type='message'))
+router_chat.callback_query.filter(ChatType(chat_types=['group', 'supergroup'], data_type='callback_query'))
 
-#     <- Router for private chat and group admin, chat admin if bot is admin ->
+#     <- Router for group chat and group admin, chat admin if bot is admin ->
 router_chat_complex = Router()
 router_chat_complex.callback_query.filter(
-	# ChatType(chat_types=['group', 'supergroup'], data_type='callback_query'),
+	ChatType(chat_types=['group', 'supergroup'], data_type='callback_query'),
 	BotIsAdministrator(flag=True, data_type='callback_query'),
 	UserIsChatAdmin(flag=True, data_type='callback_query'),
 	UserPresenceInGroup(flag=True)
 )
+
+#	  <- Router for group chat, registered, in_group ->
+router_chat_in_group = Router()
+router_chat_in_group.message.filter(UserPresenceInGroup())
+router_chat_in_group.callback_query.filter(UserPresenceInGroup())
+router_chat.include_router(router_chat_in_group)
 
 
 # <---------- Reg/unreg routers ---------->
