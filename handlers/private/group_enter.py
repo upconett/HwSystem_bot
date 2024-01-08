@@ -14,19 +14,19 @@ from data_base import operations
 
 
 # <---------- Variables ---------->
-filename = 'group_create.py'
+filename = 'group_enter.py'
 
 
 # <---------- FSM machine ---------->
-class FSMGroupRegister(StatesGroup):
+class FSMGroupEnter(StatesGroup):
 	name = State()
 	password = State()
 
 
 # <---------- Main functions ---------->
-async def callback_query_registerGroupStart(callback_query: types.CallbackQuery, state: FSMContext):
+async def callback_query_enterGroupStart(callback_query: types.CallbackQuery, state: FSMContext):
 	"""
-	Starts group registration FSM machine from callback button.
+	Starts group entry FSM machine from callback button.
 	:param state:
 	:param callback_query:
 	:return:
@@ -39,47 +39,51 @@ async def callback_query_registerGroupStart(callback_query: types.CallbackQuery,
 		)
 		await bot.send_message(
 			chat_id=callback_query.from_user.id,
-			text=ms_private.groupRegisterName,
+			text=ms_private.groupEnterName,
 			reply_markup=kb_private.reply_cancel
 		)
-		await state.set_state(FSMGroupRegister.name)
+		await state.set_state(FSMGroupEnter.name)
 		exception = ''
-		content = 'Started group registration.'
+		content = 'Group entry start.'
 	except Exception as exc:
 		exception = exc
 		content = ''
 	await ut_logger.create_log(
 		id=callback_query.from_user.id,
 		filename=filename,
-		function='callback_query_registerGroupStart',
+		function='callback_query_enterGroupStart',
 		exception=exception,
 		content=content
 	)
 
 
-async def message_registerGroupStart(message: types.Message, state: FSMContext):
+async def message_enterGroupStart(message: types.Message, state: FSMContext):
 	"""
-	Starts group registration FSM machine.
+	Starts group entry FSM machine.
 	:param message:
 	:param state:
 	:return:
 	"""
 	try:
-		await message.delete()
-		await message.answer(
-			text=ms_private.groupRegisterName,
+		await bot.delete_message(
+			chat_id=message.from_user.id,
+			message_id=message.message_id
+		)
+		await bot.send_message(
+			chat_id=message.from_user.id,
+			text=ms_private.groupEnterName,
 			reply_markup=kb_private.reply_cancel
 		)
-		await state.set_state(state=FSMGroupRegister.name)
+		await state.set_state(FSMGroupEnter.name)
 		exception = ''
-		content = 'Started group registration.'
+		content = 'Group entry start.'
 	except Exception as exc:
 		exception = exc
 		content = ''
 	await ut_logger.create_log(
 		id=message.from_user.id,
 		filename=filename,
-		function='message_registerGroupStart',
+		function='message_enterGroupStart',
 		exception=exception,
 		content=content
 	)
@@ -119,7 +123,7 @@ async def FSM_message_cancel(message: types.Message, state: FSMContext):
 	)
 
 
-async def FSM_message_registerGroupName(message: types.Message, state: FSMContext):
+async def FSM_message_enterGroupName(message: types.Message, state: FSMContext):
 	"""
 	Set name for group.
 	:param message:
@@ -127,14 +131,27 @@ async def FSM_message_registerGroupName(message: types.Message, state: FSMContex
 	:return:
 	"""
 	try:
-		await state.update_data(name=message.text)
-		await message.answer(
-			text=ms_private.groupRegisterPassword,
-			reply_markup=kb_private.reply_cancel
+		response = await psql.select(
+			table='groups',
+			what='*',
+			where='group_name',
+			where_value=message.text
 		)
-		await state.set_state(state=FSMGroupRegister.password)
+		if response:
+			await state.update_data(name=message.text)
+			await message.answer(
+				text=ms_private.groupEnterPassword,
+				reply_markup=kb_private.reply_cancel
+			)
+			await state.set_state(state=FSMGroupEnter.password)
+			content = f'Chosen group "{message.text}".'
+		else:
+			await message.answer(
+				text=ms_private.groupEnterName_noGroup,
+				reply_markup=kb_private.reply_cancel
+			)
+			content = f'No group with name "{message.text}".'
 		exception = ''
-		content = f'Set group name "{message.text}".'
 	except Exception as exc:
 		exception = exc
 		content = ''
@@ -147,7 +164,7 @@ async def FSM_message_registerGroupName(message: types.Message, state: FSMContex
 	)
 
 
-async def FSM_message_registerGroupPassword(message: types.Message, state: FSMContext):
+async def FSM_message_enterGroupPassword(message: types.Message, state: FSMContext):
 	"""
 	Set password for group.
 	:param message:
@@ -155,45 +172,42 @@ async def FSM_message_registerGroupPassword(message: types.Message, state: FSMCo
 	:return:
 	"""
 	try:
-		await state.update_data(password=message.text)
 		data = await state.get_data()
-		await operations.insertGroup(
-			group_name=data['name'],
-			group_password=data['password'],
-			owner_id=message.from_user.id,
-		)
-		group_id = (await psql.select(
+		response = (await psql.select(
 			table='groups',
-			what='group_id',
+			what='*',
 			where='group_name',
 			where_value=data['name']
-		))[0]
-		await psql.update(
-			table='users',
-			what='group_id',
-			what_value=group_id,
-			where='id',
-			where_value=message.from_user.id
-		)
-		group_name = await ut_handlers.ut_filterForMDV2(data['name'])
-		group_password = await ut_handlers.ut_filterForMDV2(data['password'])
-		text = await ms_private.groupRegisterFinish(
-			group_name=group_name,
-			group_password=group_password
-		)
-		await message.answer(
-			text=ms_private.groupRegisterPassword_set,
-			reply_markup=kb_private.reply_commandStartOrHelp
-		)
-		await message.answer(
-			text=text,
-			reply_markup=kb_private.inline_groupPanelForOwner,
-			parse_mode='MarkdownV2'
-		)
-		await message.delete()
-		await state.clear()
+		))
+		if response[0][2] == message.text:
+			await state.update_data(password=message.text)
+			await psql.update(
+				table='users',
+				what='group_id',
+				what_value=response[0][0],
+				where='id',
+				where_value=message.from_user.id
+			)
+			text = await ms_private.groupEnterFinish(group_name=response[0][1])
+			await message.answer(
+				text=ms_private.groupEnterPassword_correct,
+				reply_markup=kb_private.reply_commandStartOrHelp
+			)
+			await message.answer(
+				text=text,
+				reply_markup=kb_private.inline_groupPanelForMember
+			)
+			await message.delete()
+			await state.clear()
+			content = 'Entered group.'
+		else:
+			await message.answer(
+				text=ms_private.groupEnterPassword_incorrect,
+				reply_markup=kb_private.reply_cancel
+			)
+			content = f'Incorrect password for group "{response[0][1]}".'
+			await message.delete()
 		exception = ''
-		content = 'Registered group.'
 	except Exception as exc:
 		exception = exc
 		content = ''
@@ -214,8 +228,8 @@ def register_handlers(router: Router):
 	:param router:
 	:return:
 	"""
-	router.callback_query.register(callback_query_registerGroupStart, F.data == 'CreateGroup')
-	router.message.register(message_registerGroupStart, ut_filters.TextEquals(list_ms=ms_regular.groupRegistration, data_type='message'))
+	router.callback_query.register(callback_query_enterGroupStart, F.data == 'EnterGroup')
+	router.message.register(message_enterGroupStart, ut_filters.TextEquals(list_ms=ms_regular.groupEntry, data_type='message'))
 	router.message.register(FSM_message_cancel, ut_filters.TextEquals(list_ms=ms_regular.FSM_cancel, data_type='message'), StateFilter('*'))
-	router.message.register(FSM_message_registerGroupName, FSMGroupRegister.name)
-	router.message.register(FSM_message_registerGroupPassword, FSMGroupRegister.password)
+	router.message.register(FSM_message_enterGroupName, FSMGroupEnter.name)
+	router.message.register(FSM_message_enterGroupPassword, FSMGroupEnter.password)

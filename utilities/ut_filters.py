@@ -10,6 +10,7 @@ from create_bot import psql
 
 # <---------- Variables ---------->
 filename = 'ut_filters.py'
+__all__ = ['ChatType', 'BotIsAdministrator', 'TextEquals', 'UserIsChatAdmin', 'UserRegister', 'UserIsGroupAdmin', 'UserIsGroupOwner', 'UserPresenceInGroup']
 
 
 # <---------- Filter classes ---------->
