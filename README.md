@@ -40,5 +40,4 @@ pip install -r requirements.txt
 **Install** and setup **PostgreSQL** and **MongoDB**.\
 Create **blank databases** with the **same name** and create **similar users** there.\
 Make shure db servers **work properly** because they are used in **startupConfiguration**.\
-\
-Add **config.json, venv, .idea, .git** and **.gitignore** to .gitignore
+\
