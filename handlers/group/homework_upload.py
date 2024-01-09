@@ -35,15 +35,13 @@ async def UploadApprove(state: FSMContext, message: types.Message = None, query:
 			subject = data['subject'],
 			date = data['date'],
 			weekday = data['weekday']
-		)
-		
+		)	
 		if message:
 			await message.answer(
 				f'Найден урок {data["subject"].capitalize()}!\n'
 				f'{ms_regular.weekdays[result["weekday"]].capitalize()} {result["lesson"]} урок\n'
 				f'{result["date"].day} числа, {result["date"].month} месяца'
 			)
-
 		else:
 			await query.message.edit_text(
 				text=(
