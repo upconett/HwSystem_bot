@@ -74,6 +74,10 @@ async def FSM_message_textUpload(message: types.Message, state: FSMContext):
 		await message.answer(exc.text)
 		exception = ''
 		content = 'User provided no task.'
+	except NoMainSchedule as exc:
+		await message.answer(exc.text)
+		exception = ''
+		content = 'Main Schedule is not set.'
 	except InvalidSubject as exc:
 		await message.answer(
 			text=exc.text,

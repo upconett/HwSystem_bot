@@ -191,7 +191,7 @@ async def homeworkExtractData(id: int, text: str) -> tuple():
 
 	standart_schedule = await getMainSchedule(id)
 	# print(standart_schedule)
-	if standart_schedule is None:
+	if standart_schedule is None or standart_schedule == {}:
 		raise NoMainSchedule
 	subjects = await scheduleEnumSubjects(standart_schedule, 0)
 
