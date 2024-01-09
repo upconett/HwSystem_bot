@@ -47,7 +47,44 @@ groupRegisterName = (
 
 groupRegisterPassword = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
-	'Отлично, теперь давайте пароль!'
+	'Чудное название, теперь давайте придумаем пароль!'
+)
+
+
+groupRegisterPassword_set = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Пароль задан!'
+)
+
+
+#         <- group_enter.py ->
+groupEnterName = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Название группы, в которую хотите войти 👇'
+)
+
+
+groupEnterName_noGroup = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Группы с таким названием нет 🧐\n'
+	'Попробуйте ещё раз 👇'
+)
+
+
+groupEnterPassword = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Отлично, теперь введите пароль от данной группы!'
+)
+
+
+groupEnterPassword_incorrect = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Пароль неверный!'
+)
+
+groupEnterPassword_correct = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Пароль верный!'
 )
 
 
@@ -119,7 +156,16 @@ async def scheduleAppearance(schedule: str):
 #         <- group_create.py ->
 async def groupRegisterFinish(group_name: str, group_password: str):
 	return (
+		f'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
 		f'Отлично, группа создана ✅\n'
 		f'Название группы: *{group_name}*\n'
 		f'Установлен пароль: *||{group_password}||*'
+	)
+
+
+#         <- group_enter.py ->
+async def groupEnterFinish(group_name: str):
+	return (
+		f'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+		f'Теперь вы состоите в группе: <b>{group_name}</b>'
 	)

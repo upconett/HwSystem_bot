@@ -84,7 +84,7 @@ async def groupPanel(id: int, message_id: int = None):
 		))[0][0]
 		if is_owner == id:
 			text = ms_private.groupPanel_forOwner
-			reply_markup = kb_private.inline_GroupPanelForOwner
+			reply_markup = kb_private.inline_groupPanelForOwner
 			content = 'Called the group panel as the creator of the group.'
 		else:
 			text = ms_private.groupPanel_forMember

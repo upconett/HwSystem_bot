@@ -9,7 +9,7 @@ __all__ = [
 	'inline_groupPanel',
 	'inline_groupPanelForNotMember',
 	'inline_groupPanelForMember',
-	'inline_GroupPanelForOwner',
+	'inline_groupPanelForOwner',
 	'inline_mainScheduleApprove',
 	'inline_mainScheduleDays',
 ]
@@ -56,7 +56,7 @@ inline_groupPanelForMember = InlineKeyboardMarkup(inline_keyboard=[[btn_inline_l
 
 btn_inline_deleteGroup = InlineKeyboardButton(text='🚪 Удалить', callback_data=f'DeleteGroup')
 btn_inline_changeOwner = InlineKeyboardButton(text='🔑 Передать права', callback_data=f'ChangeOwner')
-inline_GroupPanelForOwner = InlineKeyboardMarkup(
+inline_groupPanelForOwner = InlineKeyboardMarkup(
 	inline_keyboard=[
 		[btn_inline_deleteGroup],
 		[btn_inline_changeOwner]
