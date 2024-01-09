@@ -48,7 +48,7 @@ async def scheduleMessageToDict(text: str, mode: int) -> dict:
 				weekday = line.capitalize()
 				result[weekday] = {}
 				for i in range(11):
-					result[weekday][str(i)] = {'subject': None}
+					result[weekday][str(i)] = None
 			elif line.replace(' ', '') != '':
 				if weekday:
 					if len(line.split()) < 2:
@@ -64,7 +64,7 @@ async def scheduleMessageToDict(text: str, mode: int) -> dict:
 						subject = " ".join([x for x in line.split()[1:]]).lower()
 						if subject == '-':
 							subject = None
-						result[weekday][str(int(lesson_num))]['subject'] = subject
+						result[weekday][str(int(lesson_num))] = subject
 				else:
 					raise InvalidWeekDay(num, line)
 		if len(result) < 5:
@@ -86,7 +86,7 @@ async def scheduleMessageToDict(text: str, mode: int) -> dict:
 					subject = " ".join([x for x in line.split()[1:]]).lover()
 					if subject == '-':
 						subject = None
-					result[str(int(lesson_num))] = {'subject': subject}
+					result[str(int(lesson_num))] = subject
 	else:
 		raise ValueError('Mode can be [0,1]')
 	return result
@@ -105,14 +105,14 @@ async def scheduleDictToMessage(schedule: dict, mode: int) -> str:
 	result = ''
 	if mode == 0:
 		for day in schedule:
-			lesson_nums = [x for x in schedule[day] if schedule[day][x]['subject'] is not None]
+			lesson_nums = [x for x in schedule[day] if schedule[day][x] is not None]
 			for i, j in enumerate(lesson_nums):
 				lesson_nums[i] = int(j)
 			end = max(lesson_nums)
 			result += f'<b>{day}</b>\n'
 			for lesson in schedule[day]:
 				if int(lesson) in range(0, end+1):
-					subject = schedule[day][lesson]['subject']
+					subject = schedule[day][lesson]
 					if lesson == '0' and subject is None:
 						continue
 					if subject is None:
@@ -121,14 +121,14 @@ async def scheduleDictToMessage(schedule: dict, mode: int) -> str:
 			result += '\n'
 	elif mode == 1:
 		for day in schedule:
-			lesson_nums = map(int(), [x for x in schedule[day] if schedule[x]['subject'] is not None])
+			lesson_nums = map(int(), [x for x in schedule[day] if schedule[x] is not None])
 			for i, j in enumerate(lesson_nums):
 				lesson_nums[i] = int(j)
 			end = max(lesson_nums)
 			result += f'<b>{day}</b>\n'
 			for lesson in schedule:
 				if int(lesson) in range(0, end+1):
-					subject = schedule[lesson]['subject']
+					subject = schedule[lesson]
 					if lesson == '0' and subject is None:
 						continue
 					if subject is None:
@@ -155,12 +155,12 @@ async def scheduleEnumSubjects(schedule: dict, mode: int) -> list[str]:
 	if mode == 0:
 		for day in schedule:
 			for lesson in schedule[day]:
-				subject = schedule[day][lesson]['subject']
+				subject = schedule[day][lesson]
 				if subject is not None and subject not in result:
 					result.append(subject)
 	elif mode == 1:
 		for lesson in schedule:
-			subject = schedule[lesson]['subject']
+			subject = schedule[lesson]
 			if subject is not None and subject not in result:
 				result.append(subject)
 	else:

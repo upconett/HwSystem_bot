@@ -258,13 +258,13 @@ async def setMainSchedule(id: int, data: dict):
 		return False
 
 
-async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: str = None) -> dict[datetime, int]:
+async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: str = None) -> dict[datetime, int, int]:
 	"""
 	Finds next lesson in MainSchedule.
 	:param id: User id
 	:param subject: Subject to find
 	:param date_str: Date when to seek
-	:return: Dict with date and lesson num
+	:return: Dict with date, weekday and lesson
 	"""
 	date_now = datetime.now()
 	result = {
@@ -280,7 +280,7 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 			raise SundayException
 		day = list(weekdays)[wd]
 		for lesson in schedule[day]:
-			if schedule[day][lesson]['subject'] == subject:
+			if schedule[day][lesson] == subject:
 				result['date'] = date
 				result['weekday'] = wd
 				result['lesson'] = int(lesson)
@@ -299,7 +299,7 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 			else:
 				date = datetime.now() + timedelta(days = ((6 - wd_now) + wd))
 		for lesson in schedule[weekday]:
-			if schedule[weekday][lesson]['subject'] == subject:
+			if schedule[weekday][lesson] == subject:
 				result['date'] = date
 				result['weekday'] = wd
 				result['lesson'] = int(lesson)
@@ -314,7 +314,7 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 		for i in range(2):
 			for day in list(weekdays)[wd:]:
 				for lesson in schedule[day]:
-					if schedule[day][lesson]['subject'] == subject:
+					if schedule[day][lesson] == subject:
 						result['date'] = date
 						result['weekday'] = date.weekday()
 						result['lesson'] = int(lesson)
@@ -325,15 +325,28 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 	return result
 
 
-async def getHomework(id: int, date: datetime = None, weekday: str = None):
-	group_id = (psql.select(
+async def getHomework(id: int, date: datetime, subject: str = None):
+	group_id = (await psql.select(
 		'users',
 		'group_id',
 		'id', id
-	))[0]
-	group_name = (psql.select(
+	))[0][0]
+	group_name = (await psql.select(
 		'groups',
 		'group_name',
 		'group_id', group_id
-	))[0]
-	# mndb.db.get_collection(group_name)
+	))[0][0]
+	collections = mndb.db.list_collection_names()
+	if group_name not in collections:
+		raise Exception(f'MongoDB has no collection named {group_name}')
+	coll = mndb.db.get_collection(group_name)
+	if date:
+		print(date.strftime('%d.%m.%Y'))
+		record = coll.find_one({'date': date.strftime('%d.%m.%Y')})
+	else:
+		raise ValueError('Date must be here!')
+	if not record: return record
+	homework = record['tasks']
+	if subject:
+		return homework[subject]
+	return homework

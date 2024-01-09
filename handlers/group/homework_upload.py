@@ -5,8 +5,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
 # <---------- Local modules ---------->
+from create_bot import bot
 from utilities import ut_logger, ut_handlers
 from data_base import operations
+from messages.ms_private import homeworkUploadRewrite
 from exceptions.ex_handlers import *
 
 # <---------- Variables ---------->
@@ -28,25 +30,74 @@ async def UploadApprove(state: FSMContext, message: types.Message = None, query:
 		else:
 			id = query.from_user.id
 		result = await operations.findNextLesson(
-			id = id,
-			subject = data['subject'],
-			date = data['date'],
-			weekday = data['weekday']
-		)	
-		if message:
-			await message.answer(
-				f'Найден урок {data["subject"].capitalize()}!\n'
-				f'{ms_regular.weekdays[result["weekday"]].capitalize()} {result["lesson"]} урок\n'
-				f'{result["date"].day} числа, {result["date"].month} месяца'
+			id=id,
+			subject=data['subject'],
+			date=data['date'],
+			weekday=data['weekday']
+		)
+		if result:
+			hw = await operations.getHomework(
+				id=id,
+				date=result['date'],
+				subject=data['subject']
 			)
-		else:
-			await query.message.edit_text(
-				text=(
-					f'Найден урок {data["subject"].capitalize()}!\n'
-					f'{ms_regular.weekdays[result["weekday"]].capitalize()} {result["lesson"]} урок\n'
-					f'{result["date"].day} числа, {result["date"].month} месяца'
-				)
-			)
+			if hw['task'] is not None or hw['photo'] is not None:
+				if hw['photo']:
+					if message:
+						await message.answer_photo(
+							photo=hw['photo'],
+							caption=await homeworkUploadRewrite(
+								date=result['date'],
+								subject=data['subject'],
+								hw=hw
+							),
+							reply_markup=inline_HomeworkApprove
+						)
+					else:
+						await query.message.answer_photo(
+							photo=hw['photo'],
+							caption=await homeworkUploadRewrite(
+								date=result['date'],
+								subject=data['subject'],
+								hw=hw
+							),
+							reply_markup=inline_HomeworkApprove
+						)
+						await query.message.delete()
+				else:
+					if message:
+						await message.answer(
+							text=await homeworkUploadRewrite(
+								date=result['date'],
+								subject=data['subject'],
+								hw=hw
+							),
+							reply_markup=inline_HomeworkApprove
+						)
+					else:
+						query.message.edit_text(
+							text=await homeworkUploadRewrite(
+								date=result['date'],
+								subject=data['subject'],
+								hw=hw
+							),
+							reply_markup=inline_HomeworkApprove
+						)
+
+		# if message:
+			# await message.answer(
+				# f'Найден урок {data["subject"].capitalize()}!\n'
+				# f'{ms_regular.weekdays[result["weekday"]].capitalize()} {result["lesson"]} урок\n'
+				# f'{result["date"].day} числа, {result["date"].month} месяца'
+			# )
+		# else:
+			# await query.message.edit_text(
+				# text=(
+					# f'Найден урок {data["subject"].capitalize()}!\n'
+					# f'{ms_regular.weekdays[result["weekday"]].capitalize()} {result["lesson"]} урок\n'
+					# f'{result["date"].day} числа, {result["date"].month} месяца'
+				# )
+			# )
 	except SundayException as exc:
 		await message.answer(text=exc.alt)
 	except NoLessonAtWeekday as exc:
@@ -129,25 +180,27 @@ async def FSM_message_textUpload(message: types.Message, state: FSMContext):
 	)
 
 
-# async def 
-
 async def FSM_callback_query_MistakeCorrect(query: types.CallbackQuery, state: FSMContext):
 	data = await state.get_data()
 	if data['message_id'] != query.message.message_id:
 		await query.answer()
 		return
-	await query.message.edit_text(
-		text=f'Дз на {data["subject"]}',
-		reply_markup=None
-	)
+	# await query.message.edit_text(
+		# text=f'Дз на {data["subject"]}',
+		# reply_markup=None
+	# )
 	await state.set_state(UploadHomeworkFSM.hw_approve)
 	await UploadApprove(
 		query=query,
 		state=state
 	)
 
+async def p(message: types.Message):
+	print(message.photo[-1])
+
 
 # <---------- Handlers registration ---------->
 def register_handlers(router: Router):
+	router.message.register(p, F.photo)
 	router.callback_query.register(FSM_callback_query_MistakeCorrect, F.data == 'HomeworkAccept', StateFilter(UploadHomeworkFSM.hw_mistake))
 	router.message.register(FSM_message_textUpload, F.text.startswith(ms_regular.hw_keywords))
