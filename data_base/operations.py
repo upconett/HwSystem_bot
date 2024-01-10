@@ -5,8 +5,8 @@ from create_bot import mndb
 from exceptions.ex_handlers import SundayException, NoLessonAtWeekday
 
 # <---------- Python modules ---------->
-from datetime import datetime
-from datetime import timedelta
+import json
+from datetime import datetime, timedelta
 
 
 # <---------- Variables ---------->
@@ -87,7 +87,7 @@ async def userData(id: int, formatted: bool = False) -> dict:
 	))
 	if not formatted:
 		if not response:
-			response = [id, '', '', '', '', '']
+			response = [id, None, None, None, None, None]
 		else:
 			response = [response[0][0], response[0][1], response[0][2], response[0][3], response[0][4], response[0][5]]
 			response[5] = response[5].strftime('%Y-%m-%d %H:%M:%S')
@@ -225,7 +225,10 @@ async def getMainSchedule(id: int) -> dict:
 			where='group_id',
 			where_value=group_id
 		))[0]
-		return schedule[0]
+		if schedule:
+			return schedule[0]
+		else:
+			return None
 	except Exception as exception:
 		print(f'FILENAME="{filename}"; FUNCTION="getMainSchedule"; CONTENT=""; EXCEPTION="{exception}";')
 		return False
@@ -325,6 +328,28 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 	return result
 
 
+async def generateMongoRecord(date: str, weekday: int, schedule: dict, breaks: dict = None, subject: str = None, task: str = None, photo: str = None) -> dict:
+	tasks = {}
+	for lesson in schedule:
+		task[schedule[lesson]] = {
+			'task': None, 
+			'photo': None
+		}
+	if subject:
+		task[subject] = {
+			'task': task,
+			'photo': photo
+		}
+	result = {
+		'date': date,
+		'weekday': weekday,
+		'schedule': schedule,
+		'breaks': breaks,
+		'tasks': tasks
+	}
+	return result
+
+
 async def getHomework(id: int, date: datetime, subject: str = None):
 	group_id = (await psql.select(
 		'users',
@@ -341,7 +366,6 @@ async def getHomework(id: int, date: datetime, subject: str = None):
 		raise Exception(f'MongoDB has no collection named {group_name}')
 	coll = mndb.db.get_collection(group_name)
 	if date:
-		print(date.strftime('%d.%m.%Y'))
 		record = coll.find_one({'date': date.strftime('%d.%m.%Y')})
 	else:
 		raise ValueError('Date must be here!')
@@ -350,3 +374,42 @@ async def getHomework(id: int, date: datetime, subject: str = None):
 	if subject:
 		return homework[subject]
 	return homework
+
+
+async def setHomework(id: int, date: datetime, subject: str, task: str = None, photo: str = None):
+	group_id = (await psql.select(
+		'users',
+		'group_id',
+		'id', id
+	))[0][0]
+	group_name = (await psql.select(
+		'groups',
+		'group_name',
+		'group_id', group_id
+	))[0][0]
+	collections = mndb.db.list_collection_names()
+	if group_name not in collections:
+		raise Exception(f'MongoDB has no collection named {group_name}')
+	coll = mndb.db.get_collection(group_name)
+	record = coll.find_one({'date': date.strftime('%d.%m.%Y')})
+	if not record:
+		schedule = await getMainSchedule(id)
+		weekday = list(schedule.keys())[date.weekday()]
+		coll.insert_one(await generateMongoRecord(
+			date=date.strftime('%d.%m.%Y'),
+			weekday=date.weekday(),
+			schedule=schedule[weekday],
+			subject=subject,
+			task=task,
+			photo=photo
+		))
+	else:
+		modified = record
+		modified['tasks'][subject] = {
+			'task': task,
+			'photo': photo
+		}
+		coll.replace_one(
+			filter={'date': record['date']},
+			replacement=modified
+		)

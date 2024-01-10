@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 # <---------- Local modules ---------->
-from messages.ms_regular import months_genitive
+from messages.ms_regular import months_genitive, weekdays
 
 
 # <---------- Simple messages ---------->
@@ -179,13 +179,34 @@ async def groupEnterFinish(group_name: str):
 	)
 
 
+async def homeworkUpload(date: datetime, subject:str):
+	month = months_genitive[date.month-1]
+	weekday = weekdays[date.weekday()]
+	result = (
+		f'<b>Задание сохранено ✅</b>\n'
+		f'{weekday.capitalize()} ({date.day} {month} {date.year})'
+	)
+	return result
+
+
+async def homeworkReUpload(date: datetime, subject:str):
+	month = months_genitive[date.month-1]
+	weekday = weekdays[date.weekday()]
+	result = (
+		f'<b>Задание перезаписано ✅</b>\n'
+		f'{weekday.capitalize()} ({date.day} {month} {date.year})'
+	)
+	return result
+
+
 async def homeworkUploadRewrite(date: datetime, subject:str, hw: dict):
 	month = months_genitive[date.month-1]
+	weekday = weekdays[date.weekday()]
 	result = (
-		f'<b>{subject.capitalize()}</b> ({date.day} {month} {date.year})\n'
-		f'Похоже задание на этот урок уже было записано:\n'
-		'----------\n'
-		f'{hw["task"]}\n\n'
+		f'<b>{subject.capitalize()}</b>\n'
+		f'{weekday.capitalize()} ({date.day} {month} {date.year})\n'
+		f'Похоже задание на этот урок уже было записано:\n\n'
+		f'<em>{hw["task"]}</em>\n\n'
 		'<b>Перезаписать?</b> ✏️'
 	)
 	return result

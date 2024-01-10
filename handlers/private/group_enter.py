@@ -43,6 +43,7 @@ async def callback_query_enterGroupStart(callback_query: types.CallbackQuery, st
 			reply_markup=kb_private.reply_cancel
 		)
 		await state.set_state(FSMGroupEnter.name)
+		print('state SET', state)
 		exception = ''
 		content = 'Group entry start.'
 	except Exception as exc:
@@ -131,6 +132,7 @@ async def FSM_message_enterGroupName(message: types.Message, state: FSMContext):
 	:return:
 	"""
 	try:
+		print('nic')
 		response = await psql.select(
 			table='groups',
 			what='*',
@@ -228,8 +230,8 @@ def register_handlers(router: Router):
 	:param router:
 	:return:
 	"""
-	router.callback_query.register(callback_query_enterGroupStart, F.data == 'EnterGroup')
-	router.message.register(message_enterGroupStart, ut_filters.TextEquals(list_ms=ms_regular.groupEntry, data_type='message'))
-	router.message.register(FSM_message_cancel, ut_filters.TextEquals(list_ms=ms_regular.FSM_cancel, data_type='message'), StateFilter('*'))
 	router.message.register(FSM_message_enterGroupName, FSMGroupEnter.name)
 	router.message.register(FSM_message_enterGroupPassword, FSMGroupEnter.password)
+	router.message.register(message_enterGroupStart, ut_filters.TextEquals(list_ms=ms_regular.groupEntry, data_type='message'))
+	router.message.register(FSM_message_cancel, ut_filters.TextEquals(list_ms=ms_regular.FSM_cancel, data_type='message'), StateFilter('*'))
+	router.callback_query.register(callback_query_enterGroupStart, F.data == 'EnterGroup')

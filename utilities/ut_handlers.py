@@ -237,6 +237,3 @@ async def homeworkExtractData(id: int, text: str) -> tuple():
 
 	return (subject, task, weekday, date)
 
-
-async def homeworkFindSubject():
-	pass

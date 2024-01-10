@@ -129,7 +129,7 @@ class UserRegister(BaseFilter):
         """
         try:
             response = await operations.userData(id=data.from_user.id)
-            result = response['username'] is not None
+            result = response['date'] is not None
             print(f'UserRegister {data.from_user.id} >> {result}')
             return result
         except Exception as exception:
@@ -150,6 +150,7 @@ class UserPresenceInGroup(BaseFilter):
         """
         try:
             response = await operations.userData(id=data.from_user.id)
+            print('GGF', response)
             result = response['group_id'] is not None
             print(f'UserPresenceInGroup {data.from_user.id} >> {result}')
             return result
