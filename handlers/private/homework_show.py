@@ -15,3 +15,7 @@ from exceptions.ex_handlers import *
 
 # <---------- Variables ---------->
 filename = 'homework_show.py'
+
+
+# <---------- Handlers homework ---------->
+async def message_homeworkShow

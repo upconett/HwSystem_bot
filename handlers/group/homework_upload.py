@@ -36,7 +36,7 @@ async def cleanup(messages):
 
 
 # <---------- Homework uploading ---------->
-async def message_UploadApprove(state: FSMContext, message: types.Message):
+async def message_uploadApprove(state: FSMContext, message: types.Message):
 	try:
 		data = await state.get_data()
 		result = await operations.findNextLesson(
@@ -147,7 +147,7 @@ async def message_UploadApprove(state: FSMContext, message: types.Message):
 		await message.answer(text=exc.text)
 
 
-async def callback_query_UploadApprove(state: FSMContext, query: types.CallbackQuery):
+async def callback_query_uploadApprove(state: FSMContext, query: types.CallbackQuery):
 	try:
 		data = await state.get_data()
 		result = await operations.findNextLesson(
@@ -260,7 +260,7 @@ async def callback_query_UploadApprove(state: FSMContext, query: types.CallbackQ
 		await query.message.answer(text=exc.text)
 
 
-async def FSM_callback_query_UploadEdit(query: types.CallbackQuery, state: FSMContext):
+async def FSM_callback_query_uploadEdit(query: types.CallbackQuery, state: FSMContext):
 	try:	
 		data = await state.get_data()
 		try: data['task']
@@ -303,20 +303,20 @@ async def FSM_callback_query_UploadEdit(query: types.CallbackQuery, state: FSMCo
 	await ut_logger.create_log(
 		id=query.from_user.id,
 		filename=filename,
-		function='FSM_callback_query_UploadSubmit',
+		function='FSM_callback_query_uploadSubmit',
 		exception=exception,
 		content=content
 	)
 
 
-async def FSM_callback_query_MistakeCorrect(query: types.CallbackQuery, state: FSMContext):
+async def FSM_callback_query_mistakeCorrect(query: types.CallbackQuery, state: FSMContext):
 	try:
 		data = await state.get_data()
 		if data['message_id'] != query.message.message_id:
 			await query.answer()
 			return
 		await state.set_state(UploadHomeworkFSM.hw_approve)
-		await callback_query_UploadApprove(
+		await callback_query_uploadApprove(
 			query=query,
 			state=state
 		)
@@ -330,14 +330,14 @@ async def FSM_callback_query_MistakeCorrect(query: types.CallbackQuery, state: F
 	await ut_logger.create_log(
 		id=query.from_user.id,
 		filename=filename,
-		function='FSM_callback_query_MistakeCorrect',
+		function='FSM_callback_query_mistakeCorrect',
 		exception=exception,
 		content=content
 	)
 
 
 
-async def FSM_callback_query_Decline(query: types.CallbackQuery, state: FSMContext):
+async def FSM_callback_query_decline(query: types.CallbackQuery, state: FSMContext):
 	try:
 		data = await state.get_data()
 		try:
@@ -354,13 +354,13 @@ async def FSM_callback_query_Decline(query: types.CallbackQuery, state: FSMConte
 	await ut_logger.create_log(
 		id=query.from_user.id,
 		filename=filename,
-		function='FSM_callback_query_Decline',
+		function='FSM_callback_query_decline',
 		exception=exception,
 		content=content
 	)
 
 
-async def FSM_callback_query_DontTouchButtons(query: types.CallbackQuery, state: FSMContext):
+async def FSM_callback_query_dontTouchButtons(query: types.CallbackQuery, state: FSMContext):
 	await query.answer(
 		'Не вы сейчас сохраняете задание!',
 		show_alert=True
@@ -380,7 +380,7 @@ async def FSM_message_textUpload(message: types.Message, state: FSMContext):
 			'weekday': weekday,
 			'date': date
 		})
-		await message_UploadApprove(
+		await message_uploadApprove(
 			message=message,
 			state=state
 		)
@@ -462,7 +462,7 @@ async def FSM_message_photosUpload(message: types.Message, state: FSMContext):
 			'weekday': weekday,
 			'date': date
 		})
-		await message_UploadApprove(
+		await message_uploadApprove(
 			message=message,
 			state=state
 		)
@@ -527,7 +527,7 @@ async def FSM_message_photosUpload(message: types.Message, state: FSMContext):
 	)
 	
 
-async def FSM_callback_query_UploadAdd(query: types.CallbackQuery, state: FSMContext):
+async def FSM_callback_query_uploadAdd(query: types.CallbackQuery, state: FSMContext):
 	try:
 		data = await state.get_data()
 		for key in ['tasks', 'photos', 'old_task', 'old_photos']:
@@ -581,12 +581,12 @@ async def FSM_callback_query_UploadAdd(query: types.CallbackQuery, state: FSMCon
 # <---------- Handlers registration ---------->
 def register_handlers(router: Router):
 	# router.message.register(p, F.photos)
-	router.callback_query.register(FSM_callback_query_MistakeCorrect, F.data == 'HomeworkAccept', StateFilter(UploadHomeworkFSM.hw_mistake))
-	router.callback_query.register(FSM_callback_query_UploadEdit, F.data == 'HomeworkEdit', StateFilter(UploadHomeworkFSM.hw_approve))
-	router.callback_query.register(FSM_callback_query_UploadAdd, F.data == 'HomeworkAdd', StateFilter(UploadHomeworkFSM.hw_approve))
-	router.callback_query.register(FSM_callback_query_Decline, F.data == 'HomeworkDecline', StateFilter(UploadHomeworkFSM))
+	router.callback_query.register(FSM_callback_query_mistakeCorrect, F.data == 'HomeworkAccept', StateFilter(UploadHomeworkFSM.hw_mistake))
+	router.callback_query.register(FSM_callback_query_uploadEdit, F.data == 'HomeworkEdit', StateFilter(UploadHomeworkFSM.hw_approve))
+	router.callback_query.register(FSM_callback_query_uploadAdd, F.data == 'HomeworkAdd', StateFilter(UploadHomeworkFSM.hw_approve))
+	router.callback_query.register(FSM_callback_query_decline, F.data == 'HomeworkDecline', StateFilter(UploadHomeworkFSM))
 
-	router.callback_query.register(FSM_callback_query_DontTouchButtons, F.data.startswith('Homework'))
+	router.callback_query.register(FSM_callback_query_dontTouchButtons, F.data.startswith('Homework'))
 
 	router.message.register(FSM_message_photosUpload, F.caption.startswith(ms_regular.hw_keywords)) #startswith(ms_regular.hw_keywords))
 	router.message.register(FSM_message_textUpload, F.text.startswith(ms_regular.hw_keywords))
