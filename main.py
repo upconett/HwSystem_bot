@@ -5,7 +5,8 @@ import asyncio
 # <---------- Local modules ---------->
 from create_bot import dp, bot, mndb, psql
 from handlers.routers import *
-from handlers.private import commands, default_schedule_upload, group_create, group_enter
+from handlers.private import commands, default_schedule_upload, group_create, group_enter,\
+	homework_show
 from handlers.group import group_start, homework_upload
 from utilities import ut_logger
 
@@ -49,6 +50,7 @@ async def main():
 	dp.include_routers(
 		router_chat_complex,
 		router_private_groupAdmin,
+		router_private_groupMember,
 		router_private_groupNotMember,
 		router_chat,
 		router_private,
@@ -62,6 +64,7 @@ async def main():
 		router1=router_chat_complex
 	)
 	homework_upload.register_handlers(router=router_chat_in_group)
+	homework_show.register_handlers(router=router_private_groupMember)
 	group_create.register_handlers(router=router_private_groupNotMember)
 	group_enter.register_handlers(router=router_private_groupNotMember)
 	default_schedule_upload.register_handlers(router=router_private_groupAdmin)

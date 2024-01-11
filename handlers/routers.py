@@ -19,6 +19,10 @@ router_private.message.filter(ChatType(chat_types=['private'], data_type='messag
 router_private_groupNotMember = Router()
 router_private_groupNotMember.message.filter(ChatType(chat_types=['private'], data_type='message'), ~UserPresenceInGroup())
 
+#     <- Router for private chat and group member ->
+router_private_groupMember = Router()
+router_private_groupMember.message.filter(ChatType(chat_types=['private'], data_type='message'), UserPresenceInGroup())
+
 #     <- Router for private chat and group admin ->
 router_private_groupAdmin = Router()
 router_private_groupAdmin.message.filter(ChatType(chat_types=['private'], data_type='message'), UserIsGroupAdmin())

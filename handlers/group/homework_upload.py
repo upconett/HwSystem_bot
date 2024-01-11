@@ -452,6 +452,14 @@ async def FSM_message_textUpload(message: types.Message, state: FSMContext):
 
 async def FSM_message_photosUpload(message: types.Message, state: FSMContext):
 	try:
+		if message.photo is None:
+			await message.answer(
+				text=(
+					'<b>Домашнее задание не сохранено</b> ❌\n'
+					'Пожалуйста, пришлите <em>сжатое изображение</em> 🙏'
+				)
+			)
+			return
 		subject, task, weekday, date = await ut_handlers.homeworkExtractData(message.from_user.id, message.caption)
 		await state.set_state(UploadHomeworkFSM.hw_approve)
 		await state.set_data({
@@ -588,5 +596,5 @@ def register_handlers(router: Router):
 
 	router.callback_query.register(FSM_callback_query_dontTouchButtons, F.data.startswith('Homework'))
 
-	router.message.register(FSM_message_photosUpload, F.caption.startswith(ms_regular.hw_keywords)) #startswith(ms_regular.hw_keywords))
-	router.message.register(FSM_message_textUpload, F.text.startswith(ms_regular.hw_keywords))
+	router.message.register(FSM_message_photosUpload, F.caption.lower().startswith(ms_regular.hw_keywords)) #startswith(ms_regular.hw_keywords))
+	router.message.register(FSM_message_textUpload, F.text.lower().startswith(ms_regular.hw_keywords))

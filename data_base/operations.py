@@ -354,7 +354,7 @@ def generateMongoRecord(date: str, weekday: int, schedule: dict, breaks: dict = 
 	return result
 
 
-async def getHomework(id: int, date: datetime, subject: str = None):
+async def getHomework(id: int, date: datetime = None, subject: str = None):
 	group_id = (await psql.select(
 		'users',
 		'group_id',
@@ -365,14 +365,13 @@ async def getHomework(id: int, date: datetime, subject: str = None):
 		'group_name',
 		'group_id', group_id
 	))[0][0]
+	if not date:
+		date = datetime.now() + timedelta(hours=12)
 	collections = mndb.db.list_collection_names()
 	if group_name not in collections:
 		raise Exception(f'MongoDB has no collection named {group_name}')
 	coll = mndb.db.get_collection(group_name)
-	if date:
-		record = coll.find_one({'date': date.strftime('%d.%m.%Y')})
-	else:
-		raise ValueError('Date must be here!')
+	record = coll.find_one({'date': date.strftime('%d.%m.%Y')})
 	if not record: return record
 	homework = record['tasks']
 	if subject:

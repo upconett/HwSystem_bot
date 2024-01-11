@@ -181,7 +181,7 @@ async def homeworkExtractData(id: int, text: str) -> tuple():
 	weekday = None
 	date = None
 
-	first = text.split('\n')[0]
+	first = text.split('\n')[0].lower()
 	if len(text.split('\n')) == 1:
 		task = None
 	else:
