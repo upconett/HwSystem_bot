@@ -210,8 +210,8 @@ def homeworkUploadRewrite(date: datetime, subject:str, hw: dict):
 		f'{weekday.capitalize()} ({date.day} {month} {date.year})\n'
 		f'Похоже задание на этот урок уже было записано:\n\n'
 		f'<em>{task}</em>\n\n'
-		'<b>Перезаписать</b> ✏️\n'
-		'<b>Добавить</b> ➕\n'
+		'<b>Перезаписать</b> 🆕\n'
+		'<b>Добавить</b> ✏️\n'
 		'<b>Отменить</b> ❌'
 	)
 	return result
