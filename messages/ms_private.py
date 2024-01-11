@@ -1,11 +1,3 @@
-# <---------- Python modules ---------->
-from datetime import datetime
-
-
-# <---------- Local modules ---------->
-from messages.ms_regular import months_genitive, weekdays
-
-
 # <---------- Simple messages ---------->
 #            <- commands.py ->
 commandStartOrHelp_forGroupMember = (
@@ -177,41 +169,3 @@ async def groupEnterFinish(group_name: str):
 		f'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
 		f'Теперь вы состоите в группе: <b>{group_name}</b>'
 	)
-
-
-def homeworkUpload(date: datetime, subject:str):
-	month = months_genitive[date.month-1]
-	weekday = weekdays[date.weekday()]
-	result = (
-		f'<b>Задание сохранено ✅</b>\n'
-		f'{weekday.capitalize()} ({date.day} {month} {date.year})'
-	)
-	return result
-
-
-def homeworkReUpload(date: datetime, subject:str):
-	month = months_genitive[date.month-1]
-	weekday = weekdays[date.weekday()]
-	result = (
-		f'<b>Задание перезаписано ✅</b>\n'
-		f'{weekday.capitalize()} ({date.day} {month} {date.year})'
-	)
-	return result
-
-
-def homeworkUploadRewrite(date: datetime, subject:str, hw: dict):
-	month = months_genitive[date.month-1]
-	weekday = weekdays[date.weekday()]
-	task = hw['task']
-	if task is None:
-		task = 'Фото ☝️'
-	result = (
-		f'<b>{subject.capitalize()}</b>\n'
-		f'{weekday.capitalize()} ({date.day} {month} {date.year})\n'
-		f'Похоже задание на этот урок уже было записано:\n\n'
-		f'<em>{task}</em>\n\n'
-		'<b>Перезаписать</b> 🆕\n'
-		'<b>Добавить</b> ✏️\n'
-		'<b>Отменить</b> ❌'
-	)
-	return result

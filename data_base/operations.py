@@ -328,7 +328,7 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 	return result
 
 
-async def generateMongoRecord(date: str, weekday: int, schedule: dict, breaks: dict = None, subject: str = None, task: str = None, photo: str = None) -> dict:
+def generateMongoRecord(date: str, weekday: int, schedule: dict, breaks: dict = None, subject: str = None, task: str = None, photos: list = None) -> dict:
 	tasks = {}
 	print(task)
 	for lesson in schedule:
@@ -336,12 +336,12 @@ async def generateMongoRecord(date: str, weekday: int, schedule: dict, breaks: d
 			continue
 		tasks[schedule[lesson]] = {
 			'task': None, 
-			'photo': None
+			'photos': None
 		}
 	if subject:
 		tasks[subject] = {
 			'task': task,
-			'photo': photo
+			'photos': photos
 		}
 	result = {
 		'date': date,
@@ -380,7 +380,7 @@ async def getHomework(id: int, date: datetime, subject: str = None):
 	return homework
 
 
-async def setHomework(id: int, date: datetime, subject: str, task: str = None, photo: str = None):
+async def setHomework(id: int, date: datetime, subject: str, task: str = None, photos: list = None):
 	group_id = (await psql.select(
 		'users',
 		'group_id',
@@ -399,19 +399,19 @@ async def setHomework(id: int, date: datetime, subject: str, task: str = None, p
 	if not record:
 		schedule = await getMainSchedule(id)
 		weekday = list(schedule.keys())[date.weekday()]
-		coll.insert_one(await generateMongoRecord(
+		coll.insert_one(generateMongoRecord(
 			date=date.strftime('%d.%m.%Y'),
 			weekday=date.weekday(),
 			schedule=schedule[weekday],
 			subject=subject,
 			task=task,
-			photo=photo
+			photos=photos
 		))
 	else:
 		modified = record
 		modified['tasks'][subject] = {
 			'task': task,
-			'photo': photo
+			'photos': photos
 		}
 		coll.replace_one(
 			filter={'date': record['date']},

@@ -1,4 +1,12 @@
-# <---------- Simple messages ---------->
+# <---------- Python modules ---------->
+from datetime import datetime
+
+
+# <---------- Local modules ---------->
+from messages.ms_regular import months_genitive, weekdays 
+
+
+#<---------- Simple messages ---------->
 chatFirstMessage = 'Прошу права администратора, а затем нажать на кнопочку 👇'
 
 
@@ -75,3 +83,58 @@ async def boundGroup_withoutLink(group_name: str, full_name: str, username: str)
 
 async def unlinkGroup(group_name: str):
 	return f'Этот чат был отвязан от группы <b>{group_name}</b> 🔓'
+
+
+def homeworkUpload(date: datetime, subject:str):
+	month = months_genitive[date.month-1]
+	weekday = weekdays[date.weekday()]
+	result = (
+		f'<b>Задание сохранено ✅</b>\n'
+		f'{weekday.capitalize()} ({date.day} {month} {date.year})'
+	)
+	return result
+
+
+def homeworkReUpload(date: datetime, subject:str):
+	month = months_genitive[date.month-1]
+	weekday = weekdays[date.weekday()]
+	result = (
+		f'<b>Задание перезаписано ✅</b>\n'
+		f'{weekday.capitalize()} ({date.day} {month} {date.year})'
+	)
+	return result
+
+
+def homeworkUploadAdd(date: datetime, subject:str):
+	month = months_genitive[date.month-1]
+	weekday = weekdays[date.weekday()]
+	result = (
+		f'<b>Задание дополнено ✅</b>\n'
+		f'{weekday.capitalize()} ({date.day} {month} {date.year})'
+	)
+	return result
+
+
+def homeworkUploadRewrite(date: datetime, subject:str, hw: dict):
+	month = months_genitive[date.month-1]
+	weekday = weekdays[date.weekday()]
+	task = hw['task']
+	if task is None:
+		task = 'Фото ☝️'
+	result = (
+		f'<b>{subject.capitalize()}</b>\n'
+		f'{weekday.capitalize()} ({date.day} {month} {date.year})\n'
+		f'Похоже задание на этот урок уже было записано:\n\n'
+		f'<em>{task}</em>\n\n'
+		'✏️ <b>Добавить</b>\n'
+		'🆕 <b>Перезаписать</b>\n'
+		'❌ <b>Отменить</b> '
+	)
+	return result
+
+
+separateMessage = (
+	'✏️ <b>Добавить</b>\n'
+	'🆕 <b>Перезаписать</b>\n'
+	'❌ <b>Отменить</b> '
+)
