@@ -1,3 +1,11 @@
+# <---------- Python modules ---------->
+from datetime import datetime
+
+
+# <---------- Local modules ---------->
+from messages import ms_regular
+
+
 # <---------- Simple messages ---------->
 #            <- commands.py ->
 commandStartOrHelp_forGroupMember = (
@@ -169,3 +177,47 @@ async def groupEnterFinish(group_name: str):
 		f'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
 		f'Теперь вы состоите в группе: <b>{group_name}</b>'
 	)
+
+
+noMainSchedule = (
+	'В вашей группе не установлено <b>основное расписание</b> 📋\n'
+	'Попросите <b>админов вашей группы</b> установить его 🛠️'
+)
+
+
+def homeworkShow(date: datetime, tasks: dict, schedule: dict) -> str:
+	month = ms_regular.months_genitive[date.month-1]
+	weekday = ms_regular.weekdays[date.weekday()]
+	result = (
+		'<b>📝 Домашнее задание</b>\n'
+		f'<b>{weekday.capitalize()} ({date.day} {month} {date.year})</b>\n\n'
+	)
+	sc_subj = set(schedule.values())
+	print(sc_subj)
+	ls_nums = {}
+	for subj in sc_subj:
+		ls_nums[subj] = [int(ls) for ls in schedule if schedule[ls] == subj]
+	for subj in ls_nums:
+		item = ls_nums[subj]
+		print(item)
+		if len(item) == 1:
+			ls_nums[subj] = str(item[0])
+		elif item == list(range(min(item), max(item)+1)):
+			ls_nums[subj] = str(min(item)) + "-" + str(max(item))
+		else:
+			ls_nums[subj] = ",".join([str(i) for i in item])
+	print(ls_nums)		
+	least = False
+	for lesson in tasks:
+		if tasks[lesson]['task'] or tasks[lesson]['photos']:
+			least = True
+			result +=f'<b>[{ls_nums[lesson]}] {lesson.capitalize()}</b>:\n'
+			if tasks[lesson]['task']:
+				result += f' <em>{tasks[lesson]["task"]}</em>\n'
+			if tasks[lesson]['photos']:
+				result += 'Фото ☝️\n'
+			result += '\n'
+	if not least:
+		result += 'Сохранённых заданий нет 🕊️'
+	return result
+
