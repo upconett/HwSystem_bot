@@ -226,3 +226,10 @@ class NoLessonAtWeekday(Exception):
 			'Домашнее задание не сохранено ❌\n'
 			f'У вас нет {subject.capitalize()} в {weekday.capitalize()}!\n'
 		)
+
+
+class NoSubject(Exception):
+	"""
+	Raised when no subject provided.\n 
+	We pass that.
+	"""

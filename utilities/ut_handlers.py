@@ -6,7 +6,7 @@ from dateutil.parser._parser import ParserError
 # <---------- Local modules ---------->
 from exceptions.ex_handlers import NotEnoughDays, InvalidWeekDay, \
 	SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber, \
-	NoTask, NoMainSchedule, InvalidSubject, InvalidDate, TimeTravel
+	NoTask, NoMainSchedule, NoSubject, InvalidSubject, InvalidDate, TimeTravel
 from messages import ms_regular
 from data_base.operations import getMainSchedule
 from difflib import SequenceMatcher
@@ -181,13 +181,17 @@ async def homeworkExtractData(id: int, text: str) -> tuple():
 	weekday = None
 	date = None
 
-	if len(text.split('\n')) < 2:
-		raise NoTask
 	first = text.split('\n')[0]
-	task = "\n".join(text.split('\n')[1:])
+	if len(text.split('\n')) == 1:
+		task = None
+	else:
+		task = "\n".join(text.split('\n')[1:])
 	for w in ms_regular.hw_keywords:
 		if w in first: first = first.replace(w, '')
 	first = first.split()
+
+	if len(first) == 0:
+		raise NoSubject 
 
 	standart_schedule = await getMainSchedule(id)
 	# print(standart_schedule)

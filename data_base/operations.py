@@ -330,13 +330,16 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 
 async def generateMongoRecord(date: str, weekday: int, schedule: dict, breaks: dict = None, subject: str = None, task: str = None, photo: str = None) -> dict:
 	tasks = {}
+	print(task)
 	for lesson in schedule:
-		task[schedule[lesson]] = {
+		if schedule[lesson] is None:
+			continue
+		tasks[schedule[lesson]] = {
 			'task': None, 
 			'photo': None
 		}
 	if subject:
-		task[subject] = {
+		tasks[subject] = {
 			'task': task,
 			'photo': photo
 		}
@@ -347,6 +350,7 @@ async def generateMongoRecord(date: str, weekday: int, schedule: dict, breaks: d
 		'breaks': breaks,
 		'tasks': tasks
 	}
+	print(f"\n\n{result}\n\n")
 	return result
 
 
@@ -413,3 +417,4 @@ async def setHomework(id: int, date: datetime, subject: str, task: str = None, p
 			filter={'date': record['date']},
 			replacement=modified
 		)
+	return True

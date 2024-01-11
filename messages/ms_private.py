@@ -179,7 +179,7 @@ async def groupEnterFinish(group_name: str):
 	)
 
 
-async def homeworkUpload(date: datetime, subject:str):
+def homeworkUpload(date: datetime, subject:str):
 	month = months_genitive[date.month-1]
 	weekday = weekdays[date.weekday()]
 	result = (
@@ -189,7 +189,7 @@ async def homeworkUpload(date: datetime, subject:str):
 	return result
 
 
-async def homeworkReUpload(date: datetime, subject:str):
+def homeworkReUpload(date: datetime, subject:str):
 	month = months_genitive[date.month-1]
 	weekday = weekdays[date.weekday()]
 	result = (
@@ -199,14 +199,19 @@ async def homeworkReUpload(date: datetime, subject:str):
 	return result
 
 
-async def homeworkUploadRewrite(date: datetime, subject:str, hw: dict):
+def homeworkUploadRewrite(date: datetime, subject:str, hw: dict):
 	month = months_genitive[date.month-1]
 	weekday = weekdays[date.weekday()]
+	task = hw['task']
+	if task is None:
+		task = 'Фото ☝️'
 	result = (
 		f'<b>{subject.capitalize()}</b>\n'
 		f'{weekday.capitalize()} ({date.day} {month} {date.year})\n'
 		f'Похоже задание на этот урок уже было записано:\n\n'
-		f'<em>{hw["task"]}</em>\n\n'
-		'<b>Перезаписать?</b> ✏️'
+		f'<em>{task}</em>\n\n'
+		'<b>Перезаписать</b> ✏️\n'
+		'<b>Добавить</b> ➕\n'
+		'<b>Отменить</b> ❌'
 	)
 	return result

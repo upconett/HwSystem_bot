@@ -63,9 +63,16 @@ async def inline_chatStart_withBoundGroup(group_id: int, group_name: str):
 
 
 btn_inline_HomeworkAccept = InlineKeyboardButton(text='✅', callback_data='HomeworkAccept')
+btn_inline_HomeworkEdit = InlineKeyboardButton(text='✏️', callback_data='HomeworkEdit')
+btn_inline_HomeworkAdd = InlineKeyboardButton(text='➕', callback_data='HomeworkAdd')
 btn_inline_HomeworkDecline = InlineKeyboardButton(text='❌', callback_data='HomeworkDecline')
 inline_HomeworkApprove = InlineKeyboardMarkup(
 	inline_keyboard=[
 		[btn_inline_HomeworkAccept, btn_inline_HomeworkDecline]
+	]
+)
+inline_HomeworkUpload = InlineKeyboardMarkup(
+	inline_keyboard=[
+		[btn_inline_HomeworkEdit, btn_inline_HomeworkAdd, btn_inline_HomeworkDecline]
 	]
 )
