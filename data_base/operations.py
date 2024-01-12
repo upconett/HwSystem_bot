@@ -431,3 +431,30 @@ async def setHomework(id: int, date: datetime, subject: str, task: str = None, p
 			replacement=modified
 		)
 	return True
+
+
+async def closestDates(id: int, date: datetime) -> tuple[datetime, datetime]:
+	next_date, prev_date = (None, None)
+	group_id = (await psql.select(
+		'users',
+		'group_id',
+		'id', id
+	))[0][0]
+	group_name = (await psql.select(
+		'groups',
+		'group_name',
+		'group_id', group_id
+	))[0][0]
+	collections = mndb.db.list_collection_names()
+	if group_name not in collections:
+		raise Exception(f'MongoDB has no collection named {group_name}')
+	coll = mndb.db.get_collection(group_name)
+	try:
+		cursor = coll.find({'date': {'$gt': dateToday(date)}})
+		next_date = min(cursor.distinct('date'))
+	except: pass
+	try:
+		cursor = coll.find({'date': {'$lt': dateToday(date)}})
+		prev_date = max(cursor.distinct('date'))
+	except: pass
+	return (next_date, prev_date)

@@ -1,5 +1,12 @@
 # <---------- Python modules ---------->
 from aiogram.types import KeyboardButton, InlineKeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+from datetime import datetime
+
+
+# <---------- Local modules ---------->
+from messages import ms_regular
 
 
 # <---------- Variables ---------->
@@ -77,3 +84,24 @@ inline_mainScheduleDays = InlineKeyboardMarkup(
 		[btn_inline_mainScheduleDays5]
 	]
 )
+
+
+def inline_homeworkNavigate(current_date: datetime, date_next: datetime = None, date_prev: datetime = None):
+	result = InlineKeyboardBuilder()
+	btn_next, btn_prev = (None, None)
+	now = current_date
+	if date_prev:
+		if (now-date_prev).days < 6:
+			text = ms_regular.weekdays_smol[date_prev.weekday()].capitalize()
+		else:
+			text = date_prev.strftime('%d.%m.%y')
+		btn_prev = InlineKeyboardButton(text=f'⬅️ {text}', callback_data=f'Homework{date_prev.date()}')
+		result.add(btn_prev)
+	if date_next:
+		if (date_next-now).days < 6:
+			text = ms_regular.weekdays_smol[date_next.weekday()].capitalize()
+		else:
+			text = date_next.strftime('%d.%m.%y')
+		btn_next = InlineKeyboardButton(text=f'{text} ➡️', callback_data=f'Homework{date_next.date()}')
+		result.add(btn_next)
+	return InlineKeyboardMarkup(inline_keyboard=result.export())
