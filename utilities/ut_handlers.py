@@ -1,4 +1,5 @@
 # <---------- Python modules ---------->
+from aiogram import types
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 from dateutil.parser._parser import ParserError
@@ -23,6 +24,14 @@ async def ut_filterForMDV2(text: str) -> str:
 		if char in text:
 			text = text.replace(char, f'\{char}')
 	return text
+
+
+def quotate(message: types.Message, quote: str):
+	return types.ReplyParameters(
+		message_id=message.message_id,
+		chat_id=message.chat.id,
+		quote=quote
+	)
 
 
 async def scheduleMessageToDict(text: str, mode: int) -> dict:
@@ -52,21 +61,21 @@ async def scheduleMessageToDict(text: str, mode: int) -> dict:
 			elif line.replace(' ', '') != '':
 				if weekday:
 					if len(line.split()) < 2:
-						raise NoLesson(num, line)
+						raise NoLesson(line)
 					else:
 						lesson_num = line.split()[0].replace('.', '').replace(')', '')
 						try:
 							int(lesson_num)
 						except:
-							raise InvalidLessonNumber(num, line)
+							raise InvalidLessonNumber(line)
 						if int(lesson_num) not in range(0, 11):
-							raise NotSuitableLessonNumber(num, line)
+							raise NotSuitableLessonNumber(line)
 						subject = " ".join([x for x in line.split()[1:]]).lower()
 						if subject == '-':
 							subject = None
 						result[weekday][str(int(lesson_num))] = subject
 				else:
-					raise InvalidWeekDay(num, line)
+					raise InvalidWeekDay(line)
 		if len(result) < 5:
 			raise NotEnoughDays	
 	elif mode == 1:
@@ -74,15 +83,15 @@ async def scheduleMessageToDict(text: str, mode: int) -> dict:
 		for num, line in enumerate(data):
 			if line.replace(' ', '') != '':
 				if len(line.split()) < 2:
-					raise NoLesson(num, line)
+					raise NoLesson(line)
 				else:
 					lesson_num = line.split()[0].replace('.', '').replace(')', '')
 					try:
 						int(lesson_num)
 					except:
-						raise InvalidLessonNumber(num, line)
+						raise InvalidLessonNumber(line)
 					if int(lesson_num) not in range(0, 11):
-						raise NotSuitableLessonNumber(num, line)
+						raise NotSuitableLessonNumber(line)
 					subject = " ".join([x for x in line.split()[1:]]).lover()
 					if subject == '-':
 						subject = None
@@ -194,16 +203,29 @@ async def homeworkExtractDataUpload(id: int, text: str) -> tuple():
 		raise NoSubject 
 
 	standart_schedule = await getMainSchedule(id)
-	# print(standart_schedule)
 	if standart_schedule is None or standart_schedule == {}:
 		raise NoMainSchedule
 	subjects = await scheduleEnumSubjects(standart_schedule, 0)
 
+	for word in first:
+		if word.lower() == 'воскресенье':
+			raise SundayException()
+		if word.lower() in ms_regular.weekdays:
+			weekday = word.lower()
+		else:
+			try:
+				date = parse(word, dayfirst=True)
+				if date.date() < datetime.now().date():
+					raise TimeTravel(word)
+			except ParserError:
+				pass
+				# raise InvalidDate(word)
+				
 	l = len(first)
 	for i in range(l):
 		subject = " ".join(first[:i+1]).lower()
+		offset = i
 		if subject in subjects:
-			offset = i
 			break
 	else:
 		max_similarity = 0
@@ -225,20 +247,6 @@ async def homeworkExtractDataUpload(id: int, text: str) -> tuple():
 			date = date
 		)
 
-	if offset < l-1:
-		if first[offset+1].lower() == 'воскресенье':
-			raise SundayException()
-		if first[offset+1].lower() in ms_regular.weekdays:
-			weekday = first[offset+1]
-		else:
-			try:
-				date = parse(first[offset+1], dayfirst=True)
-				print(date.date(), datetime.now().date(), date.date() < datetime.now().date())
-				if date.date() < datetime.now().date():
-					raise TimeTravel(first[offset+1])
-			except ParserError:
-				raise InvalidDate(first[offset+1])
-
 	return (subject, task, weekday, date)
 
 
@@ -252,6 +260,15 @@ async def homeworkExtractDataShow(id: int, text: str) -> datetime:
 	if text in ms_regular.weekdays:
 		current_wd = datetime.now().weekday()
 		input_wd = ms_regular.weekdays.index(text)
+		if input_wd == current_wd:
+			date = datetime.now()
+		elif input_wd > current_wd:
+			date = datetime.now() + timedelta(days=(input_wd-current_wd))
+		else:
+			date = datetime.now() + timedelta(days=((6-current_wd)+(input_wd+1)))
+	elif text in ms_regular.weekdays_smol:
+		current_wd = datetime.now().weekday()
+		input_wd = ms_regular.weekdays_smol.index(text)
 		if input_wd == current_wd:
 			date = datetime.now()
 		elif input_wd > current_wd:

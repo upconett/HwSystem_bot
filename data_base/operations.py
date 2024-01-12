@@ -14,6 +14,27 @@ filename = 'operations.py'
 __all__ = ['insertUser', 'insertChat', 'userData', 'chatData', 'groupData', 'insertGroup', 'getMainSchedule', 'setMainSchedule']
 
 
+# <---------- Utility ---------->
+def dateToday(date: datetime = None) -> datetime:
+	"""
+	Returns datetime object with the time set to zero.
+	"""
+	if date:
+		return date.replace(
+			hour=0,
+			minute=0,
+			second=0,
+			microsecond=0
+		)
+	else:
+		return datetime.now().replace(
+			hour=0,
+			minute=0,
+			second=0,
+			microsecond=0
+		)
+
+
 # <---------- Interoperability with PostgreSQL ---------->
 async def insertUser(id: int, username: str, full_name: str):
 	"""
@@ -272,7 +293,6 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 	date_now = datetime.now()
 	result = {
 		'date': None,
-		'weekday': None,
 		'lesson': None
 	}
 	schedule = await getMainSchedule(id)
@@ -284,8 +304,7 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 		day = list(weekdays)[wd]
 		for lesson in schedule[day]:
 			if schedule[day][lesson] == subject:
-				result['date'] = date
-				result['weekday'] = wd
+				result['date'] = dateToday(date)
 				result['lesson'] = int(lesson)
 				return result
 		else:
@@ -300,11 +319,10 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 			if wd > wd_now:
 				date = datetime.now() + timedelta(days = (wd - wd_now))
 			else:
-				date = datetime.now() + timedelta(days = ((6 - wd_now) + wd))
+				date = datetime.now() + timedelta(days = ((6 - wd_now) + wd)+1)
 		for lesson in schedule[weekday]:
 			if schedule[weekday][lesson] == subject:
-				result['date'] = date
-				result['weekday'] = wd
+				result['date'] = dateToday(date)
 				result['lesson'] = int(lesson)
 				return result
 		else:
@@ -318,8 +336,7 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 			for day in list(weekdays)[wd:]:
 				for lesson in schedule[day]:
 					if schedule[day][lesson] == subject:
-						result['date'] = date
-						result['weekday'] = date.weekday()
+						result['date'] = dateToday(date)
 						result['lesson'] = int(lesson)
 						return result
 				date = date + timedelta(days = 1)
@@ -328,9 +345,8 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 	return result
 
 
-def generateMongoRecord(date: str, weekday: int, schedule: dict, breaks: dict = None, subject: str = None, task: str = None, photos: list = None) -> dict:
+def generateMongoRecord(date: str, schedule: dict, breaks: dict = None, subject: str = None, task: str = None, photos: list = None) -> dict:
 	tasks = {}
-	print(task)
 	for lesson in schedule:
 		if schedule[lesson] is None:
 			continue
@@ -345,7 +361,6 @@ def generateMongoRecord(date: str, weekday: int, schedule: dict, breaks: dict = 
 		}
 	result = {
 		'date': date,
-		'weekday': weekday,
 		'schedule': schedule,
 		'breaks': breaks,
 		'tasks': tasks
@@ -371,7 +386,7 @@ async def getHomework(id: int, date: datetime = None, subject: str = None):
 	if group_name not in collections:
 		raise Exception(f'MongoDB has no collection named {group_name}')
 	coll = mndb.db.get_collection(group_name)
-	record = coll.find_one({'date': date.strftime('%d.%m.%Y')})
+	record = coll.find_one({'date': dateToday(date)})
 	if not record: return record
 	homework = record['tasks']
 	if subject:
@@ -394,13 +409,12 @@ async def setHomework(id: int, date: datetime, subject: str, task: str = None, p
 	if group_name not in collections:
 		raise Exception(f'MongoDB has no collection named {group_name}')
 	coll = mndb.db.get_collection(group_name)
-	record = coll.find_one({'date': date.strftime('%d.%m.%Y')})
+	record = coll.find_one({'date': dateToday(date)})
 	if not record:
 		schedule = await getMainSchedule(id)
 		weekday = list(schedule.keys())[date.weekday()]
 		coll.insert_one(generateMongoRecord(
-			date=date.strftime('%d.%m.%Y'),
-			weekday=date.weekday(),
+			date=dateToday(date),
 			schedule=schedule[weekday],
 			subject=subject,
 			task=task,

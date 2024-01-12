@@ -9,6 +9,7 @@ import json
 # <---------- Local modules ---------->
 from create_bot import bot
 from utilities import ut_logger, ut_handlers
+from utilities.ut_handlers import quotate
 from data_base import operations
 from messages.ms_group import homeworkUpload, homeworkReUpload,\
 	homeworkUploadRewrite, homeworkUploadAdd, separateMessage
@@ -47,8 +48,8 @@ async def message_uploadApprove(state: FSMContext, message: types.Message):
 		)
 		if result:
 			data['date'] = result['date']
-			data['weekday'] = result['weekday']
 			await state.set_data(data)
+			print("MS_U", data['date'])
 			hw = await operations.getHomework(
 				id=message.from_user.id,
 				date=result['date'],
@@ -158,7 +159,6 @@ async def callback_query_uploadApprove(state: FSMContext, query: types.CallbackQ
 		)
 		if result:
 			data['date'] = result['date']
-			data['weekday'] = result['weekday']
 			await state.set_data(data)
 			hw = await operations.getHomework(
 				id=query.from_user.id,
@@ -255,8 +255,10 @@ async def callback_query_uploadApprove(state: FSMContext, query: types.CallbackQ
 					)
 		await state.set_data(data)
 	except SundayException as exc:
+		await query.message.delete()
 		await query.message.answer(text=exc.alt)
 	except NoLessonAtWeekday as exc:
+		await query.message.delete()
 		await query.message.answer(text=exc.text)
 
 
@@ -410,8 +412,8 @@ async def FSM_message_textUpload(message: types.Message, state: FSMContext):
 					'message_id': message.message_id + 1,
 					'task': exc.task,
 					'subject': exc.subject,
-					'weekday': None,
-					'date': None
+					'weekday': exc.weekday, 
+					'date': exc.date
 				}
 			)
 		exception = ''
@@ -427,6 +429,10 @@ async def FSM_message_textUpload(message: types.Message, state: FSMContext):
 	except TimeTravel as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
 		exception = 'TimeTravel'
@@ -506,6 +512,10 @@ async def FSM_message_photosUpload(message: types.Message, state: FSMContext):
 	except InvalidDate as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
 		exception = 'InvalidDate'
@@ -514,6 +524,10 @@ async def FSM_message_photosUpload(message: types.Message, state: FSMContext):
 	except TimeTravel as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
 		exception = 'TimeTravel'

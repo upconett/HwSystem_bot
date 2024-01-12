@@ -192,21 +192,21 @@ def homeworkShow(date: datetime, tasks: dict, schedule: dict) -> str:
 		'<b>📝 Домашнее задание</b>\n'
 		f'<b>{weekday.capitalize()} ({date.day} {month} {date.year})</b>\n\n'
 	)
+	if not tasks:
+		result += 'Сохранённых заданий нет 🕊️'
+		return result
 	sc_subj = set(schedule.values())
-	print(sc_subj)
 	ls_nums = {}
 	for subj in sc_subj:
 		ls_nums[subj] = [int(ls) for ls in schedule if schedule[ls] == subj]
 	for subj in ls_nums:
 		item = ls_nums[subj]
-		print(item)
 		if len(item) == 1:
 			ls_nums[subj] = str(item[0])
 		elif item == list(range(min(item), max(item)+1)):
 			ls_nums[subj] = str(min(item)) + "-" + str(max(item))
 		else:
-			ls_nums[subj] = ",".join([str(i) for i in item])
-	print(ls_nums)		
+			ls_nums[subj] = ", ".join([str(i) for i in item])
 	least = False
 	for lesson in tasks:
 		if tasks[lesson]['task'] or tasks[lesson]['photos']:

@@ -21,16 +21,11 @@ class InvalidWeekDay(Exception):
 	Example: 'пондельник'
 	#### MarkdowV2 required!
 	"""
-	def __init__(self, num: int, line: str):
-		self.num = num
-		for char in ms_regular.filter_chars:
-			if char in line:
-				line = line.replace(char, f'\{char}')
-		self.line = line
+	def __init__(self, line: str):
+		self.quote = line
 		self.text = (
 			f'Расписание не сохранено ❌\n'
-			f'В строке *№{self.num}* неправильно записан день недели\!\n'
-			f'> {self.line}'
+			f'Неправильно записан день недели\!\n'
 		)
 
 
@@ -54,16 +49,11 @@ class NoLesson(Exception):
 	Example: '2. '
 	#### MarkdowV2 required!
 	"""
-	def __init__(self, num: int, line: str):
-		self.num = num
-		for char in ms_regular.filter_chars:
-			if char in line:
-				line = line.replace(char, f'\{char}')
-		self.line = line
+	def __init__(self, line: str):
+		self.quote = line
 		self.text = (
 			f'Расписание не сохранено ❌\n'
-			f'В строке *№{self.num}* не указано название предмета\!\n'
-			f'> {self.line}'
+			f'Не указано название предмета\!\n'
 		)
 
 
@@ -73,16 +63,11 @@ class InvalidLessonNumber(Exception):
 	Example: '1u. Алгебра'
 	#### MarkdowV2 required!
 	"""
-	def __init__(self, num: int, line: str):
-		self.num = num
-		for char in ms_regular.filter_chars:
-			if char in line:
-				line = line.replace(char, f'\{char}')
-		self.line = line
+	def __init__(self, line: str):
+		self.quote = line
 		self.text = (
 			f'Расписание не сохранено ❌\n'
-			f'В строке *№{self.num}* неправильно указан номер урока\!\n'
-			f'> {self.line}'
+			f'Неправильно указан номер урока\!\n'
 		)
 
 
@@ -92,17 +77,11 @@ class NotSuitableLessonNumber(Exception):
 	Example: '40. Алгебра'
 	#### MarkdowV2 required!
 	"""
-	def __init__(self, num: int, line: str):
-		self.num = num
-		for char in ms_regular.filter_chars:
-			if char in line:
-				line = line.replace(char, f'\{char}')
-		self.line = line
+	def __init__(self, line: str):
+		self.quote = line
 		self.text = (
 			f'Расписание не сохранено ❌\n'
-			f'Ошибка в строке *№{self.num}*\n'
 			f'Номер урока не может быть меньше *0* или больше *10*\!\n'
-			f'> {self.line}'
 		)
 		self.exc = 'Not suitable lesson number at line {exception.num}.'
 
@@ -184,13 +163,10 @@ class InvalidDate(Exception):
 		Raised when written date string can't be parsed.\n
 		#### MarkdowV2 required!
 		"""
-		for char in ms_regular.filter_chars:
-			if char in date:
-				date = date.replace(char, f'\{char}')
+		self.quote = date
 		self.text = (
 			'Домашнее задание не сохранено ❌\n'
-			'Вы неправильно указали дату сохранения\!\n'
-			f'> {date}'
+			'Вы неправильно указали дату сохранения\!\n'	
 		)
 
 
@@ -203,13 +179,10 @@ class TimeTravel(Exception):
 		Raised when written date is in past.
 		#### MarkdowV2 required!
 		"""
-		for char in ms_regular.filter_chars:
-			if char in date:
-				date = date.replace(char, f'\{char}')
+		self.quote = date
 		self.text = (
 			'Домашнее задание не сохранено ❌\n'
 			f'Вы не можете сохранить задание в прошлое\!\n'
-			f'> {date}'
 		)
 
 

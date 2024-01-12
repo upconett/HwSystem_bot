@@ -10,6 +10,7 @@ import json
 # <---------- Local modules ---------->
 from messages import ms_regular, ms_private
 from utilities import ut_logger, ut_handlers, ut_filters
+from utilities.ut_handlers import quotate
 from data_base import operations
 from exceptions.ex_handlers import NotEnoughDays, InvalidWeekDay, SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber
 from keyboards import kb_private
@@ -113,23 +114,35 @@ async def FSM_message_weekDayInput(message: types.Message, state: FSMContext):
 	except NoLesson as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
-		exception = f'No lesson at line {exc.num}.'
+		exception = f'No lesson at line .'
 		content = ''
 	except InvalidLessonNumber as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
-		exception =f'Invalid lesson number at line {exc.num}.'
+		exception =f'Invalid lesson number at line .'
 		content = ''
 	except NotSuitableLessonNumber as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
-		exception = f'Not suitable lesson number at line {exc.num}.'
+		exception = f'Not suitable lesson number at line .'
 		content=''
 	except Exception as exc:
 		exception = exc
@@ -160,23 +173,35 @@ async def FSM_message_checkUpload(message: types.Message, state: FSMContext):
 	except NoLesson as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
-		exception = f'No lesson at line {exc.num}.',
+		exception = f'No lesson at line .',
 		content=''
 	except InvalidLessonNumber as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
-		exception = f'Invalid lesson number at line {exc.num}.',
+		exception = f'Invalid lesson number at line .',
 		content=''	
 	except NotSuitableLessonNumber as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
-		exception = f'Not suitable lesson number at line {exc.num}.',
+		exception = f'Not suitable lesson number at line .',
 		content=''
 	except Exception as exc:
 		exception = exc,
@@ -241,10 +266,14 @@ async def FSM_message_approveUpload(message: types.Message, state: FSMContext):
 	except InvalidWeekDay as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
 		await state.clear()
-		exception = f'Invalid week day at line {exc.num}.',
+		exception = f'Invalid week day at line .',
 		content = ''
 	except SundayException as exc:
 		await message.answer(text=exc.text)
@@ -254,26 +283,38 @@ async def FSM_message_approveUpload(message: types.Message, state: FSMContext):
 	except NoLesson as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
 		await state.clear()
-		exception = f'No lesson at line {exc.num}.',
+		exception = f'No lesson',
 		content = ''
 	except InvalidLessonNumber as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
 		await state.clear()
-		exception = f'Invalid lesson number at line {exc.num}.',
+		exception = f'Invalid lesson number at line .',
 		content = ''
 	except NotSuitableLessonNumber as exc:
 		await message.answer(
 			text=exc.text,
+			reply_parameters=quotate(
+				message=message,
+				quote=exc.quote
+			),
 			parse_mode='MarkdownV2'
 		)
 		await state.clear()
-		exception = f'Not suitable lesson number at line {exc.num}.',
+		exception = f'Not suitable lesson number at line .',
 		content = ''
 	except Exception as exc:
 		exception = exc
@@ -297,7 +338,7 @@ async def FSM_callback_query_submitUpload(callback_query: types.CallbackQuery, s
 			id=callback_query.from_user.id,
 			data=data["schedule_dict"]
 		)
-		print(json.dumps(data['schedule_dict'], indent=3, ensure_ascii=False))
+		# print(json.dumps(data['schedule_dict'], indent=3, ensure_ascii=False))
 		await callback_query.message.answer(
 			text=ms_private.scheduleLoaded,
 			reply_markup=kb_private.reply_commandStartOrHelp
