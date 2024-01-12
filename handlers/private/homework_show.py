@@ -19,7 +19,7 @@ filename = 'homework_show.py'
 
 
 # <---------- Homework Showing ---------->
-async def message_homeworkShow(message: types.Message):
+async def message_homeworkShowTomorrow(message: types.Message):
 	try:
 		date = datetime.now() + timedelta(hours=12)
 		tasks = await operations.getHomework(
@@ -55,7 +55,18 @@ async def message_homeworkShow(message: types.Message):
 		print(exc)
 	
 
+async def message_homeworkShowDate(message: types.Message):
+	try:
+		date = await ut_handlers.homeworkExtractDataShow(
+			id=message.from_user.id,
+			text=message.text
+		)
+		print(date)
+	except ValueError as exc:
+		print(exc)
+
 
 # <---------- Handlers registration ---------->
 def register_handlers(router: Router):
-	router.message.register(message_homeworkShow, ut_filters.TextEquals(list_ms=ms_regular.homeworkShow, data_type='message'))
+	router.message.register(message_homeworkShowTomorrow, ut_filters.TextEquals(list_ms=ms_regular.homeworkShow, data_type='message'))
+	router.message.register(message_homeworkShowDate, F.text.lower().startswith(tuple(ms_regular.homeworkShow)))

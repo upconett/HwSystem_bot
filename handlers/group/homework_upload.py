@@ -369,7 +369,7 @@ async def FSM_callback_query_dontTouchButtons(query: types.CallbackQuery, state:
 
 async def FSM_message_textUpload(message: types.Message, state: FSMContext):
 	try:
-		subject, task, weekday, date = await ut_handlers.homeworkExtractData(message.from_user.id, message.text)
+		subject, task, weekday, date = await ut_handlers.homeworkExtractDataUpload(message.from_user.id, message.text)
 		if task is None:
 			raise NoTask
 		await state.set_state(UploadHomeworkFSM.hw_approve)
@@ -460,7 +460,7 @@ async def FSM_message_photosUpload(message: types.Message, state: FSMContext):
 				)
 			)
 			return
-		subject, task, weekday, date = await ut_handlers.homeworkExtractData(message.from_user.id, message.caption)
+		subject, task, weekday, date = await ut_handlers.homeworkExtractDataUpload(message.from_user.id, message.caption)
 		await state.set_state(UploadHomeworkFSM.hw_approve)
 		await state.set_data({
 			'id': message.from_user.id,

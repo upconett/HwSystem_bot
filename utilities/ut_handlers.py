@@ -1,5 +1,5 @@
 # <---------- Python modules ---------->
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil.parser import parse
 from dateutil.parser._parser import ParserError
 
@@ -8,7 +8,7 @@ from exceptions.ex_handlers import NotEnoughDays, InvalidWeekDay, \
 	SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber, \
 	NoTask, NoMainSchedule, NoSubject, InvalidSubject, InvalidDate, TimeTravel
 from messages import ms_regular
-from data_base.operations import getMainSchedule
+from data_base.operations import getMainSchedule, findNextLesson
 from difflib import SequenceMatcher
 
 
@@ -168,7 +168,7 @@ async def scheduleEnumSubjects(schedule: dict, mode: int) -> list[str]:
 	return result
 
 
-async def homeworkExtractData(id: int, text: str) -> tuple():
+async def homeworkExtractDataUpload(id: int, text: str) -> tuple():
 	"""
 	Read users message and find 'subject', 'task', and 'weekday'/'date'.
 	:param id: User id
@@ -232,7 +232,7 @@ async def homeworkExtractData(id: int, text: str) -> tuple():
 			weekday = first[offset+1]
 		else:
 			try:
-				date = parse(first[offset+1])
+				date = parse(first[offset+1], dayfirst=True)
 				print(date.date(), datetime.now().date(), date.date() < datetime.now().date())
 				if date.date() < datetime.now().date():
 					raise TimeTravel(first[offset+1])
@@ -241,3 +241,26 @@ async def homeworkExtractData(id: int, text: str) -> tuple():
 
 	return (subject, task, weekday, date)
 
+
+async def homeworkExtractDataShow(id: int, text: str) -> datetime:
+	date = None
+	text = text.lower()
+	for f in ms_regular.homeworkShow:
+		if f in text:
+			text = text.replace(f, '')
+	text = text.replace(' ', '')
+	if text in ms_regular.weekdays:
+		current_wd = datetime.now().weekday()
+		input_wd = ms_regular.weekdays.index(text)
+		if input_wd == current_wd:
+			date = datetime.now()
+		elif input_wd > current_wd:
+			date = datetime.now() + timedelta(days=(input_wd-current_wd))
+		else:
+			date = datetime.now() + timedelta(days=((6-current_wd)+(input_wd+1)))
+	else:			
+		try:
+			date = parse(text, dayfirst=True)
+		except ParserError:
+			raise InvalidDate(text)
+	return date
