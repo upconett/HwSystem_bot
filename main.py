@@ -63,7 +63,7 @@ async def main():
 		router0=router_chat,
 		router1=router_chat_complex
 	)
-	homework_upload.register_handlers(router=router_chat_in_group)
+	homework_upload.register_handlers(router=router_chat_groupMember)
 	homework_show.register_handlers(router=router_private_groupMember)
 	group_create.register_handlers(router=router_private_groupNotMember)
 	group_enter.register_handlers(router=router_private_groupNotMember)

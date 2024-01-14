@@ -22,6 +22,8 @@ router_private_groupNotMember.message.filter(ChatType(chat_types=['private'], da
 #     <- Router for private chat and group member ->
 router_private_groupMember = Router()
 router_private_groupMember.message.filter(ChatType(chat_types=['private'], data_type='message'), UserPresenceInGroup())
+router_private_groupMember.callback_query.filter(ChatType(chat_types=['private'], data_type='callback_query'), UserPresenceInGroup())
+
 
 #     <- Router for private chat and group admin ->
 router_private_groupAdmin = Router()
@@ -44,11 +46,11 @@ router_chat_complex.callback_query.filter(
 	UserPresenceInGroup()
 )
 
-#	  <- Router for group chat, registered, in_group ->
-router_chat_in_group = Router()
-router_chat_in_group.message.filter(UserPresenceInGroup())
-router_chat_in_group.callback_query.filter(UserPresenceInGroup())
-router_chat.include_router(router_chat_in_group)
+#	  <- Router for group chat, registered, groupMember ->
+router_chat_groupMember = Router()
+router_chat_groupMember.message.filter(UserPresenceInGroup())
+router_chat_groupMember.callback_query.filter(UserPresenceInGroup())
+router_chat.include_router(router_chat_groupMember)
 
 
 # <---------- Reg/unreg routers ---------->
