@@ -211,11 +211,13 @@ def homeworkShow(date: datetime, tasks: dict, schedule: dict) -> str:
 	for lesson in tasks:
 		if tasks[lesson]['task'] or tasks[lesson]['photos']:
 			least = True
-			result +=f'<b>[{ls_nums[lesson]}] {lesson.capitalize()}</b>:\n'
-			if tasks[lesson]['task']:
-				result += f' <em>{tasks[lesson]["task"]}</em>\n'
+			result +=f'<b>[{ls_nums[lesson]}] {lesson.capitalize()}</b>'
 			if tasks[lesson]['photos']:
-				result += 'Фото ☝️\n'
+				result += ' 🖼️'
+			result += '\n'
+			if tasks[lesson]['task']:
+				for record in tasks[lesson]['task'].split('\n\n'):
+					result += f' • <em>{record}</em>\n'
 			result += '\n'
 	if not least:
 		result += 'Сохранённых заданий нет 🕊️'
