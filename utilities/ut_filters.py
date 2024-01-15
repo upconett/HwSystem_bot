@@ -150,7 +150,6 @@ class UserPresenceInGroup(BaseFilter):
         """
         try:
             response = await operations.userData(id=data.from_user.id)
-            print('GGF', response)
             result = response['group_id'] is not None
             print(f'UserPresenceInGroup {data.from_user.id} >> {result}')
             return result

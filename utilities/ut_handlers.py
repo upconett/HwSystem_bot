@@ -219,7 +219,6 @@ async def homeworkExtractDataUpload(id: int, text: str) -> tuple():
 					raise TimeTravel(word)
 			except ParserError:
 				pass
-				# raise InvalidDate(word)
 				
 	l = len(first)
 	for i in range(l):
@@ -251,6 +250,13 @@ async def homeworkExtractDataUpload(id: int, text: str) -> tuple():
 
 
 async def homeworkExtractDataShow(id: int, text: str) -> datetime:
+	"""
+	Read user message and extract 'date'.
+	:param id: User id
+	:param text: User message
+	:raises InvalidDate:
+	:return: 
+	"""
 	date = None
 	text = text.lower()
 	for f in ms_regular.homeworkShow:

@@ -38,7 +38,8 @@ def dateToday(date: datetime = None) -> datetime:
 # <---------- Interoperability with PostgreSQL ---------->
 async def insertUser(id: int, username: str, full_name: str):
 	"""
-	Insert new user in users table.
+	Insert new user in users table.\n
+	---
 	:param id: Telegram id
 	:param username: Telegram username
 	:param full_name: Telegram full_name
@@ -56,7 +57,8 @@ async def insertUser(id: int, username: str, full_name: str):
 
 async def insertGroup(group_name: str, group_password: str, owner_id: int, default_lessons: str = '{}', default_breaks: str = '{}'):
 	"""
-	Insert new group in groups table.
+	Insert new group in groups table.\n
+	---
 	:param group_name:
 	:param group_password:
 	:param owner_id: Telegram id from owner
@@ -76,7 +78,8 @@ async def insertGroup(group_name: str, group_password: str, owner_id: int, defau
 
 async def insertChat(id: int, title: str, group_id: int, notifications: bool):
 	"""
-	Insert new chat in chats table.
+	Insert new chat in chats table.\n
+	---
 	:param id: Telegram chat id
 	:param title: Telegram chat title
 	:param group_id: Group id
@@ -95,7 +98,8 @@ async def insertChat(id: int, title: str, group_id: int, notifications: bool):
 
 async def userData(id: int, formatted: bool = False) -> dict:
 	"""
-	Return data about user formatted or not.
+	Return data about user formatted or not.\n
+	---
 	:param id: Telegram ID
 	:param formatted: Dictionary for code or str for output
 	:return: Dictionary if formatted False or string if formatted True
@@ -141,7 +145,8 @@ async def userData(id: int, formatted: bool = False) -> dict:
 
 async def chatData(id: int, formatted: bool = False) -> dict:
 	"""
-	Return data about chat formatted or not.
+	Return data about chat formatted or not.\n
+	---
 	:param id: Telegram chat ID
 	:param formatted: Dictionary for code or str for output
 	:return: Dictionary if formatted False or string if formatted True
@@ -185,7 +190,8 @@ async def chatData(id: int, formatted: bool = False) -> dict:
 
 async def groupData(group_id: int, formatted: bool = False) -> dict:
 	"""
-	Return data about group formatted or not.
+	Return data about group formatted or not.\n
+	---
 	:param group_id: Group ID
 	:param formatted: Dictionary for code or str for output
 	:return: Dictionary if formatted False or string if formatted True
@@ -229,7 +235,8 @@ async def groupData(group_id: int, formatted: bool = False) -> dict:
 
 async def getMainSchedule(id: int) -> dict:
 	"""
-	Get default schedule from database.
+	Get default schedule from database.\n
+	---
 	:param id: Telegram ID of user
 	:return:
 	"""
@@ -257,7 +264,8 @@ async def getMainSchedule(id: int) -> dict:
 
 async def setMainSchedule(id: int, data: dict):
 	"""
-	Set default schedule in database.
+	Set default schedule in database.\n
+	---
 	:param id: Telegram ID of user.
 	:param data: Schedule
 	:return:
@@ -284,7 +292,8 @@ async def setMainSchedule(id: int, data: dict):
 
 async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: str = None) -> dict[datetime, int, int]:
 	"""
-	Finds next lesson in MainSchedule.
+	Finds next lesson in MainSchedule.\n
+	---
 	:param id: User id
 	:param subject: Subject to find
 	:param date_str: Date when to seek
@@ -345,7 +354,18 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 	return result
 
 
-def generateMongoRecord(date: str, schedule: dict, breaks: dict = None, subject: str = None, task: str = None, photos: list = None) -> dict:
+def generateMongoRecord(date: datetime, schedule: dict, breaks: dict = None, subject: str = None, task: str = None, photos: list = None) -> dict:
+	"""
+	Generates dict file with schedule and tasks info that will be stored in MongoDB.\n
+	---
+	:param date: Date as a key value.
+	:param schedule: Main schedule set in group.
+	:param breaks: Breaks schedule set in group.
+	:param subject: Subject on which to store task. (Optional)
+	:param task: Task that will be written to subject. (Optional)
+	:param photos: Photos that will be attached to subject. (Optional)
+	:return:
+	"""
 	tasks = {}
 	for lesson in schedule:
 		if schedule[lesson] is None:
@@ -365,11 +385,19 @@ def generateMongoRecord(date: str, schedule: dict, breaks: dict = None, subject:
 		'breaks': breaks,
 		'tasks': tasks
 	}
-	print(f"\n\n{result}\n\n")
 	return result
 
 
-async def getHomework(id: int, date: datetime = None, subject: str = None):
+async def getHomework(id: int, date: datetime = None, subject: str = None) -> dict:
+	"""
+	Returns homework for specified date or subject.\n
+	If heither given, return all tasks for tomorrow.\n
+	---
+	:param id: User id.
+	:param date: Date on which to look for data.
+	:param subject: Subject that we are looking for.
+	:return:
+	"""
 	group_id = (await psql.select(
 		'users',
 		'group_id',
@@ -394,7 +422,18 @@ async def getHomework(id: int, date: datetime = None, subject: str = None):
 	return homework
 
 
-async def setHomework(id: int, date: datetime, subject: str, task: str = None, photos: list = None):
+async def setHomework(id: int, date: datetime, subject: str, task: str = None, photos: list = None) -> bool:
+	"""
+	Sets task on subject provided.\n
+	Creates new MongoDB document if there is no hw for given date.\n
+	---
+	:param id: User id.
+	:param date: Date on which to store data.
+	:param subject: Subject on which to set task.
+	:param task: Task to be set.
+	:param photos: Photos to be attached.
+	:return:
+	"""
 	group_id = (await psql.select(
 		'users',
 		'group_id',
@@ -434,6 +473,13 @@ async def setHomework(id: int, date: datetime, subject: str, task: str = None, p
 
 
 async def closestDates(id: int, date: datetime) -> tuple[datetime, datetime]:
+	"""
+	Checks if there is any homework before and after given date.\n
+	---
+	:param id: _User id.
+	:param date: Date across which to seak.
+	:return:
+	"""
 	next_date, prev_date = (None, None)
 	group_id = (await psql.select(
 		'users',
