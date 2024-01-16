@@ -46,7 +46,7 @@ async def message_homeworkShowTomorrow(message: types.Message):
 		text = ms_private.homeworkShow(
 			date=date,
 			tasks=tasks,
-			schedule=schedule[ms_regular.weekdays[date.weekday()].capitalize()]
+			schedule=schedule[ms_regular.weekdays[date.weekday()]]
 		)
 		if has_media:
 			media_group[0] = types.InputMediaPhoto(

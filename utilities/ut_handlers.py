@@ -129,21 +129,19 @@ async def scheduleDictToMessage(schedule: dict, mode: int) -> str:
 					result += f' {lesson}. {subject.capitalize()}\n'
 			result += '\n'
 	elif mode == 1:
-		for day in schedule:
-			lesson_nums = map(int(), [x for x in schedule[day] if schedule[x] is not None])
-			for i, j in enumerate(lesson_nums):
-				lesson_nums[i] = int(j)
-			end = max(lesson_nums)
-			result += f'<b>{day}</b>\n'
-			for lesson in schedule:
-				if int(lesson) in range(0, end+1):
-					subject = schedule[lesson]
-					if lesson == '0' and subject is None:
-						continue
-					if subject is None:
-						subject = '-'
-					result += f' {lesson}. {subject}\n'
-			result += '\n'
+		lesson_nums = [x for x in schedule if schedule[x] is not None]
+		for i, j in enumerate(lesson_nums):
+			lesson_nums[i] = int(j)
+		end = max(lesson_nums)
+		for lesson in schedule:
+			if int(lesson) in range(0, end+1):
+				subject = schedule[lesson]
+				if lesson == '0' and subject is None:
+					continue
+				if subject is None:
+					subject = '-'
+				result += f' {lesson}. {subject.capitalize()}\n'
+		result += '\n'
 	else:
 		raise ValueError('Mode can be [0,1]')
 	return result

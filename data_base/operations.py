@@ -290,6 +290,37 @@ async def setMainSchedule(id: int, data: dict):
 		return False
 
 
+async def getSchedule(id: int, date: datetime = None) -> dict:
+	"""
+	Returns schedule for specified date.\n
+	If heither given, return schedule for tomorrow.\n
+	---
+	:param id: User id.
+	:param date: Date on which to look for data.
+	:return:
+	"""
+	group_id = (await psql.select(
+		'users',
+		'group_id',
+		'id', id
+	))[0][0]
+	group_name = (await psql.select(
+		'groups',
+		'group_name',
+		'group_id', group_id
+	))[0][0]
+	if not date:
+		date = datetime.now() + timedelta(hours=12)
+	collections = mndb.db.list_collection_names()
+	if group_name not in collections:
+		raise Exception(f'MongoDB has no collection named {group_name}')
+	coll = mndb.db.get_collection(group_name)
+	record = coll.find_one({'date': dateToday(date)})
+	if not record: return record
+	schedule = record['schedule']
+	return schedule
+
+
 async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: str = None) -> dict[datetime, int, int]:
 	"""
 	Finds next lesson in MainSchedule.\n
