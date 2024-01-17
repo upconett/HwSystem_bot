@@ -62,17 +62,17 @@ async def inline_chatStart_withBoundGroup(group_id: int, group_name: str):
 	return reply_markup
 
 
-btn_inline_HomeworkAccept = InlineKeyboardButton(text='✅', callback_data='HomeworkAccept')
-btn_inline_HomeworkEdit = InlineKeyboardButton(text='️🆕', callback_data='HomeworkEdit')
-btn_inline_HomeworkAdd = InlineKeyboardButton(text='✏️', callback_data='HomeworkAdd')
-btn_inline_HomeworkDecline = InlineKeyboardButton(text='❌', callback_data='HomeworkDecline')
-inline_HomeworkApprove = InlineKeyboardMarkup(
+btn_inline_homeworkAccept = InlineKeyboardButton(text='✅', callback_data='HomeworkAccept')
+btn_inline_homeworkEdit = InlineKeyboardButton(text='️🆕', callback_data='HomeworkEdit')
+btn_inline_homeworkAdd = InlineKeyboardButton(text='✏️', callback_data='HomeworkAdd')
+btn_inline_homeworkDecline = InlineKeyboardButton(text='❌', callback_data='HomeworkDecline')
+inline_homeworkApprove = InlineKeyboardMarkup(
 	inline_keyboard=[
-		[btn_inline_HomeworkAccept, btn_inline_HomeworkDecline]
+		[btn_inline_homeworkAccept, btn_inline_homeworkDecline]
 	]
 )
-inline_HomeworkUpload = InlineKeyboardMarkup(
+inline_homeworkUpload = InlineKeyboardMarkup(
 	inline_keyboard=[
-		[btn_inline_HomeworkEdit, btn_inline_HomeworkAdd, btn_inline_HomeworkDecline]
+		[btn_inline_homeworkEdit, btn_inline_homeworkAdd, btn_inline_homeworkDecline]
 	]
 )

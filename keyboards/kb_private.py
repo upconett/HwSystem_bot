@@ -2,11 +2,12 @@
 from aiogram.types import KeyboardButton, InlineKeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # <---------- Local modules ---------->
 from messages import ms_regular
+from utilities.ut_essentials import *
 
 
 # <---------- Variables ---------->
@@ -86,7 +87,7 @@ inline_mainScheduleDays = InlineKeyboardMarkup(
 )
 
 
-def inline_homeworkNavigate(current_date: datetime, date_next: datetime = None, date_prev: datetime = None):
+def inline_homeworkNavigate(current_date: datetime, date_next: datetime = None, date_prev: datetime = None) -> InlineKeyboardMarkup:
 	result = InlineKeyboardBuilder()
 	btn_next, btn_prev = (None, None)
 	now = current_date
@@ -104,4 +105,19 @@ def inline_homeworkNavigate(current_date: datetime, date_next: datetime = None, 
 			text = date_next.strftime('%d.%m.%y')
 		btn_next = InlineKeyboardButton(text=f'{text} ➡️', callback_data=f'Homework{date_next.date()}')
 		result.add(btn_next)
+	return InlineKeyboardMarkup(inline_keyboard=result.export())
+
+
+def inline_scheduleNavigate(date: datetime) -> InlineKeyboardMarkup:
+	result = InlineKeyboardBuilder()
+	prev_date = date - timedelta(days=1)
+	if prev_date.weekday() == 6:
+		prev_date -= timedelta(days=1)
+	next_date = date + timedelta(days=1)
+	if next_date.weekday() == 6:
+		next_date += timedelta(days=1)
+	result.add(InlineKeyboardButton(text='⬅️ '+ms_regular.weekdays_smol[prev_date.weekday()].capitalize(), callback_data=f'Schedule{dateToday(prev_date)}'))
+	if dateToday(date) != dateToday()+timedelta(days=1):
+		result.add(InlineKeyboardButton(text='🏠', callback_data=f'Schedule{dateToday()+timedelta(days=1)}'))
+	result.add(InlineKeyboardButton(text=ms_regular.weekdays_smol[next_date.weekday()].capitalize() + ' ➡️', callback_data=f'Schedule{dateToday(next_date)}'))
 	return InlineKeyboardMarkup(inline_keyboard=result.export())

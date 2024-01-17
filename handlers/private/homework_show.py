@@ -88,9 +88,10 @@ async def message_homeworkShowDate(message: types.Message):
 	:return:
 	"""
 	try:
-		date = await ut_handlers.homeworkExtractDataShow(
+		date = await ut_handlers.ExtractDataShow(
 			id=message.from_user.id,
-			text=message.text
+			text=message.text,
+			mode=0
 		)
 		tasks = await operations.getHomework(
 			id=message.from_user.id,
@@ -112,7 +113,7 @@ async def message_homeworkShowDate(message: types.Message):
 		text = ms_private.homeworkShow(
 			date=date,
 			tasks=tasks,
-			schedule=schedule[ms_regular.weekdays[date.weekday()].capitalize()]
+			schedule=schedule[ms_regular.weekdays[date.weekday()]]
 		)
 		if has_media:
 			media_group[0] = types.InputMediaPhoto(
@@ -182,7 +183,7 @@ async def callback_query_homeworkShowDate(query: types.CallbackQuery):
 		text = ms_private.homeworkShow(
 			date=date,
 			tasks=tasks,
-			schedule=schedule[ms_regular.weekdays[date.weekday()].capitalize()]
+			schedule=schedule[ms_regular.weekdays[date.weekday()]]
 		)
 		if has_media:
 			media_group[0] = types.InputMediaPhoto(

@@ -1,6 +1,6 @@
 # <---------- Local modules ---------->
 from messages import ms_regular
-from keyboards.kb_group import inline_HomeworkApprove
+from keyboards.kb_group import inline_homeworkApprove
 
 
 # <---------- Exception classes ---------->
@@ -150,7 +150,7 @@ class InvalidSubject(Exception):
 				f'В расписании нет урока "{self.subject_invalid}"\n'
 				f'Может вы имели в виду "{self.subject}"?'
 			)
-			self.markup = inline_HomeworkApprove
+			self.markup = inline_homeworkApprove
 
 
 class InvalidDate(Exception):

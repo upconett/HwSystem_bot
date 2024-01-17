@@ -12,7 +12,7 @@ from utilities.ut_handlers import quotate
 from data_base import operations
 from messages.ms_group import homeworkUpload, homeworkReUpload,\
 	homeworkUploadRewrite, homeworkUploadAdd, separateMessage
-from keyboards.kb_group import inline_HomeworkUpload
+from keyboards.kb_group import inline_homeworkUpload
 from exceptions.ex_handlers import *
 
 
@@ -143,7 +143,7 @@ async def message_uploadApprove(message: types.Message, state: FSMContext):
 							'🆕 <b>Перезаписать</b>\n'
 							'❌ <b>Отменить</b> '
 						),
-						reply_markup=inline_HomeworkUpload
+						reply_markup=inline_homeworkUpload
 					)
 				else:
 					await message.answer(
@@ -152,7 +152,7 @@ async def message_uploadApprove(message: types.Message, state: FSMContext):
 							subject=data['subject'],
 							hw=hw
 						),
-						reply_markup=inline_HomeworkUpload
+						reply_markup=inline_homeworkUpload
 					)
 		await state.set_data(data)
 		exception = ''
@@ -279,7 +279,7 @@ async def callback_query_uploadApprove(query: types.CallbackQuery, state: FSMCon
 							'🆕 <b>Перезаписать</b>\n'
 							'❌ <b>Отменить</b> '
 						),
-						reply_markup=inline_HomeworkUpload
+						reply_markup=inline_homeworkUpload
 					)
 					await query.message.delete()
 				else:
@@ -289,7 +289,7 @@ async def callback_query_uploadApprove(query: types.CallbackQuery, state: FSMCon
 							subject=data['subject'],
 							hw=hw	
 						),
-						reply_markup=inline_HomeworkUpload
+						reply_markup=inline_homeworkUpload
 					)
 		await state.set_data(data)
 		exception = ''

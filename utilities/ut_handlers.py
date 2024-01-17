@@ -247,17 +247,24 @@ async def homeworkExtractDataUpload(id: int, text: str) -> tuple():
 	return (subject, task, weekday, date)
 
 
-async def homeworkExtractDataShow(id: int, text: str) -> datetime:
+async def ExtractDataShow(id: int, text: str, mode: int = 0) -> datetime:
 	"""
 	Read user message and extract 'date'.
 	:param id: User id
 	:param text: User message
+	:param mode: Usage mod:\n
+		- 0: Homework show
+		- 1: Schedule show
 	:raises InvalidDate:
 	:return: 
 	"""
 	date = None
 	text = text.lower()
-	for f in ms_regular.homeworkShow:
+	if mode == 0:
+		words = ms_regular.homeworkShow
+	else:
+		words = ms_regular.scheduleShow
+	for f in words:
 		if f in text:
 			text = text.replace(f, '')
 	text = text.replace(' ', '')

@@ -3,6 +3,7 @@ from messages.ms_regular import boolToRussian
 from create_bot import psql
 from create_bot import mndb
 from exceptions.ex_handlers import SundayException, NoLessonAtWeekday
+from utilities.ut_essentials import *
 
 # <---------- Python modules ---------->
 import json
@@ -12,27 +13,6 @@ from datetime import datetime, timedelta
 # <---------- Variables ---------->
 filename = 'operations.py'
 __all__ = ['insertUser', 'insertChat', 'userData', 'chatData', 'groupData', 'insertGroup', 'getMainSchedule', 'setMainSchedule']
-
-
-# <---------- Utility ---------->
-def dateToday(date: datetime = None) -> datetime:
-	"""
-	Returns datetime object with the time set to zero.
-	"""
-	if date:
-		return date.replace(
-			hour=0,
-			minute=0,
-			second=0,
-			microsecond=0
-		)
-	else:
-		return datetime.now().replace(
-			hour=0,
-			minute=0,
-			second=0,
-			microsecond=0
-		)
 
 
 # <---------- Interoperability with PostgreSQL ---------->
