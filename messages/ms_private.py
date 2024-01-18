@@ -28,6 +28,12 @@ commandStartOrHelp_forNotGroupMember = (
 )
 
 
+commandStartOrHelp_fastTravel_forGroupMember = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Вы уже находитесь в группе!'
+)
+
+
 groupPanel_forNotMember = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
 	'Хотите войти в группу или создать её?'
@@ -145,6 +151,13 @@ scheduleElseUpload = (
 scheduleUpdateFinish = 'Обновление расписания завершено...'
 
 
+#         <- homework_show.py ->
+noMainSchedule = (
+	'В вашей группе не установлено <b>основное расписание</b> 📋\n'
+	'Попросите <b>админов вашей группы</b> установить его 🛠️'
+)
+
+
 # <---------- Complex messages ---------->
 #            <- commands.py ->
 async def commandStartOrHelp_forNotRegistered(first_name: str):
@@ -191,12 +204,7 @@ async def groupEnterFinish(group_name: str):
 	)
 
 
-noMainSchedule = (
-	'В вашей группе не установлено <b>основное расписание</b> 📋\n'
-	'Попросите <b>админов вашей группы</b> установить его 🛠️'
-)
-
-
+#         <- homework_show.py ->
 def homeworkShow(date: datetime, tasks: dict, schedule: dict) -> str:
 	month = ms_regular.months_genitive[date.month-1]
 	weekday = ms_regular.weekdays[date.weekday()]
@@ -223,7 +231,7 @@ def homeworkShow(date: datetime, tasks: dict, schedule: dict) -> str:
 	for lesson in tasks:
 		if tasks[lesson]['task'] or tasks[lesson]['photos']:
 			least = True
-			result +=f'<b>[{ls_nums[lesson]}] {lesson.capitalize()}</b>'
+			result += f'<b>[{ls_nums[lesson]}] {lesson.capitalize()}</b>'
 			if tasks[lesson]['photos']:
 				result += ' 🖼️'
 			result += '\n'
@@ -234,4 +242,3 @@ def homeworkShow(date: datetime, tasks: dict, schedule: dict) -> str:
 	if not least:
 		result += 'Сохранённых заданий нет 🕊️'
 	return result
-

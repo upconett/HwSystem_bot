@@ -34,4 +34,6 @@ async def decodeLink(argument):
 	:return:
 	"""
 	parameter = decode_payload(payload=argument)
-	return parameter
+	response = parameter.split('|')
+	ret = (response[1], response[3])
+	return ret

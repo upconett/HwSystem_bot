@@ -7,7 +7,7 @@ from create_bot import bot, psql
 from data_base import operations
 from messages import ms_private, ms_regular
 from keyboards import kb_private
-from utilities import ut_logger, ut_filters
+from utilities import ut_logger, ut_filters, ut_security
 
 
 # <---------- Variables ---------->
@@ -69,6 +69,44 @@ async def message_commandStartOrHelp_unregistered(message: types.Message):
 			exception=exc,
 			content=''
 		)
+
+
+async def message_commandStartOrHelp_fastTravel(message: types.Message):
+	try:
+		user_data = await operations.userData(id=message.from_user.id)
+		if not user_data['group_id']:
+			link = message.text.split(' ')[1]
+			group_id, id = await ut_security.decodeLink(argument=link)
+			group_data = await operations.groupData(group_id=group_id)
+			text = await ms_private.groupEnterFinish(group_name=group_data['group_name'])
+			reply_markup = kb_private.inline_groupPanelForMember
+			await psql.update(
+				table='users',
+				what='group_id',
+				what_value=group_id,
+				where='id',
+				where_value=message.from_user.id
+			)
+			content = 'User entered group.'
+		else:
+			text = ms_private.commandStartOrHelp_fastTravel_forGroupMember
+			reply_markup = None
+			content = 'User already in group.'
+		await message.answer(
+			text=text,
+			reply_markup=reply_markup
+		)
+		exception = ''
+	except Exception as exc:
+		content = ''
+		exception = exc
+	await ut_logger.create_log(
+		id=message.from_user.id,
+		filename=filename,
+		function='message_commandStartOrHelp_fastTravel',
+		exception=exception,
+		content=content
+	)
 
 
 # <---------- Group panel ---------->
@@ -177,6 +215,10 @@ def register_handlers(router: Router):
 		message_commandStartOrHelp_unregistered,
 		ut_filters.TextEquals(list_ms=ms_regular.startOrHelp, data_type='message'),
 		~ut_filters.UserRegister()
+	)
+	router.message.register(
+		message_commandStartOrHelp_fastTravel,
+		F.text.startswith('/start')
 	)
 	router.callback_query.register(callback_query_groupPanel, F.data == 'GroupPanel')
 	router.message.register(message_groupPanel, ut_filters.TextEquals(list_ms=ms_regular.groupPanel, data_type='message'))
