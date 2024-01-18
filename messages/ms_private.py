@@ -127,6 +127,23 @@ groupDeleted = (
 )
 
 
+#         <- group_changeOwner.py ->
+groupAdmins = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Админы, которым вы можете передать права управления группой 👇'
+)
+
+groupNewOwner = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Вы передали права управления группой.'
+)
+
+groupToNewOwner = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Вы стали владельцем группы, в которой состоите.'
+)
+
+
 #     <- default_schedule_upload.py ->
 scheduleSet = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
@@ -179,6 +196,14 @@ async def commandStartOrHelp_forNotRegistered(first_name: str):
 		f'Привет, <b>{first_name}</b> 👋\n'
 		f'Я помогу упорядочить твои знания\n'
 		f'Начни со вступления в группу или её создания прямо сейчас 👇'
+	)
+
+
+#         <- group_changeOwner.py ->
+async def groupConfirmNewOwner(name: str):
+	return (
+		f'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+		f'Вы уверены, что хотите сделать {name} админом?'
 	)
 
 

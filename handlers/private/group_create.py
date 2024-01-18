@@ -171,6 +171,13 @@ async def FSM_message_registerGroupPassword(message: types.Message, state: FSMCo
 			where='id',
 			where_value=message.from_user.id
 		)
+		await psql.update(
+			table='users',
+			what='group_admin',
+			what_value=True,
+			where='id',
+			where_value=message.from_user.id
+		)
 		group_name = await ut_handlers.ut_filterForMDV2(data['name'])
 		group_password = await ut_handlers.ut_filterForMDV2(data['password'])
 		text = await ms_private.groupRegisterFinish(

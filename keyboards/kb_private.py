@@ -8,6 +8,7 @@ from datetime import timedelta, datetime
 # <---------- Local modules ---------->
 from messages import ms_regular
 from utilities.ut_essentials import dateToday
+from data_base import operations
 
 
 # <---------- Reply keyboards ---------->
@@ -83,6 +84,24 @@ inline_mainScheduleDays = InlineKeyboardMarkup(
 
 
 #         <- Complex keyboards ->
+async def inline_groupAdmins(group_admins: list):
+	builder = InlineKeyboardBuilder()
+	for admin_id in group_admins:
+		admin_data = await operations.userData(id=admin_id)
+		text = admin_data['username']
+		if admin_data['username'] == '':
+			text = admin_data['full_name']
+		builder.button(text=text, callback_data=f'ChangeOwnerTo|{admin_id}|{text}')
+	builder.adjust(2, repeat=True)
+	return builder
+
+
+async def inline_confirmNewOwner(id: int):
+	button = InlineKeyboardButton(text='Подтвердить', callback_data=f'ConfirmNewOwner|{id}')
+	reply_markup = InlineKeyboardMarkup(inline_keyboard=[[button]])
+	return reply_markup
+
+
 def inline_homeworkNavigate(current_date: datetime, date_next: datetime = None, date_prev: datetime = None) -> InlineKeyboardMarkup:
 	result = InlineKeyboardBuilder()
 	now = current_date

@@ -94,7 +94,7 @@ async def callback_query_deleteGroupConfirmed(callback_query: types.CallbackQuer
 	await ut_logger.create_log(
 		id=callback_query.from_user.id,
 		filename=filename,
-		function='callback_query_deleteGroupConfirm',
+		function='callback_query_deleteGroupConfirmed',
 		exception=exception,
 		content=content
 	)

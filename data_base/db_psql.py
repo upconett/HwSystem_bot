@@ -87,6 +87,28 @@ class PostgreSQL:
 			print(f'FILENAME="{filename}"; FUNCTION="PostgreSQL.select"; CONTENT=""; EXCEPTION="{exception}";')
 			return False
 
+	async def select_two(self, table: str, what: str = '*', where: str = '', where_value: any = '', where_2: str = '', where_value_2: str = ''):
+		"""
+		Select line (lines) from table where column.
+		:param table: Table (users, groups, chats)
+		:param what: Select this from table
+		:param where: Where this
+		:param where_value: Equals this
+		:param where_2: And where this
+		:param where_value_2: And equals this
+		:return: Array with tuples if OK or False if not OK
+		"""
+		try:
+			with self.conn.cursor() as cursor:
+				if where != '':
+					cursor.execute(f"SELECT {what} FROM {table} WHERE {where} = %s AND {where_2} = %s", (where_value, where_value_2))
+				else:
+					cursor.execute(f"SELECT {what} FROM {table}")
+				return cursor.fetchall()
+		except Exception as exception:
+			print(f'FILENAME="{filename}"; FUNCTION="PostgreSQL.select_two"; CONTENT=""; EXCEPTION="{exception}";')
+			return False
+
 	async def update(self, table: str, what: str, what_value: any, where: str, where_value: any):
 		"""
 		Update column0 in line in table where column1.
