@@ -24,7 +24,6 @@ router_private_groupMember = Router()
 router_private_groupMember.message.filter(ChatType(chat_types=['private'], data_type='message'), UserPresenceInGroup())
 router_private_groupMember.callback_query.filter(ChatType(chat_types=['private'], data_type='callback_query'), UserPresenceInGroup())
 
-
 #     <- Router for private chat and group admin ->
 router_private_groupAdmin = Router()
 router_private_groupAdmin.message.filter(ChatType(chat_types=['private'], data_type='message'), UserIsGroupAdmin())

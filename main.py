@@ -6,7 +6,7 @@ import asyncio
 from create_bot import dp, bot, mndb, psql
 from handlers.routers import *
 from handlers.private import commands, default_schedule_upload, group_create, group_enter,\
-	homework_show, schedule_show
+	homework_show, schedule_show, group_leave
 from handlers.group import group_start, homework_upload
 from utilities import ut_logger
 
@@ -68,6 +68,7 @@ async def main():
 	schedule_show.register_handlers(router=router_private_groupMember)
 	group_create.register_handlers(router=router_private_groupNotMember)
 	group_enter.register_handlers(router=router_private_groupNotMember)
+	group_leave.register_handlers(router=router_private_groupMember)
 	default_schedule_upload.register_handlers(router=router_private_groupAdmin)
 
 	await bot.delete_webhook(drop_pending_updates=True)

@@ -72,6 +72,10 @@ inline_groupPanelForOwner = InlineKeyboardMarkup(
 )
 
 
+btn_inline_leaveGroupConfirm = InlineKeyboardButton(text='Подтвердить', callback_data=f'LeaveGroupConfirm')
+inline_leaveGroupConfirm = InlineKeyboardMarkup(inline_keyboard=[[btn_inline_leaveGroupConfirm]])
+
+
 btn_inline_mainScheduleAccept = InlineKeyboardButton(text='✅', callback_data='MainSchedule_Submit')
 btn_inline_mainScheduleDecline = InlineKeyboardButton(text='❌', callback_data='MainSchedule_Decline')
 inline_mainScheduleApprove = InlineKeyboardMarkup(inline_keyboard=[[btn_inline_mainScheduleAccept, btn_inline_mainScheduleDecline]])

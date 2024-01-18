@@ -96,6 +96,18 @@ groupEnterPassword_correct = (
 )
 
 
+#         <- group_leave.py ->
+groupLeave = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Вы точно хотите выйти?'
+)
+
+groupLeaved = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Вы покинули группу.'
+)
+
+
 #     <- default_schedule_upload.py ->
 scheduleSet = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
