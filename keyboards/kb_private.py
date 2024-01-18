@@ -52,10 +52,12 @@ inline_groupPanelForMember = InlineKeyboardMarkup(inline_keyboard=[[btn_inline_l
 
 btn_inline_deleteGroup = InlineKeyboardButton(text='🚪 Удалить', callback_data=f'DeleteGroup')
 btn_inline_changeOwner = InlineKeyboardButton(text='🔑 Передать права', callback_data=f'ChangeOwner')
+btn_inline_newAdmin = InlineKeyboardButton(text='🎟 Добавить админа', callback_data=f'NewAdmin')
 inline_groupPanelForOwner = InlineKeyboardMarkup(
 	inline_keyboard=[
 		[btn_inline_deleteGroup],
-		[btn_inline_changeOwner]
+		[btn_inline_changeOwner],
+		[btn_inline_newAdmin]
 	]
 )
 

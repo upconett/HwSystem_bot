@@ -127,7 +127,7 @@ groupDeleted = (
 )
 
 
-#         <- group_changeOwner.py ->
+#         <- group_change_owner.py ->
 groupAdmins = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
 	'Админы, которым вы можете передать права управления группой 👇'
@@ -199,7 +199,7 @@ async def commandStartOrHelp_forNotRegistered(first_name: str):
 	)
 
 
-#         <- group_changeOwner.py ->
+#         <- group_change_owner.py ->
 async def groupConfirmNewOwner(name: str):
 	return (
 		f'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'

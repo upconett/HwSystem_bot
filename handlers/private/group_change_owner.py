@@ -10,7 +10,7 @@ from utilities import ut_logger, ut_filters
 
 
 # <---------- Variables ---------->
-filename = 'group_changeOwner.py'
+filename = 'group_change_owner.py'
 
 
 # <---------- Side functions ---------->
