@@ -1,5 +1,4 @@
 # <---------- Local modules ---------->
-from messages import ms_regular
 from keyboards.kb_group import inline_homeworkApprove
 
 
@@ -19,7 +18,7 @@ class InvalidWeekDay(Exception):
 	"""
 	Triggered when invalid weekday name detected.
 	Example: 'пондельник'
-	#### MarkdowV2 required!
+	#### MarkdownV2 required!
 	"""
 	def __init__(self, line: str):
 		self.quote = line
@@ -47,7 +46,7 @@ class NoLesson(Exception):
 	"""
 	Triggered when no lesson detected.
 	Example: '2. '
-	#### MarkdowV2 required!
+	#### MarkdownV2 required!
 	"""
 	def __init__(self, line: str):
 		self.quote = line
@@ -61,7 +60,7 @@ class InvalidLessonNumber(Exception):
 	"""
 	Triggered when invalid lesson number detected.
 	Example: '1u. Алгебра'
-	#### MarkdowV2 required!
+	#### MarkdownV2 required!
 	"""
 	def __init__(self, line: str):
 		self.quote = line
@@ -75,7 +74,7 @@ class NotSuitableLessonNumber(Exception):
 	"""
 	Raised when lesson number not in [0,11].
 	Example: '40. Алгебра'
-	#### MarkdowV2 required!
+	#### MarkdownV2 required!
 	"""
 	def __init__(self, line: str):
 		self.quote = line
@@ -89,7 +88,7 @@ class NotSuitableLessonNumber(Exception):
 class SundayException(Exception):
 	"""
 	Triggered if someone enters 'воскресенье' in schedule.\n
-	We will use it because why the frick would somebody have lessons on sundays?!
+	We will use it because why the freak would somebody have lessons on sundays?!
 	"""
 	def __init__(self):
 		self.text = (
@@ -156,12 +155,12 @@ class InvalidSubject(Exception):
 class InvalidDate(Exception):
 	"""
 	Raised when written date string can't be parsed.\n
-	#### MarkdowV2 required!
+	#### MarkdownV2 required!
 	"""
 	def __init__(self, date: str):
 		"""
 		Raised when written date string can't be parsed.\n
-		#### MarkdowV2 required!
+		#### MarkdownV2 required!
 		"""
 		self.quote = date
 		self.text = (
@@ -172,12 +171,12 @@ class InvalidDate(Exception):
 
 class TimeTravel(Exception):
 	"""
-	Raised when written date is in past.
+	Raised when written date is in the past.
 	"""
 	def __init__(self, date: str):
 		"""
-		Raised when written date is in past.
-		#### MarkdowV2 required!
+		Raised when written date is in the past.
+		#### MarkdownV2 required!
 		"""
 		self.quote = date
 		self.text = (
@@ -193,7 +192,7 @@ class NoLessonAtWeekday(Exception):
 	def __init__(self, weekday: str, subject: str):
 		"""
 		Raised when there is no lesson of given subject at date provided.
-		#### MarkdowV2 required!
+		#### MarkdownV2 required!
 		"""
 		self.text = (
 			'Домашнее задание не сохранено ❌\n'

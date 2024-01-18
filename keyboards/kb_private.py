@@ -2,25 +2,12 @@
 from aiogram.types import KeyboardButton, InlineKeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from datetime import datetime, timedelta
+from datetime import timedelta, datetime
 
 
 # <---------- Local modules ---------->
 from messages import ms_regular
-from utilities.ut_essentials import *
-
-
-# <---------- Variables ---------->
-__all__ = [
-	'reply_commandStartOrHelp',
-	'reply_cancel',
-	'inline_groupPanel',
-	'inline_groupPanelForNotMember',
-	'inline_groupPanelForMember',
-	'inline_groupPanelForOwner',
-	'inline_mainScheduleApprove',
-	'inline_mainScheduleDays',
-]
+from utilities.ut_essentials import dateToday
 
 
 # <---------- Reply keyboards ---------->
@@ -93,7 +80,6 @@ inline_mainScheduleDays = InlineKeyboardMarkup(
 
 def inline_homeworkNavigate(current_date: datetime, date_next: datetime = None, date_prev: datetime = None) -> InlineKeyboardMarkup:
 	result = InlineKeyboardBuilder()
-	btn_next, btn_prev = (None, None)
 	now = current_date
 	if date_prev:
 		if (now-date_prev).days < 6:

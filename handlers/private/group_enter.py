@@ -6,11 +6,10 @@ from aiogram.fsm.context import FSMContext
 
 
 # <---------- Local modules ---------->
-from create_bot import bot, psql
+from create_bot import psql
 from messages import ms_private, ms_regular
 from keyboards import kb_private
-from utilities import ut_logger, ut_filters, ut_handlers
-from data_base import operations
+from utilities import ut_logger, ut_filters
 
 
 # <---------- Variables ---------->
@@ -33,28 +32,20 @@ async def callback_query_enterGroupStart(callback_query: types.CallbackQuery, st
 	"""
 	try:
 		await callback_query.answer()
-		await bot.delete_message(
-			chat_id=callback_query.from_user.id,
-			message_id=callback_query.message.message_id
-		)
-		await bot.send_message(
-			chat_id=callback_query.from_user.id,
+		await callback_query.message.delete()
+		await callback_query.message.delete(
 			text=ms_private.groupEnterName,
 			reply_markup=kb_private.reply_cancel
 		)
 		await state.set_state(FSMGroupEnter.name)
-		exception = ''
-		content = 'Group entry start.'
 	except Exception as exc:
-		exception = exc
-		content = ''
-	await ut_logger.create_log(
-		id=callback_query.from_user.id,
-		filename=filename,
-		function='callback_query_enterGroupStart',
-		exception=exception,
-		content=content
-	)
+		await ut_logger.create_log(
+			id=callback_query.from_user.id,
+			filename=filename,
+			function='callback_query_enterGroupStart',
+			exception=exc,
+			content=''
+		)
 
 
 async def message_enterGroupStart(message: types.Message, state: FSMContext):
@@ -65,28 +56,20 @@ async def message_enterGroupStart(message: types.Message, state: FSMContext):
 	:return:
 	"""
 	try:
-		await bot.delete_message(
-			chat_id=message.from_user.id,
-			message_id=message.message_id
-		)
-		await bot.send_message(
-			chat_id=message.from_user.id,
+		await message.delete()
+		await message.answer(
 			text=ms_private.groupEnterName,
 			reply_markup=kb_private.reply_cancel
 		)
 		await state.set_state(FSMGroupEnter.name)
-		exception = ''
-		content = 'Group entry start.'
 	except Exception as exc:
-		exception = exc
-		content = ''
-	await ut_logger.create_log(
-		id=message.from_user.id,
-		filename=filename,
-		function='message_enterGroupStart',
-		exception=exception,
-		content=content
-	)
+		await ut_logger.create_log(
+			id=message.from_user.id,
+			filename=filename,
+			function='message_enterGroupStart',
+			exception=exc,
+			content=''
+		)
 
 
 async def FSM_message_cancel(message: types.Message, state: FSMContext):
@@ -100,17 +83,16 @@ async def FSM_message_cancel(message: types.Message, state: FSMContext):
 		current_state = await state.get_state()
 		if not current_state:
 			text = 'Нечего отменять 🤷'
-			exception = 'No active state.'
-			content = ''
+			content = 'No active state.'
 		else:
 			await state.clear()
 			text = 'Отменено 👍'
-			exception = ''
-			content = 'Register'
+			content = 'State aborted.'
 		await message.answer(
 			text=text,
 			reply_markup=kb_private.reply_commandStartOrHelp
 		)
+		exception = ''
 	except Exception as exc:
 		exception = exc
 		content = ''
@@ -139,18 +121,16 @@ async def FSM_message_enterGroupName(message: types.Message, state: FSMContext):
 		)
 		if response:
 			await state.update_data(name=message.text)
-			await message.answer(
-				text=ms_private.groupEnterPassword,
-				reply_markup=kb_private.reply_cancel
-			)
+			text = ms_private.groupEnterPassword
 			await state.set_state(state=FSMGroupEnter.password)
 			content = f'Chosen group "{message.text}".'
 		else:
-			await message.answer(
-				text=ms_private.groupEnterName_noGroup,
-				reply_markup=kb_private.reply_cancel
-			)
+			text = ms_private.groupEnterName_noGroup
 			content = f'No group with name "{message.text}".'
+		await message.answer(
+			text=text,
+			reply_markup=kb_private.reply_cancel
+		)
 		exception = ''
 	except Exception as exc:
 		exception = exc
@@ -197,7 +177,6 @@ async def FSM_message_enterGroupPassword(message: types.Message, state: FSMConte
 				text=text,
 				reply_markup=kb_private.inline_groupPanelForMember
 			)
-			await message.delete()
 			await state.clear()
 			content = 'Entered group.'
 		else:
@@ -206,7 +185,7 @@ async def FSM_message_enterGroupPassword(message: types.Message, state: FSMConte
 				reply_markup=kb_private.reply_cancel
 			)
 			content = f'Incorrect password for group "{response[0][1]}".'
-			await message.delete()
+		await message.delete()
 		exception = ''
 	except Exception as exc:
 		exception = exc

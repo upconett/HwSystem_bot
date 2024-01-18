@@ -6,7 +6,6 @@ from exceptions.ex_handlers import SundayException, NoLessonAtWeekday
 from utilities.ut_essentials import *
 
 # <---------- Python modules ---------->
-import json
 from datetime import datetime, timedelta
 
 
@@ -213,7 +212,7 @@ async def groupData(group_id: int, formatted: bool = False) -> dict:
 	return data
 
 
-async def getMainSchedule(id: int) -> dict:
+async def getMainSchedule(id: int):
 	"""
 	Get default schedule from database.\n
 	---
@@ -272,8 +271,8 @@ async def setMainSchedule(id: int, data: dict):
 
 async def getSchedule(id: int, date: datetime = None) -> dict:
 	"""
-	Returns schedule for specified date.\n
-	If heither given, return schedule for tomorrow.\n
+	Returns schedule for specified date.
+	If either given, return schedule for tomorrow.
 	---
 	:param id: User id.
 	:param date: Date on which to look for data.
@@ -296,18 +295,20 @@ async def getSchedule(id: int, date: datetime = None) -> dict:
 		raise Exception(f'MongoDB has no collection named {group_name}')
 	coll = mndb.db.get_collection(group_name)
 	record = coll.find_one({'date': dateToday(date)})
-	if not record: return record
+	if not record:
+		return record
 	schedule = record['schedule']
 	return schedule
 
 
-async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: str = None) -> dict[datetime, int, int]:
+async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: str = None):
 	"""
 	Finds next lesson in MainSchedule.\n
 	---
 	:param id: User id
 	:param subject: Subject to find
-	:param date_str: Date when to seek
+	:param date: Date when to seek
+	:param weekday: Weekday
 	:return: Dict with date, weekday and lesson
 	"""
 	date_now = datetime.now()
@@ -337,9 +338,9 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 			date = datetime.now()
 		else:
 			if wd > wd_now:
-				date = datetime.now() + timedelta(days = (wd - wd_now))
+				date = datetime.now() + timedelta(days=(wd - wd_now))
 			else:
-				date = datetime.now() + timedelta(days = ((6 - wd_now) + wd)+1)
+				date = datetime.now() + timedelta(days=((6 - wd_now) + wd)+1)
 		for lesson in schedule[weekday]:
 			if schedule[weekday][lesson] == subject:
 				result['date'] = dateToday(date)
@@ -348,10 +349,10 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 		else:
 			raise NoLessonAtWeekday(weekday, subject)
 	else:
-		date = date_now + timedelta(days = 1)
+		date = date_now + timedelta(days=1)
 		wd = date.weekday()
 		if wd == 6:
-			wd == 0
+			wd = 0
 		for i in range(2):
 			for day in list(weekdays)[wd:]:
 				for lesson in schedule[day]:
@@ -359,8 +360,8 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 						result['date'] = dateToday(date)
 						result['lesson'] = int(lesson)
 						return result
-				date = date + timedelta(days = 1)
-			date = date + timedelta(days = 1)
+				date = date + timedelta(days=1)
+			date = date + timedelta(days=1)
 			wd = date.weekday()
 	return result
 
@@ -402,7 +403,7 @@ def generateMongoRecord(date: datetime, schedule: dict, breaks: dict = None, sub
 async def getHomework(id: int, date: datetime = None, subject: str = None) -> dict:
 	"""
 	Returns homework for specified date or subject.\n
-	If heither given, return all tasks for tomorrow.\n
+	If either given, return all tasks for tomorrow.\n
 	---
 	:param id: User id.
 	:param date: Date on which to look for data.
@@ -426,7 +427,8 @@ async def getHomework(id: int, date: datetime = None, subject: str = None) -> di
 		raise Exception(f'MongoDB has no collection named {group_name}')
 	coll = mndb.db.get_collection(group_name)
 	record = coll.find_one({'date': dateToday(date)})
-	if not record: return record
+	if not record:
+		return record
 	homework = record['tasks']
 	if subject:
 		return homework[subject]
@@ -488,7 +490,7 @@ async def closestDates(id: int, date: datetime) -> tuple[datetime, datetime]:
 	Checks if there is any homework before and after given date.\n
 	---
 	:param id: _User id.
-	:param date: Date across which to seak.
+	:param date: Date across which to seek.
 	:return:
 	"""
 	next_date, prev_date = (None, None)
@@ -509,9 +511,11 @@ async def closestDates(id: int, date: datetime) -> tuple[datetime, datetime]:
 	try:
 		cursor = coll.find({'date': {'$gt': dateToday(date)}})
 		next_date = min(cursor.distinct('date'))
-	except: pass
+	except:
+		pass
 	try:
 		cursor = coll.find({'date': {'$lt': dateToday(date)}})
 		prev_date = max(cursor.distinct('date'))
-	except: pass
-	return (next_date, prev_date)
+	except:
+		pass
+	return next_date, prev_date

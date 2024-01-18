@@ -1,16 +1,12 @@
 # <---------- Python modules ---------->
 from aiogram import types, Router, F
-from aiogram.filters import StateFilter
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.fsm.context import FSMContext
 
 
 # <---------- Local modules ---------->
-from create_bot import bot, psql
+from create_bot import psql
 from messages import ms_private, ms_regular
 from keyboards import kb_private
-from utilities import ut_logger, ut_filters, ut_handlers
-from data_base import operations
+from utilities import ut_logger, ut_filters
 
 
 # <---------- Variables ---------->
@@ -42,11 +38,11 @@ async def callback_query_leaveGroup(callback_query: types.CallbackQuery):
 
 async def message_leaveGroup(message: types.Message):
 	try:
-		await message.delete()
 		await message.answer(
 			text=ms_private.groupLeave,
 			reply_markup=kb_private.inline_leaveGroupConfirm
 		)
+		await message.delete()
 	except Exception as exc:
 		await ut_logger.create_log(
 			id=message.from_user.id,

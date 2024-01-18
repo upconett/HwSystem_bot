@@ -152,7 +152,7 @@ def first_configuration():
 		print('Tables built successfully!')
 	print('\nTrying to connect to MongoDB...')
 	try:
-		mndb = MongoDB(db_host, db_user, db_password, db_name)
+		MongoDB(db_host, db_user, db_password, db_name)
 	except Exception as ex:
 		print(
 			'Connection Error!\n'

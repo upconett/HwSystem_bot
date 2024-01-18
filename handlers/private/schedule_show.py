@@ -6,9 +6,9 @@ from dateutil.parser import parse
 
 # <---------- Local modules ---------->
 from utilities import ut_logger, ut_handlers, ut_filters
-from utilities.ut_handlers import quotate
+from utilities.ut_handlers import quote_format
 from keyboards.kb_private import inline_scheduleNavigate
-from messages import ms_private
+from messages import ms_regular
 from data_base import operations
 from exceptions.ex_handlers import *
 
@@ -20,7 +20,7 @@ filename = 'schedule_show.py'
 # <---------- Homework Showing ---------->
 async def message_scheduleShowTomorrow(message: types.Message):
 	"""
-	Show schedule for tommorow (from now + 12h).
+	Show schedule for tomorrow (from now + 12h).
 	:param message:
 	:return:
 	"""
@@ -94,7 +94,7 @@ async def message_scheduleShowDate(message: types.Message):
 	except InvalidDate as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			)

@@ -5,7 +5,7 @@ import asyncio
 # <---------- Local modules ---------->
 from create_bot import dp, bot, mndb, psql
 from handlers.routers import *
-from handlers.private import commands, default_schedule_upload, group_create, group_enter,\
+from handlers.private import commands, default_schedule_upload, group_create, group_enter, \
 	homework_show, schedule_show, group_leave
 from handlers.group import group_start, homework_upload
 from utilities import ut_logger

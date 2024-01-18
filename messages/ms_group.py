@@ -1,17 +1,13 @@
 # <---------- Python modules ---------->
 from datetime import datetime
 
-
 # <---------- Local modules ---------->
-from messages.ms_regular import months_genitive, weekdays 
+from messages.ms_regular import months_genitive, weekdays
 
-
-#<---------- Simple messages ---------->
+# <---------- Simple messages ---------->
 chatFirstMessage = 'Прошу права администратора, а затем нажать на кнопочку 👇'
 
-
 chatFirstMessageEdited = 'Настройка начата.'
-
 
 chatStart = (
 	'Привет, ученики 👋\n'
@@ -21,13 +17,11 @@ chatStart = (
 	'Как выдадите, нажмите сюда 👇'
 )
 
-
 chatStart_notSupergroup = (
 	'Ваш чат не является супергруппой!\n'
 	'Сделайте его общедоступным по ссылке, а не частным 🔓\n'
 	'После этого перепригласите бота в чат'
 )
-
 
 chatStart_noGroups = (
 	'Участники данного чата не состоят ни в одной группе 😕\n'
@@ -35,21 +29,16 @@ chatStart_noGroups = (
 	'Затем вы сможете нажать эту кнопку 👇'
 )
 
-
 newBotInChat = 'О, у меня появился друг? Спасибо ❤️‍'
-
 
 selectGroup = (
 	'Отлично 🤓\n'
 	'В вашем чате я вижу участников данных групп, выберите к какой из них привязать бота 👇'
 )
 
-
 bindChatSettings = 'Теперь выберите, хотите ли вы получать уведомления о предстоящих уроках, приближающихся звонках и скорых событиях?'
 
-
 chatReloaded = 'Ваш чат <b>успешно</b> перезагружен!'
-
 
 chatReloadError = (
 	'<b>Ошибка</b> перезапуска!\n'
@@ -85,8 +74,8 @@ async def unlinkGroup(group_name: str):
 	return f'Этот чат был отвязан от группы <b>{group_name}</b> 🔓'
 
 
-def homeworkUpload(date: datetime, subject:str):
-	month = months_genitive[date.month-1]
+def homeworkUpload(date: datetime, subject: str):
+	month = months_genitive[date.month - 1]
 	weekday = weekdays[date.weekday()]
 	result = (
 		f'<b>Задание сохранено ✅</b>\n'
@@ -95,8 +84,8 @@ def homeworkUpload(date: datetime, subject:str):
 	return result
 
 
-def homeworkReUpload(date: datetime, subject:str):
-	month = months_genitive[date.month-1]
+def homeworkReUpload(date: datetime, subject: str):
+	month = months_genitive[date.month - 1]
 	weekday = weekdays[date.weekday()]
 	result = (
 		f'<b>Задание перезаписано ✅</b>\n'
@@ -105,8 +94,8 @@ def homeworkReUpload(date: datetime, subject:str):
 	return result
 
 
-def homeworkUploadAdd(date: datetime, subject:str):
-	month = months_genitive[date.month-1]
+def homeworkUploadAdd(date: datetime, subject: str):
+	month = months_genitive[date.month - 1]
 	weekday = weekdays[date.weekday()]
 	result = (
 		f'<b>Задание дополнено ✅</b>\n'
@@ -115,8 +104,8 @@ def homeworkUploadAdd(date: datetime, subject:str):
 	return result
 
 
-def homeworkUploadRewrite(date: datetime, subject:str, hw: dict):
-	month = months_genitive[date.month-1]
+def homeworkUploadRewrite(date: datetime, subject: str, hw: dict):
+	month = months_genitive[date.month - 1]
 	weekday = weekdays[date.weekday()]
 	task = hw['task']
 	if task is None:

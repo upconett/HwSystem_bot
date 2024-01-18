@@ -6,9 +6,9 @@ from dateutil.parser import parse
 
 # <---------- Local modules ---------->
 from utilities import ut_logger, ut_handlers, ut_filters
-from utilities.ut_handlers import quotate
+from utilities.ut_handlers import quote_format
 from keyboards.kb_private import inline_homeworkNavigate
-from messages import ms_private
+from messages import ms_private, ms_regular
 from data_base import operations
 from exceptions.ex_handlers import *
 
@@ -20,7 +20,7 @@ filename = 'homework_show.py'
 # <---------- Homework Showing ---------->
 async def message_homeworkShowTomorrow(message: types.Message):
 	"""
-	Show homework for tommorow (from now + 12h).
+	Show homework for tomorrow (from now + 12h).
 	:param message:
 	:return:
 	"""
@@ -138,7 +138,7 @@ async def message_homeworkShowDate(message: types.Message):
 	except InvalidDate as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			)

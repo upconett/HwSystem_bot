@@ -2,14 +2,14 @@
 from aiogram import types
 from datetime import datetime, timedelta
 from dateutil.parser import parse
-from dateutil.parser._parser import ParserError
+from dateutil.parser.__init__ import ParserError
 
 # <---------- Local modules ---------->
 from exceptions.ex_handlers import NotEnoughDays, InvalidWeekDay, \
 	SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber, \
-	NoTask, NoMainSchedule, NoSubject, InvalidSubject, InvalidDate, TimeTravel
+	NoMainSchedule, NoSubject, InvalidSubject, InvalidDate, TimeTravel
 from messages import ms_regular
-from data_base.operations import getMainSchedule, findNextLesson
+from data_base.operations import getMainSchedule
 from difflib import SequenceMatcher
 
 
@@ -26,7 +26,7 @@ async def ut_filterForMDV2(text: str) -> str:
 	return text
 
 
-def quotate(message: types.Message, quote: str):
+def quote_format(message: types.Message, quote: str):
 	return types.ReplyParameters(
 		message_id=message.message_id,
 		chat_id=message.chat.id,
@@ -92,7 +92,7 @@ async def scheduleMessageToDict(text: str, mode: int) -> dict:
 						raise InvalidLessonNumber(line)
 					if int(lesson_num) not in range(0, 11):
 						raise NotSuitableLessonNumber(line)
-					subject = " ".join([x for x in line.split()[1:]]).lover()
+					subject = " ".join([x for x in line.split()[1:]]).lower()
 					if subject == '-':
 						subject = None
 					result[str(int(lesson_num))] = subject
@@ -175,16 +175,14 @@ async def scheduleEnumSubjects(schedule: dict, mode: int) -> list[str]:
 	return result
 
 
-async def homeworkExtractDataUpload(id: int, text: str) -> tuple():
+async def homeworkExtractDataUpload(id: int, text: str) -> tuple:
 	"""
 	Read users message and find 'subject', 'task', and 'weekday'/'date'.
 	:param id: User id
 	:param text: User message.text
 	:return tuple: subject, task, weekday, date
 	"""
-	subject = None
 	subject_invalid = None
-	task = None
 	weekday = None
 	date = None
 
@@ -194,16 +192,17 @@ async def homeworkExtractDataUpload(id: int, text: str) -> tuple():
 	else:
 		task = "\n".join(text.split('\n')[1:])
 	for w in ms_regular.hw_keywords:
-		if w in first: first = first.replace(w, '')
+		if w in first:
+			first = first.replace(w, '')
 	first = first.split()
 
 	if len(first) == 0:
 		raise NoSubject 
 
-	standart_schedule = await getMainSchedule(id)
-	if standart_schedule is None or standart_schedule == {}:
+	standard_schedule = await getMainSchedule(id)
+	if standard_schedule is None or standard_schedule == {}:
 		raise NoMainSchedule
-	subjects = await scheduleEnumSubjects(standart_schedule, 0)
+	subjects = await scheduleEnumSubjects(standard_schedule, 0)
 
 	for word in first:
 		if word.lower() == 'воскресенье':
@@ -221,7 +220,6 @@ async def homeworkExtractDataUpload(id: int, text: str) -> tuple():
 	l = len(first)
 	for i in range(l):
 		subject = " ".join(first[:i+1]).lower()
-		offset = i
 		if subject in subjects:
 			break
 	else:
@@ -237,14 +235,14 @@ async def homeworkExtractDataUpload(id: int, text: str) -> tuple():
 
 	if subject_invalid:
 		raise InvalidSubject(
-			subject_invalid = subject_invalid,
-			task = task,
-			subject = subject,
-			weekday = weekday,
-			date = date
+			subject_invalid=subject_invalid,
+			task=task,
+			subject=subject,
+			weekday=weekday,
+			date=date
 		)
 
-	return (subject, task, weekday, date)
+	return subject, task, weekday, date
 
 
 async def ExtractDataShow(id: int, text: str, mode: int = 0) -> datetime:
@@ -258,7 +256,6 @@ async def ExtractDataShow(id: int, text: str, mode: int = 0) -> datetime:
 	:raises InvalidDate:
 	:return: 
 	"""
-	date = None
 	text = text.lower()
 	if mode == 0:
 		words = ms_regular.homeworkShow

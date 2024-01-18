@@ -8,12 +8,13 @@ from aiogram.fsm.state import State, StatesGroup
 # <---------- Local modules ---------->
 from create_bot import bot
 from utilities import ut_logger, ut_handlers
-from utilities.ut_handlers import quotate
+from utilities.ut_handlers import quote_format
 from data_base import operations
-from messages.ms_group import homeworkUpload, homeworkReUpload,\
+from messages.ms_group import homeworkUpload, homeworkReUpload, \
 	homeworkUploadRewrite, homeworkUploadAdd, separateMessage
 from keyboards.kb_group import inline_homeworkUpload
 from exceptions.ex_handlers import *
+from messages import ms_regular
 
 
 # <---------- Variables ---------->
@@ -68,10 +69,14 @@ async def message_uploadApprove(message: types.Message, state: FSMContext):
 				date=result['date'],
 				subject=data['subject']
 			)
-			try: data['task']
-			except: data['task'] = None
-			try: data['photos']
-			except: data['photos'] = None
+			try:
+				data['task']
+			except:
+				data['task'] = None
+			try:
+				data['photos']
+			except:
+				data['photos'] = None
 			if not hw or (hw['task'] is None and hw['photos'] is None):
 				await operations.setHomework(
 					id=message.from_user.id,
@@ -96,9 +101,9 @@ async def message_uploadApprove(message: types.Message, state: FSMContext):
 					photos=hw['photos']
 				)
 				await message.answer(
-				text=homeworkUploadAdd(
-					date=result['date'],
-					subject=data['subject']
+					text=homeworkUploadAdd(
+						date=result['date'],
+						subject=data['subject']
 					),
 					reply_markup=None
 				)
@@ -113,22 +118,26 @@ async def message_uploadApprove(message: types.Message, state: FSMContext):
 					photos=data['photos']
 				)
 				await message.answer(
-				text=homeworkUploadAdd(
-					date=result['date'],
-					subject=data['subject']
+					text=homeworkUploadAdd(
+						date=result['date'],
+						subject=data['subject']
 					),
 					reply_markup=None
 				)
 			else:
-				try: data['old_photos'] = hw['photos']
-				except: data['old_photos'] = None
-				try: data['old_task'] = hw['task']
-				except: data['old_task'] = None
+				try:
+					data['old_photos'] = hw['photos']
+				except:
+					data['old_photos'] = None
+				try:
+					data['old_task'] = hw['task']
+				except:
+					data['old_task'] = None
 				if hw['photos']:
 					media_group = [types.InputMediaPhoto(media=i) for i in hw['photos']]
 					media_group[0] = types.InputMediaPhoto(
 						media=hw['photos'][0],
-					 	caption=homeworkUploadRewrite(
+						caption=homeworkUploadRewrite(
 							date=result['date'],
 							subject=data['subject'],
 							hw=hw
@@ -203,10 +212,14 @@ async def callback_query_uploadApprove(query: types.CallbackQuery, state: FSMCon
 				date=result['date'],
 				subject=data['subject']
 			)
-			try: data['task']
-			except: data['task'] = None
-			try: data['photos']
-			except: data['photos'] = None
+			try:
+				data['task']
+			except:
+				data['task'] = None
+			try:
+				data['photos']
+			except:
+				data['photos'] = None
 			if not hw or (hw['task'] is None and hw['photos'] is None):
 				await operations.setHomework(
 					id=query.from_user.id,
@@ -216,9 +229,9 @@ async def callback_query_uploadApprove(query: types.CallbackQuery, state: FSMCon
 					photos=data['photos']
 				)
 				await query.message.edit_text(
-				text=homeworkUpload(
-					date=result['date'],
-					subject=data['subject']
+					text=homeworkUpload(
+						date=result['date'],
+						subject=data['subject']
 					),
 					reply_markup=None
 				)
@@ -231,9 +244,9 @@ async def callback_query_uploadApprove(query: types.CallbackQuery, state: FSMCon
 					photos=hw['photos']
 				)
 				await query.message.edit_text(
-				text=homeworkUploadAdd(
-					date=result['date'],
-					subject=data['subject']
+					text=homeworkUploadAdd(
+						date=result['date'],
+						subject=data['subject']
 					),
 					reply_markup=None
 				)
@@ -248,23 +261,27 @@ async def callback_query_uploadApprove(query: types.CallbackQuery, state: FSMCon
 					photos=data['photos']
 				)
 				await query.message.edit_text(
-				text=homeworkUploadAdd(
-					date=result['date'],
-					subject=data['subject']
+					text=homeworkUploadAdd(
+						date=result['date'],
+						subject=data['subject']
 					),
 					reply_markup=None
 				)
 			else:
-				try: data['old_photos'] = hw['photos']
-				except: data['old_photos'] = None
-				try: data['old_task'] = hw['task']
-				except: data['old_task'] = None
+				try:
+					data['old_photos'] = hw['photos']
+				except:
+					data['old_photos'] = None
+				try:
+					data['old_task'] = hw['task']
+				except:
+					data['old_task'] = None
 				await state.set_data(data)
 				if hw['photos']:
 					media_group = [types.InputMediaPhoto(media=i) for i in hw['photos']]
 					media_group[0] = types.InputMediaPhoto(
 						media=hw['photos'][0],
-					 	caption=homeworkUploadRewrite(
+						caption=homeworkUploadRewrite(
 							date=result['date'],
 							subject=data['subject'],
 							hw=hw
@@ -287,7 +304,7 @@ async def callback_query_uploadApprove(query: types.CallbackQuery, state: FSMCon
 						text=homeworkUploadRewrite(
 							date=result['date'],
 							subject=data['subject'],
-							hw=hw	
+							hw=hw
 						),
 						reply_markup=inline_homeworkUpload
 					)
@@ -323,12 +340,16 @@ async def FSM_callback_query_uploadEdit(query: types.CallbackQuery, state: FSMCo
 	:param state:
 	:return:
 	"""
-	try:	
+	try:
 		data = await state.get_data()
-		try: data['task']
-		except: data['task'] = None
-		try: data['photos']
-		except: data['photos'] = None
+		try:
+			data['task']
+		except:
+			data['task'] = None
+		try:
+			data['photos']
+		except:
+			data['photos'] = None
 		try:
 			await cleanup(data['messages'])
 		except:
@@ -381,8 +402,10 @@ async def FSM_callback_query_uploadAdd(query: types.CallbackQuery, state: FSMCon
 	try:
 		data = await state.get_data()
 		for key in ['tasks', 'photos', 'old_task', 'old_photos']:
-			try: data[key]
-			except: data[key] = None
+			try:
+				data[key]
+			except:
+				data[key] = None
 		if data['old_photos']:
 			if data['photos']:
 				data['photos'] = data['old_photos'] + data['photos']
@@ -555,7 +578,7 @@ async def FSM_message_textUpload(message: types.Message, state: FSMContext):
 					'message_id': message.message_id + 1,
 					'task': exc.task,
 					'subject': exc.subject,
-					'weekday': exc.weekday, 
+					'weekday': exc.weekday,
 					'date': exc.date
 				}
 			)
@@ -572,16 +595,14 @@ async def FSM_message_textUpload(message: types.Message, state: FSMContext):
 	except TimeTravel as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
 			parse_mode='MarkdownV2'
 		)
-		exception = 'TimeTravel'
-		content = ''
 		await state.clear()
-		ecxeption = ''
+		exception = 'TimeTravel'
 		content = 'User Uploaded task'
 	except SundayException as exc:
 		await message.answer(text=exc.alt)
@@ -617,7 +638,10 @@ async def FSM_message_photosUpload(message: types.Message, state: FSMContext):
 				)
 			)
 			return
-		subject, task, weekday, date = await ut_handlers.homeworkExtractDataUpload(message.from_user.id, message.caption)
+		subject, task, weekday, date = await ut_handlers.homeworkExtractDataUpload(
+			id=message.from_user.id,
+			text=message.caption
+		)
 		await state.set_state(UploadHomeworkFSM.hw_approve)
 		await state.set_data({
 			'id': message.from_user.id,
@@ -663,7 +687,7 @@ async def FSM_message_photosUpload(message: types.Message, state: FSMContext):
 	except InvalidDate as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
@@ -675,7 +699,7 @@ async def FSM_message_photosUpload(message: types.Message, state: FSMContext):
 	except TimeTravel as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
@@ -698,7 +722,7 @@ async def FSM_message_photosUpload(message: types.Message, state: FSMContext):
 		exception=exception,
 		content=content
 	)
-	
+
 
 # <---------- Handlers registration ---------->
 def register_handlers(router: Router):
@@ -710,10 +734,22 @@ def register_handlers(router: Router):
 	:param router:
 	:return:
 	"""
-	router.callback_query.register(FSM_callback_query_mistakeCorrect, F.data == 'HomeworkAccept', StateFilter(UploadHomeworkFSM.hw_mistake))
-	router.callback_query.register(FSM_callback_query_uploadEdit, F.data == 'HomeworkEdit', StateFilter(UploadHomeworkFSM.hw_approve))
-	router.callback_query.register(FSM_callback_query_uploadAdd, F.data == 'HomeworkAdd', StateFilter(UploadHomeworkFSM.hw_approve))
-	router.callback_query.register(FSM_callback_query_decline, F.data == 'HomeworkDecline', StateFilter(UploadHomeworkFSM))
+	router.callback_query.register(
+		FSM_callback_query_mistakeCorrect, F.data == 'HomeworkAccept',
+		StateFilter(UploadHomeworkFSM.hw_mistake)
+	)
+	router.callback_query.register(
+		FSM_callback_query_uploadEdit, F.data == 'HomeworkEdit',
+		StateFilter(UploadHomeworkFSM.hw_approve)
+	)
+	router.callback_query.register(
+		FSM_callback_query_uploadAdd, F.data == 'HomeworkAdd',
+		StateFilter(UploadHomeworkFSM.hw_approve)
+	)
+	router.callback_query.register(
+		FSM_callback_query_decline, F.data == 'HomeworkDecline',
+		StateFilter(UploadHomeworkFSM)
+	)
 
 	router.callback_query.register(FSM_callback_query_dontTouchButtons, F.data.startswith('Homework'))
 

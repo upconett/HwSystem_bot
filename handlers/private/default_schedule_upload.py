@@ -4,13 +4,11 @@ from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-import json
-
 
 # <---------- Local modules ---------->
 from messages import ms_regular, ms_private
 from utilities import ut_logger, ut_handlers, ut_filters
-from utilities.ut_handlers import quotate
+from utilities.ut_handlers import quote_format
 from data_base import operations
 from exceptions.ex_handlers import NotEnoughDays, InvalidWeekDay, SundayException, NoLesson, InvalidLessonNumber, NotSuitableLessonNumber
 from keyboards import kb_private
@@ -114,7 +112,7 @@ async def FSM_message_weekDayInput(message: types.Message, state: FSMContext):
 	except NoLesson as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
@@ -125,25 +123,25 @@ async def FSM_message_weekDayInput(message: types.Message, state: FSMContext):
 	except InvalidLessonNumber as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
 			parse_mode='MarkdownV2'
 		)
-		exception =f'Invalid lesson number at line .'
+		exception = f'Invalid lesson number at line .'
 		content = ''
 	except NotSuitableLessonNumber as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
 			parse_mode='MarkdownV2'
 		)
 		exception = f'Not suitable lesson number at line .'
-		content=''
+		content = ''
 	except Exception as exc:
 		exception = exc
 		content = '' 
@@ -169,43 +167,43 @@ async def FSM_message_checkUpload(message: types.Message, state: FSMContext):
 		await state.set_data(data)
 		await FSM_message_approveUpload(message, state)
 		exception = ''
-		content = 'Schedule upload checked, appoval TOGO.'
+		content = 'Schedule upload checked, approval TOGO.'
 	except NoLesson as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
 			parse_mode='MarkdownV2'
 		)
 		exception = f'No lesson at line .',
-		content=''
+		content = ''
 	except InvalidLessonNumber as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
 			parse_mode='MarkdownV2'
 		)
 		exception = f'Invalid lesson number at line .',
-		content=''	
+		content = ''
 	except NotSuitableLessonNumber as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
 			parse_mode='MarkdownV2'
 		)
 		exception = f'Not suitable lesson number at line .',
-		content=''
+		content = ''
 	except Exception as exc:
 		exception = exc,
-		content=''
+		content = ''
 		await state.clear()
 	await ut_logger.create_log(
 		id=message.from_user.id,
@@ -244,8 +242,8 @@ async def FSM_message_approveUpload(message: types.Message, state: FSMContext):
 		await state.set_state(MainScheduleFSM.sc_approve)
 		data['schedule_dict'] = schedule_dict
 		await message.answer(
-			text = text,
-			reply_markup = kb_private.reply_cancel
+			text=text,
+			reply_markup=kb_private.reply_cancel
 		)
 		if await operations.getMainSchedule(id=message.from_user.id):
 			text = ms_private.scheduleUpdate
@@ -266,7 +264,7 @@ async def FSM_message_approveUpload(message: types.Message, state: FSMContext):
 	except InvalidWeekDay as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
@@ -283,7 +281,7 @@ async def FSM_message_approveUpload(message: types.Message, state: FSMContext):
 	except NoLesson as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
@@ -295,7 +293,7 @@ async def FSM_message_approveUpload(message: types.Message, state: FSMContext):
 	except InvalidLessonNumber as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
@@ -307,7 +305,7 @@ async def FSM_message_approveUpload(message: types.Message, state: FSMContext):
 	except NotSuitableLessonNumber as exc:
 		await message.answer(
 			text=exc.text,
-			reply_parameters=quotate(
+			reply_parameters=quote_format(
 				message=message,
 				quote=exc.quote
 			),
@@ -408,15 +406,13 @@ async def FSM_message_elseUpload(message: types.Message):
 		await message.delete()
 		await message.answer(text=ms_private.scheduleElseUpload)
 	except Exception as exc:
-		exception = exc
-		content = ''
-	await ut_logger.create_log(
-		id=message.from_user.id,
-		filename=filename,
-		function='FSM_message_elseUpload',
-		exception=exception,
-		content=content
-	)
+		await ut_logger.create_log(
+			id=message.from_user.id,
+			filename=filename,
+			function='FSM_message_elseUpload',
+			exception=exc,
+			content=''
+		)
 
 
 async def callback_query_deleteButtons(callback_query: types.CallbackQuery):
@@ -426,15 +422,13 @@ async def callback_query_deleteButtons(callback_query: types.CallbackQuery):
 			reply_markup=None
 		)
 	except Exception as exc:
-		exception = exc
-		content = ''
-	await ut_logger.create_log(
-		id=callback_query.message.from_user.id,
-		filename=filename,
-		function='message_deleteButtons',
-		exception=exception,
-		content=content
-	)
+		await ut_logger.create_log(
+			id=callback_query.message.from_user.id,
+			filename=filename,
+			function='message_deleteButtons',
+			exception=exc,
+			content=''
+		)
 
 
 # <---------- Handlers registration ---------->
