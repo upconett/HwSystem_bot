@@ -39,14 +39,18 @@ async def callback_query_registerGroupStart(callback_query: types.CallbackQuery,
 		)
 		await callback_query.message.delete()
 		await state.set_state(FSMGroupRegister.name)
+		exception = ''
+		content = ''
 	except Exception as exc:
-		await ut_logger.create_log(
-			id=callback_query.from_user.id,
-			filename=filename,
-			function='callback_query_registerGroupStart',
-			exception=exc,
-			content=''
-		)
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=callback_query.from_user.id,
+		filename=filename,
+		function='callback_query_registerGroupStart',
+		exception=exception,
+		content=content
+	)
 
 
 async def message_registerGroupStart(message: types.Message, state: FSMContext):
@@ -63,14 +67,18 @@ async def message_registerGroupStart(message: types.Message, state: FSMContext):
 		)
 		await message.delete()
 		await state.set_state(state=FSMGroupRegister.name)
+		exception = ''
+		content = ''
 	except Exception as exc:
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='message_registerGroupStart',
-			exception=exc,
-			content=''
-		)
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=message.from_user.id,
+		filename=filename,
+		function='message_registerGroupStart',
+		exception=exception,
+		content=content
+	)
 
 
 async def FSM_message_cancel(message: types.Message, state: FSMContext):
@@ -179,14 +187,18 @@ async def FSM_message_registerGroupPassword(message: types.Message, state: FSMCo
 			parse_mode='MarkdownV2'
 		)
 		await state.clear()
+		exception = ''
+		content = ''
 	except Exception as exc:
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='FSM_message_registerGroupName',
-			exception=exc,
-			content=''
-		)
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=message.from_user.id,
+		filename=filename,
+		function='FSM_message_registerGroupPassword',
+		exception=exception,
+		content=content
+	)
 
 
 # <---------- Registration handlers ---------->

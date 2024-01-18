@@ -32,36 +32,25 @@ async def message_chatStart(message: types.Message):
 				text=ms_group.chatFirstMessage,
 				reply_markup=kb_group.inline_firstMessage
 			)
-			await ut_logger.create_log(
-				id=00000000,
-				chat_id=message.chat.id,
-				filename=filename,
-				function='message_chatStart',
-				exception='',
-				content='Bot entered chat.'
-			)
+			content = 'Bot entered chat.'
 		elif message.from_user.is_bot:
 			await bot.send_message(
 				chat_id=message.chat.id,
 				text=ms_group.newBotInChat
 			)
-			await ut_logger.create_log(
-				id=00000000,
-				chat_id=message.chat.id,
-				filename=filename,
-				function='message_chatStart',
-				exception='',
-				content=f'Bot greeted other bot with id={message.from_user.bot.id}.'
-			)
+			content = f'Bot greeted other bot with id={message.from_user.bot.id}.'
+		exception = ''
 	except Exception as exc:
-		await ut_logger.create_log(
-			id=00000000,
-			chat_id=message.chat.id,
-			filename=filename,
-			function='message_chatStart',
-			exception=exc,
-			content=''
-		)
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=00000000,
+		chat_id=message.chat.id,
+		filename=filename,
+		function='message_chatStart',
+		exception=exception,
+		content=content
+	)
 
 
 async def callback_query_chatStart(callback_query: types.CallbackQuery):
@@ -361,7 +350,7 @@ async def callback_query_bindGroup(callback_query: types.CallbackQuery):
 			reply_markup=reply_markup
 		)
 		exception = ''
-		content = 'Chat bound to specified group.'
+		content = ''
 	except Exception as exc:
 		exception = exc
 		content = ''
@@ -404,7 +393,7 @@ async def callback_query_deleteLink(callback_query: types.CallbackQuery):
 			message_id=callback_query.message.message_id
 		)
 		exception = ''
-		content = 'Delete group_link for chat.'
+		content = ''
 	except Exception as exc:
 		exception = exc
 		content = ''
@@ -433,7 +422,7 @@ async def callback_query_reloadChat(callback_query: types.CallbackQuery):
 		)
 		await callback_query_chatStart(callback_query=callback_query)
 		exception = ''
-		content = 'Chat was deleted from chats table.'
+		content = ''
 	except Exception as exc:
 		exception = exc
 		content = ''

@@ -63,6 +63,10 @@ btn_inline_leaveGroupConfirm = InlineKeyboardButton(text='Подтвердить
 inline_leaveGroupConfirm = InlineKeyboardMarkup(inline_keyboard=[[btn_inline_leaveGroupConfirm]])
 
 
+btn_inline_deleteGroupConfirm = InlineKeyboardButton(text='Подтвердить', callback_data=f'DeleteGroupConfirm')
+inline_deleteGroupConfirm = InlineKeyboardMarkup(inline_keyboard=[[btn_inline_deleteGroupConfirm]])
+
+
 btn_inline_mainScheduleAccept = InlineKeyboardButton(text='✅', callback_data='MainSchedule_Submit')
 btn_inline_mainScheduleDecline = InlineKeyboardButton(text='❌', callback_data='MainSchedule_Decline')
 inline_mainScheduleApprove = InlineKeyboardMarkup(inline_keyboard=[[btn_inline_mainScheduleAccept, btn_inline_mainScheduleDecline]])
@@ -78,6 +82,7 @@ inline_mainScheduleDays = InlineKeyboardMarkup(
 )
 
 
+#         <- Complex keyboards ->
 def inline_homeworkNavigate(current_date: datetime, date_next: datetime = None, date_prev: datetime = None) -> InlineKeyboardMarkup:
 	result = InlineKeyboardBuilder()
 	now = current_date

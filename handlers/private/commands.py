@@ -33,14 +33,18 @@ async def message_commandStartOrHelp_registered(message: types.Message):
 			text=text,
 			reply_markup=reply_markup
 		)
+		exception = ''
+		content = ''
 	except Exception as exc:
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='message_commandStartOrHelp_registered',
-			exception=exc,
-			content=''
-		)
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=message.from_user.id,
+		filename=filename,
+		function='message_commandStartOrHelp_registered',
+		exception=exception,
+		content=content
+	)
 
 
 async def message_commandStartOrHelp_unregistered(message: types.Message):
@@ -61,14 +65,18 @@ async def message_commandStartOrHelp_unregistered(message: types.Message):
 			text=text,
 			reply_markup=reply_markup
 		)
+		exception = ''
+		content = ''
 	except Exception as exc:
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='message_commandStartOrHelp_unregistered',
-			exception=exc,
-			content=''
-		)
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=message.from_user.id,
+		filename=filename,
+		function='message_commandStartOrHelp_unregistered',
+		exception=exception,
+		content=content
+	)
 
 
 async def message_commandStartOrHelp_fastTravel(message: types.Message):

@@ -14,18 +14,28 @@ router_private.message.filter(ChatType(chat_types=['private'], data_type='messag
 
 #     <- Router for private chat and not group member ->
 router_private_groupNotMember = Router()
-router_private_groupNotMember.message.filter(ChatType(chat_types=['private'], data_type='message'),
-                                             ~UserPresenceInGroup())
+router_private_groupNotMember.message.filter(
+	ChatType(chat_types=['private'], data_type='message'),
+	~UserPresenceInGroup()
+)
 
 #     <- Router for private chat and group member ->
 router_private_groupMember = Router()
 router_private_groupMember.message.filter(ChatType(chat_types=['private'], data_type='message'), UserPresenceInGroup())
-router_private_groupMember.callback_query.filter(ChatType(chat_types=['private'], data_type='callback_query'),
-                                                 UserPresenceInGroup())
+router_private_groupMember.callback_query.filter(
+	ChatType(chat_types=['private'], data_type='callback_query'),
+	UserPresenceInGroup()
+)
 
 #     <- Router for private chat and group admin ->
 router_private_groupAdmin = Router()
 router_private_groupAdmin.message.filter(ChatType(chat_types=['private'], data_type='message'), UserIsGroupAdmin())
+router_private_groupAdmin.callback_query.filter(ChatType(chat_types=['private'], data_type='callback_query'), UserIsGroupAdmin())
+
+#     <- Router for private chat and group owner ->
+router_private_groupOwner = Router()
+router_private_groupOwner.message.filter(ChatType(chat_types=['private'], data_type='message'), UserIsGroupOwner())
+router_private_groupOwner.callback_query.filter(ChatType(chat_types=['private'], data_type='callback_query'), UserIsGroupOwner())
 
 # <---------- Group/supergroup routers ---------->
 #     <- Router for group chat ->

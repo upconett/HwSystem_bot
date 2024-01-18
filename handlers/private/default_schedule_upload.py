@@ -146,7 +146,6 @@ async def FSM_message_weekDayInput(message: types.Message, state: FSMContext):
 		exception = exc
 		content = '' 
 		await state.clear()
-
 	await ut_logger.create_log(
 		id=message.from_user.id,
 		filename=filename,

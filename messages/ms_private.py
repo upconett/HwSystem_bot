@@ -114,6 +114,19 @@ groupLeaved = (
 )
 
 
+#         <- group_leave.py ->
+groupDelete = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Вы точно хотите удалить группу?\n'
+	'Все участники и чаты потеряют привязку к данной группе!'
+)
+
+groupDeleted = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Вы удалили группу.'
+)
+
+
 #     <- default_schedule_upload.py ->
 scheduleSet = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
@@ -189,7 +202,7 @@ async def scheduleAppearance(schedule: str):
 #         <- group_create.py ->
 async def groupRegisterFinish(group_name: str, group_password: str):
 	return (
-		f'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+		f'⚙️ * [HomeWorker\_Bot](https://t.me/HwSystem_bot) *\n'
 		f'Отлично, группа создана ✅\n'
 		f'Название группы: *{group_name}*\n'
 		f'Установлен пароль: *||{group_password}||*'

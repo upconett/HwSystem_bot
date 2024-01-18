@@ -10,11 +10,11 @@ from utilities import ut_logger, ut_filters
 
 
 # <---------- Variables ---------->
-filename = 'group_leave.py'
+filename = 'group_delete.py'
 
 
 # <---------- Main functions ---------->
-async def callback_query_leaveGroup(callback_query: types.CallbackQuery):
+async def callback_query_deleteGroup(callback_query: types.CallbackQuery):
 	"""
 	Starts group leaving from callback button.
 	:param callback_query:
@@ -23,8 +23,8 @@ async def callback_query_leaveGroup(callback_query: types.CallbackQuery):
 	try:
 		await callback_query.answer()
 		await callback_query.message.edit_text(
-			text=ms_private.groupLeave,
-			reply_markup=kb_private.inline_leaveGroupConfirm
+			text=ms_private.groupDelete,
+			reply_markup=kb_private.inline_deleteGroupConfirm
 		)
 		exception = ''
 		content = ''
@@ -34,17 +34,17 @@ async def callback_query_leaveGroup(callback_query: types.CallbackQuery):
 	await ut_logger.create_log(
 		id=callback_query.from_user.id,
 		filename=filename,
-		function='callback_query_leaveGroup',
+		function='callback_query_deleteGroup',
 		exception=exception,
 		content=content
 	)
 
 
-async def message_leaveGroup(message: types.Message):
+async def message_deleteGroup(message: types.Message):
 	try:
 		await message.answer(
-			text=ms_private.groupLeave,
-			reply_markup=kb_private.inline_leaveGroupConfirm
+			text=ms_private.groupDelete,
+			reply_markup=kb_private.inline_deleteGroupConfirm
 		)
 		await message.delete()
 		exception = ''
@@ -55,25 +55,37 @@ async def message_leaveGroup(message: types.Message):
 	await ut_logger.create_log(
 		id=message.from_user.id,
 		filename=filename,
-		function='message_leaveGroup',
+		function='message_deleteGroup',
 		exception=exception,
 		content=content
 	)
 
 
-async def callback_query_leaveGroupConfirmed(callback_query: types.CallbackQuery):
+async def callback_query_deleteGroupConfirmed(callback_query: types.CallbackQuery):
 	try:
 		await callback_query.answer()
 		await callback_query.message.edit_text(
-			text=ms_private.groupLeaved
+			text=ms_private.groupDeleted
 		)
+		group_id = (await psql.select(
+			table='users',
+			what='group_id',
+			where='id',
+			where_value=callback_query.from_user.id
+		))[0][0]
 		await psql.update(
 			table='users',
 			what='group_id',
 			what_value=None,
-			where='id',
-			where_value=callback_query.from_user.id
+			where='group_id',
+			where_value=group_id
 		)
+		for table in ['chats', 'groups']:
+			await psql.delete(
+				table=table,
+				where='group_id',
+				where_value=group_id
+			)
 		exception = ''
 		content = ''
 	except Exception as exc:
@@ -82,7 +94,7 @@ async def callback_query_leaveGroupConfirmed(callback_query: types.CallbackQuery
 	await ut_logger.create_log(
 		id=callback_query.from_user.id,
 		filename=filename,
-		function='callback_query_leaveGroupConfirm',
+		function='callback_query_deleteGroupConfirm',
 		exception=exception,
 		content=content
 	)
@@ -96,6 +108,6 @@ def register_handlers(router: Router):
 	:param router:
 	:return:
 	"""
-	router.callback_query.register(callback_query_leaveGroup, F.data == 'LeaveGroup')
-	router.message.register(message_leaveGroup, ut_filters.TextEquals(list_ms=ms_regular.groupLeave, data_type='message'))
-	router.callback_query.register(callback_query_leaveGroupConfirmed, F.data == 'LeaveGroupConfirm')
+	router.callback_query.register(callback_query_deleteGroup, F.data == 'DeleteGroup')
+	router.message.register(message_deleteGroup, ut_filters.TextEquals(list_ms=ms_regular.groupDelete, data_type='message'))
+	router.callback_query.register(callback_query_deleteGroupConfirmed, F.data == 'DeleteGroupConfirm')

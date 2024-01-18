@@ -38,14 +38,18 @@ async def callback_query_enterGroupStart(callback_query: types.CallbackQuery, st
 			reply_markup=kb_private.reply_cancel
 		)
 		await state.set_state(FSMGroupEnter.name)
+		exception = ''
+		content = ''
 	except Exception as exc:
-		await ut_logger.create_log(
-			id=callback_query.from_user.id,
-			filename=filename,
-			function='callback_query_enterGroupStart',
-			exception=exc,
-			content=''
-		)
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=callback_query.from_user.id,
+		filename=filename,
+		function='callback_query_enterGroupStart',
+		exception=exception,
+		content=content
+	)
 
 
 async def message_enterGroupStart(message: types.Message, state: FSMContext):
@@ -62,14 +66,18 @@ async def message_enterGroupStart(message: types.Message, state: FSMContext):
 			reply_markup=kb_private.reply_cancel
 		)
 		await state.set_state(FSMGroupEnter.name)
+		exception = ''
+		content = ''
 	except Exception as exc:
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='message_enterGroupStart',
-			exception=exc,
-			content=''
-		)
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=message.from_user.id,
+		filename=filename,
+		function='message_enterGroupStart',
+		exception=exception,
+		content=content
+	)
 
 
 async def FSM_message_cancel(message: types.Message, state: FSMContext):
