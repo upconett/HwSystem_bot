@@ -15,49 +15,58 @@ filename = 'commands.py'
 
 
 # <---------- Start/help commands ---------->
-async def message_commandStartOrHelp(message: types.Message):
+async def message_commandStartOrHelp_registered(message: types.Message):
 	"""
-	Triggered by 'help' command use.
+	Triggered by start/help command for registered users.
 	:param message:
 	:return:
 	"""
 	try:
 		client_data = await operations.userData(id=message.from_user.id)
-		if client_data['username']:
-			if client_data['group_id']:
-				text = ms_private.commandStartOrHelp_forGroupMember
-				reply_markup = kb_private.reply_commandStartOrHelp
-			else:
-				text = ms_private.commandStartOrHelp_forNotGroupMember
-				reply_markup = kb_private.inline_groupPanel
-			content = 'Already on database.'
+		if client_data['group_id']:
+			text = ms_private.commandStartOrHelp_forGroupMember
+			reply_markup = kb_private.reply_commandStartOrHelp
 		else:
-			text = await ms_private.commandStartOrHelp_forNotRegistered(first_name=message.from_user.full_name.split()[0])
+			text = ms_private.commandStartOrHelp_forNotGroupMember
 			reply_markup = kb_private.inline_groupPanel
-			await operations.insertUser(
-				id=message.from_user.id,
-				username=message.from_user.username,
-				full_name=message.from_user.full_name
-			)
-			content = 'Added to database.'
 		await message.answer(
 			text=text,
-			reply_markup=reply_markup,
-			disable_web_page_preview=True
+			reply_markup=reply_markup
 		)
+	except Exception as exc:
 		await ut_logger.create_log(
 			id=message.from_user.id,
 			filename=filename,
-			function='message_commandStartOrHelp',
-			exception='',
-			content=f'Initialized {message.text} command. {content}'
+			function='message_commandStartOrHelp_registered',
+			exception=exc,
+			content=''
 		)
-	except Exception as exception:
+
+
+async def message_commandStartOrHelp_unregistered(message: types.Message):
+	"""
+	Triggered by start/help command for not registered users.
+	:param message:
+	:return:
+	"""
+	try:
+		text = await ms_private.commandStartOrHelp_forNotRegistered(first_name=message.from_user.full_name.split()[0])
+		reply_markup = kb_private.inline_groupPanel
+		await operations.insertUser(
+			id=message.from_user.id,
+			username=message.from_user.username,
+			full_name=message.from_user.full_name
+		)
+		await message.answer(
+			text=text,
+			reply_markup=reply_markup
+		)
+	except Exception as exc:
 		await ut_logger.create_log(
 			id=message.from_user.id,
 			filename=filename,
-			function='message_commandStartOrHelp',
-			exception=exception,
+			function='message_commandStartOrHelp_unregistered',
+			exception=exc,
 			content=''
 		)
 
@@ -113,53 +122,43 @@ async def callback_query_groupPanel(callback_query: types.CallbackQuery):
 	:return:
 	"""
 	try:
+		exception = ''
 		content = await groupPanel(
 			id=callback_query.from_user.id,
 			message_id=callback_query.message.message_id
 		)
-		await ut_logger.create_log(
-			id=callback_query.from_user.id,
-			filename=filename,
-			function='callback_query_groupPanel',
-			exception='',
-			content=content
-		)
-	except Exception as exception:
-		await ut_logger.create_log(
-			id=callback_query.from_user.id,
-			filename=filename,
-			function='callback_query_groupPanel',
-			exception=exception,
-			content=''
-		)
+	except Exception as exc:
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=callback_query.from_user.id,
+		filename=filename,
+		function='callback_query_groupPanel',
+		exception=exception,
+		content=content
+	)
 
 
 async def message_groupPanel(message: types.Message):
 	"""
-	Open group panel for user from callback button.
+	Open group panel for user from message.
 	:param message:
 	:return:
 	"""
 	try:
 		await message.delete()
-		content = await groupPanel(
-			id=message.from_user.id
-		)
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='message_groupPanel',
-			exception='',
-			content=content
-		)
-	except Exception as exception:
-		await ut_logger.create_log(
-			id=message.from_user.id,
-			filename=filename,
-			function='message_groupPanel',
-			exception=exception,
-			content=''
-		)
+		exception = ''
+		content = await groupPanel(id=message.from_user.id)
+	except Exception as exc:
+		exception = exc
+		content = ''
+	await ut_logger.create_log(
+		id=message.from_user.id,
+		filename=filename,
+		function='message_groupPanel',
+		exception=exception,
+		content=content
+	)
 
 
 def register_handlers(router: Router):
@@ -169,6 +168,15 @@ def register_handlers(router: Router):
 	:param router:
 	:return:
 	"""
-	router.message.register(message_commandStartOrHelp, ut_filters.TextEquals(list_ms=ms_regular.startOrHelp, data_type='message'))
+	router.message.register(
+		message_commandStartOrHelp_registered,
+		ut_filters.TextEquals(list_ms=ms_regular.startOrHelp, data_type='message'),
+		ut_filters.UserRegister()
+	)
+	router.message.register(
+		message_commandStartOrHelp_unregistered,
+		ut_filters.TextEquals(list_ms=ms_regular.startOrHelp, data_type='message'),
+		~ut_filters.UserRegister()
+	)
 	router.callback_query.register(callback_query_groupPanel, F.data == 'GroupPanel')
 	router.message.register(message_groupPanel, ut_filters.TextEquals(list_ms=ms_regular.groupPanel, data_type='message'))
