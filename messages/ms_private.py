@@ -133,6 +133,11 @@ groupAdmins = (
 	'Админы, которым вы можете передать права управления группой 👇'
 )
 
+groupNoAdmins = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'В группе нет админов! Вы не можете передать права управления.'
+)
+
 groupNewOwner = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
 	'Вы передали права управления группой.'
@@ -141,6 +146,13 @@ groupNewOwner = (
 groupToNewOwner = (
 	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
 	'Вы стали владельцем группы, в которой состоите.'
+)
+
+
+#         <- group_members.py ->
+groupMembers = (
+	'⚙️ <b><a href="https://t.me/HwSystem_bot">HomeWorker_Bot</a></b>\n'
+	'Участники вашей группы 👇'
 )
 
 

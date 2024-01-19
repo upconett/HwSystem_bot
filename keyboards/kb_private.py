@@ -1,7 +1,8 @@
 # <---------- Python modules ---------->
+import math
+
 from aiogram.types import KeyboardButton, InlineKeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 from datetime import timedelta, datetime
 
 
@@ -52,12 +53,12 @@ inline_groupPanelForMember = InlineKeyboardMarkup(inline_keyboard=[[btn_inline_l
 
 btn_inline_deleteGroup = InlineKeyboardButton(text='🚪 Удалить', callback_data=f'DeleteGroup')
 btn_inline_changeOwner = InlineKeyboardButton(text='🔑 Передать права', callback_data=f'ChangeOwner')
-btn_inline_newAdmin = InlineKeyboardButton(text='🎟 Добавить админа', callback_data=f'NewAdmin')
+btn_inline_listMembers = InlineKeyboardButton(text='👨‍👨‍👦‍👦 Список участников', callback_data=f'ListMembers|0')
 inline_groupPanelForOwner = InlineKeyboardMarkup(
 	inline_keyboard=[
 		[btn_inline_deleteGroup],
 		[btn_inline_changeOwner],
-		[btn_inline_newAdmin]
+		[btn_inline_listMembers]
 	]
 )
 
@@ -102,6 +103,60 @@ async def inline_confirmNewOwner(id: int):
 	button = InlineKeyboardButton(text='Подтвердить', callback_data=f'ConfirmNewOwner|{id}')
 	reply_markup = InlineKeyboardMarkup(inline_keyboard=[[button]])
 	return reply_markup
+
+
+async def inline_members(members: list, page: int):
+	"""
+
+	:param members:
+	:param page:
+	:return: [0] Keyboard, [1] Members amount in keyboard
+	"""
+	pages = math.ceil(len(members) / 10)
+	if pages == page + 1:
+		members_page = members[page * 10:]
+		members_amount = len(members_page)
+		different = 10 - len(members_page)
+		for _ in range(different):
+			members_page.append(('✖️', '✖️', '✖️', '✖️', '✖️', '✖️'))
+	else:
+		members_page = members[page * 10:][:(page + 1) * 10]
+		members_amount = len(members_page)
+	inline_keyboard = []
+	for item in range(0, 10, 2):
+		name_1 = f'@{members_page[item][1]}'
+		if not name_1:
+			name_1 = members_page[item][2]
+		elif name_1 == '@✖️':
+			name_1 = '✖️'
+
+		name_2 = f'@{members_page[item + 1][1]}'
+		if not name_2:
+			name_2 = members_page[item + 1][2]
+		elif name_2 == '@✖️':
+			name_2 = '✖️'
+		inline_keyboard.append(
+			[
+				InlineKeyboardButton(text=name_1, callback_data=f'GetMember|{members_page[item][0]}'),
+				InlineKeyboardButton(text=name_2, callback_data=f'GetMember|{members_page[item + 1][0]}')
+			]
+		)
+	if page == 0 and len(members) > 10:
+		inline_keyboard.append([InlineKeyboardButton(text='Вперед >>>', callback_data=f'ListMembers|{page + 1}')])
+	elif page == 0 and len(members) <= 10:
+		pass
+	elif math.ceil(len(members) / 10) == page + 1:
+		inline_keyboard.append([InlineKeyboardButton(text='<<< Назад', callback_data=f'ListMembers|{page - 1}')])
+	else:
+		inline_keyboard.append(
+			[
+				InlineKeyboardButton(text='<<< Назад', callback_data=f'ListMembers|{page - 1}'),
+				InlineKeyboardButton(text='Вперед >>>', callback_data=f'ListMembers|{page + 1}')
+			]
+		)
+	inline_keyboard.append([InlineKeyboardButton(text='Отмена', callback_data=f'CancelListMembers')])
+	reply_markup = InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
+	return reply_markup, members_amount
 
 
 def inline_homeworkNavigate(current_date: datetime, date_next: datetime = None, date_prev: datetime = None) -> InlineKeyboardMarkup:
