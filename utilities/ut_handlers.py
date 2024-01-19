@@ -45,16 +45,16 @@ async def scheduleMessageToDict(text: str, mode: int) -> dict:
 	:return: Schedule as Dict
 	"""
 	result = {}
-	data = text.split('\n')
+	data = text.lower().split('\n')
 	if mode == 0:
 		weekday = None
 		for num, line in enumerate(data):
 			if num == 0:
 				continue
-			if line.replace(' ', '').lower() in ms_regular.weekdays:
+			if line.replace(' ', '') in ms_regular.weekdays:
 				if line.lower() == 'воскресенье':
 					raise SundayException
-				weekday = line.capitalize()
+				weekday = line
 				result[weekday] = {}
 				for i in range(11):
 					result[weekday][str(i)] = None
@@ -70,7 +70,7 @@ async def scheduleMessageToDict(text: str, mode: int) -> dict:
 							raise InvalidLessonNumber(line)
 						if int(lesson_num) not in range(0, 11):
 							raise NotSuitableLessonNumber(line)
-						subject = " ".join([x for x in line.split()[1:]]).lower()
+						subject = " ".join([x for x in line.split()[1:]])
 						if subject == '-':
 							subject = None
 						result[weekday][str(int(lesson_num))] = subject
@@ -92,7 +92,7 @@ async def scheduleMessageToDict(text: str, mode: int) -> dict:
 						raise InvalidLessonNumber(line)
 					if int(lesson_num) not in range(0, 11):
 						raise NotSuitableLessonNumber(line)
-					subject = " ".join([x for x in line.split()[1:]]).lower()
+					subject = " ".join([x for x in line.split()[1:]])
 					if subject == '-':
 						subject = None
 					result[str(int(lesson_num))] = subject
@@ -118,7 +118,7 @@ async def scheduleDictToMessage(schedule: dict, mode: int) -> str:
 			for i, j in enumerate(lesson_nums):
 				lesson_nums[i] = int(j)
 			end = max(lesson_nums)
-			result += f'<b>{day}</b>\n'
+			result += f'<b>{day.capitalize()}</b>\n'
 			for lesson in schedule[day]:
 				if int(lesson) in range(0, end+1):
 					subject = schedule[day][lesson]

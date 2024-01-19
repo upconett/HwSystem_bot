@@ -119,12 +119,14 @@ async def callback_query_scheduleShowDate(query: types.CallbackQuery):
 	"""
 	try:
 		date = parse(query.data.replace('Schedule', ''))
+		print(date)
 		weekday = ms_regular.weekdays[date.weekday()]
+		print(weekday)
 		text = (
 			'<b>📋 Расписание</b>\n'
 			f'<b>{weekday.capitalize()} ({date.day} {ms_regular.months_genitive[date.month-1]} {date.year})</b>\n'
 		)
-		schedule = await operations.getSchedule(query.from_user.id)
+		schedule = await operations.getSchedule(query.from_user.id, date)
 		if not schedule:
 			schedule = await operations.getMainSchedule(query.from_user.id)
 			schedule = schedule[weekday]

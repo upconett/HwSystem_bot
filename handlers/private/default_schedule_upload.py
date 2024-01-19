@@ -75,7 +75,7 @@ async def FSM_callback_query_dayChoice(callback_query: types.CallbackQuery, stat
 		)
 		await state.set_data(data=data)
 		await state.set_state(state=MainScheduleFSM.sc_weekday_input)
-		text = await ms_private.currentDaySchedule_accusativeCase(current_day=ms_regular.weekdays_accusativeCase[data["current_day"]].capitalize())
+		text = await ms_private.currentDaySchedule_accusativeCase(current_day=ms_regular.weekdays_accusativeCase[data["current_day"]].lower())
 		await callback_query.message.answer(
 			text=text,
 			reply_markup=kb_private.reply_cancel
@@ -99,7 +99,7 @@ async def FSM_message_weekDayInput(message: types.Message, state: FSMContext):
 		await ut_handlers.scheduleMessageToDict(message.text, 1)
 		data = await state.get_data()
 		data['schedule_input'] += (
-			f'{ms_regular.weekdays[data["current_day"]].capitalize()}\n'
+			f'{ms_regular.weekdays[data["current_day"]].lower()}\n'
 			f'{message.text}\n'
 		)
 		data['current_day'] += 1
@@ -160,7 +160,7 @@ async def FSM_message_checkUpload(message: types.Message, state: FSMContext):
 		await ut_handlers.scheduleMessageToDict(message.text, 1)
 		data = await state.get_data()
 		data['schedule_input'] += (
-			f'{ms_regular.weekdays[data["current_day"]].capitalize()}\n'
+			f'{ms_regular.weekdays[data["current_day"]].lower()}\n'
 			f'{message.text}\n'
 		)
 		await state.set_data(data)

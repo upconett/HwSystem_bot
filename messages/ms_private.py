@@ -221,7 +221,7 @@ async def groupConfirmNewOwner(name: str):
 
 #     <- default_schedule_upload.py ->
 async def currentDaySchedule_accusativeCase(current_day: str):
-	return f'Введите расписание на {current_day} 👇'
+	return f'Введите расписание на {current_day.capitalize()} 👇'
 
 
 async def scheduleApprove(len_subjects: int):
