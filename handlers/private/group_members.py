@@ -7,6 +7,7 @@ from create_bot import bot, psql
 from messages import ms_private, ms_regular
 from keyboards import kb_private
 from utilities import ut_logger, ut_filters
+from data_base import operations
 
 
 # <---------- Variables ---------->
@@ -58,11 +59,24 @@ async def callback_query_viewMember(callback_query: types.CallbackQuery):
 	try:
 		await callback_query.answer()
 		id = int(callback_query.data.split('|')[1])
+		data = await operations.userData(id=id)
+		data_formatted = await operations.userData(id=id, formatted=True)
+		if data['group_admin']:
+			reply_markup = await kb_private.inline_memberActions(
+				id=id,
+				for_admin=True
+			)
+		else:
+			reply_markup = await kb_private.inline_memberActions(id=id)
 		await callback_query.message.edit_text(
-			text=''
+			text=(
+				f'<blockquote>{data_formatted}</blockquote>\n\n'
+				f'Что хотите сделать с участником?'
+			),
+			reply_markup=reply_markup
 		)
 		exception = ''
-		content = f''
+		content = ''
 	except Exception as exc:
 		exception = exc
 		content = ''

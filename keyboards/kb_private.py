@@ -159,6 +159,21 @@ async def inline_members(members: list, page: int):
 	return reply_markup, members_amount
 
 
+async def inline_memberActions(id: int, for_admin: bool = False):
+	if for_admin:
+		button = InlineKeyboardButton(text='Разжаловать админа', callback_data=f'DemoteAdmin|{id}')
+	else:
+		button = InlineKeyboardButton(text='Сделать админом', callback_data=f'MakeAdmin|{id}')
+	button_delete = InlineKeyboardButton(text='Удалить из группы', callback_data=f'DeleteFromGroup|{id}')
+	reply_markup = InlineKeyboardMarkup(
+		inline_keyboard=[
+			[button],
+			[button_delete]
+		]
+	)
+	return reply_markup
+
+
 def inline_homeworkNavigate(current_date: datetime, date_next: datetime = None, date_prev: datetime = None) -> InlineKeyboardMarkup:
 	result = InlineKeyboardBuilder()
 	now = current_date
