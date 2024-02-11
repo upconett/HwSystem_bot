@@ -268,7 +268,6 @@ async def getMainSchedule(id: int):
 			where='group_id',
 			where_value=group_id
 		))[0]
-		psql.conn.close()
 		if schedule:
 			return schedule[0]
 		else:
