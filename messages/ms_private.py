@@ -281,6 +281,7 @@ def homeworkShow(date: datetime, tasks: dict, schedule: dict) -> str:
 	for lesson in tasks:
 		if tasks[lesson]['task'] or tasks[lesson]['photos']:
 			least = True
+			print(ls_nums)
 			result += f'<b>[{ls_nums[lesson]}] {lesson.capitalize()}</b>'
 			if tasks[lesson]['photos']:
 				result += ' 🖼️'

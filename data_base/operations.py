@@ -14,7 +14,37 @@ filename = 'operations.py'
 __all__ = ['insertUser', 'insertChat', 'userData', 'chatData', 'groupData', 'insertGroup', 'getMainSchedule', 'setMainSchedule']
 
 
+# <---------- Utility ---------->
+async def psqlIsClosed() -> bool:
+	return True == psql.conn.closed
+
+
+async def mndbIsClosed() -> bool:
+	try:
+		mndb.conn.server_info()
+		return False
+	except:
+		return True
+
+
+# <---------- Decorators ---------->
+def ensureConnection(func):
+	"""
+	Декоратор, определяющий подключена ли бд.
+	"""
+	async def wrapper(*args, **kwargs):
+		if await psqlIsClosed():
+			psql.reconnect()
+			print('\nPSQL Reconnected\n')
+		if await mndbIsClosed():
+			mndb.reconnect()
+			print('\nMNDB Reconnected\n')
+		return await func(*args, **kwargs)
+	return wrapper
+
+
 # <---------- Interoperability with PostgreSQL ---------->
+@ensureConnection
 async def insertUser(id: int, username: str, full_name: str):
 	"""
 	Insert new user in users table.\n
@@ -34,6 +64,7 @@ async def insertUser(id: int, username: str, full_name: str):
 		return False
 
 
+@ensureConnection
 async def insertGroup(group_name: str, group_password: str, owner_id: int, default_lessons: str = '{}', default_breaks: str = '{}'):
 	"""
 	Insert new group in groups table.\n
@@ -55,6 +86,7 @@ async def insertGroup(group_name: str, group_password: str, owner_id: int, defau
 		return False
 
 
+@ensureConnection
 async def insertChat(id: int, title: str, group_id: int, notifications: bool):
 	"""
 	Insert new chat in chats table.\n
@@ -75,6 +107,7 @@ async def insertChat(id: int, title: str, group_id: int, notifications: bool):
 		return False
 
 
+@ensureConnection
 async def userData(id: int, formatted: bool = False) -> dict:
 	"""
 	Return data about user formatted or not.\n
@@ -122,6 +155,7 @@ async def userData(id: int, formatted: bool = False) -> dict:
 	return data
 
 
+@ensureConnection
 async def chatData(id: int, formatted: bool = False) -> dict:
 	"""
 	Return data about chat formatted or not.\n
@@ -167,6 +201,7 @@ async def chatData(id: int, formatted: bool = False) -> dict:
 	return data
 
 
+@ensureConnection
 async def groupData(group_id: int, formatted: bool = False) -> dict:
 	"""
 	Return data about group formatted or not.\n
@@ -212,6 +247,7 @@ async def groupData(group_id: int, formatted: bool = False) -> dict:
 	return data
 
 
+@ensureConnection
 async def getMainSchedule(id: int):
 	"""
 	Get default schedule from database.\n
@@ -232,6 +268,7 @@ async def getMainSchedule(id: int):
 			where='group_id',
 			where_value=group_id
 		))[0]
+		psql.conn.close()
 		if schedule:
 			return schedule[0]
 		else:
@@ -241,6 +278,7 @@ async def getMainSchedule(id: int):
 		return False
 
 
+@ensureConnection
 async def setMainSchedule(id: int, data: dict):
 	"""
 	Set default schedule in database.\n
@@ -269,6 +307,7 @@ async def setMainSchedule(id: int, data: dict):
 		return False
 
 
+@ensureConnection
 async def getSchedule(id: int, date: datetime = None) -> dict:
 	"""
 	Returns schedule for specified date.
@@ -301,6 +340,7 @@ async def getSchedule(id: int, date: datetime = None) -> dict:
 	return schedule
 
 
+@ensureConnection
 async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: str = None):
 	"""
 	Finds next lesson in MainSchedule.\n
@@ -366,6 +406,7 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 	return result
 
 
+@ensureConnection
 def generateMongoRecord(date: datetime, schedule: dict, breaks: dict = None, subject: str = None, task: str = None, photos: list = None) -> dict:
 	"""
 	Generates dict file with schedule and tasks info that will be stored in MongoDB.\n
@@ -400,6 +441,7 @@ def generateMongoRecord(date: datetime, schedule: dict, breaks: dict = None, sub
 	return result
 
 
+@ensureConnection
 async def getHomework(id: int, date: datetime = None, subject: str = None) -> dict:
 	"""
 	Returns homework for specified date or subject.\n
@@ -435,6 +477,7 @@ async def getHomework(id: int, date: datetime = None, subject: str = None) -> di
 	return homework
 
 
+@ensureConnection
 async def setHomework(id: int, date: datetime, subject: str, task: str = None, photos: list = None) -> bool:
 	"""
 	Sets task on subject provided.\n
@@ -485,6 +528,7 @@ async def setHomework(id: int, date: datetime, subject: str, task: str = None, p
 	return True
 
 
+@ensureConnection
 async def closestDates(id: int, date: datetime) -> tuple[datetime, datetime]:
 	"""
 	Checks if there is any homework before and after given date.\n

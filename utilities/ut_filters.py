@@ -97,6 +97,7 @@ class TextEquals(BaseFilter):
         self.list_ms = list_ms
         self.data_type = data_type
 
+    
     async def __call__(self, data: Message or CallbackQuery) -> bool:
         """
 
@@ -151,7 +152,7 @@ class UserPresenceInGroup(BaseFilter):
         try:
             response = await operations.userData(id=data.from_user.id)
             result = response['group_id'] is not None
-            print(f'UserPresenceInGroup {data.from_user.id} >> {result}')
+            print(f'UserPresenceInGroup {data.from_user.id} >> {result}', response)
             return result
         except Exception as exception:
             print(f'FILENAME="{filename}"; CLASS="UserPresenceInGroup"; CONTENT=""; EXCEPTION="{exception}";')

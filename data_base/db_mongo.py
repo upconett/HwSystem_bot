@@ -17,8 +17,16 @@ class MongoDB:
 		:param database: Database name
 		:param port: Port to connect
 		"""
-		self.conn = MongoClient(f'mongodb://{user}:{password}@{host}:{port}/{database}?authMechanism=SCRAM-SHA-256')
-		self.db = self.conn.get_database(database)
+		self.connectionString = f'mongodb://{user}:{password}@{host}:{port}/{database}?authMechanism=SCRAM-SHA-256'
+		self.database: str = database
+		self.conn = MongoClient(self.connectionString)
+		self.db = self.conn.get_database(self.database)
+
+
+	async def reconnect(self):
+		self.conn = MongoClient(self.connectionString)
+		self.db = self.conn.get_database(self.database)
+
 
 	async def close(self):
 		self.conn.close()

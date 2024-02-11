@@ -22,8 +22,16 @@ class PostgreSQL:
 		:param database: Database name
 		:param port: Port to connect
 		"""
-		self.conn = ps.connect(host=host, port=port, dbname=database, user=user, password=password)
+		self.connectionParameters = {'host': host, 'port': port, 'dbname': database, 'user': user, 'password': password}
+		self.conn = ps.connect(**self.connectionParameters)
 		self.conn.autocommit = True
+
+	
+	def reconnect(self):
+		self.conn = ps.connect(**self.connectionParameters)
+		self.conn.autocommit = True
+		
+
 
 	def createTables(self):
 		"""

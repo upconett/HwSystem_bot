@@ -289,3 +289,5 @@ async def ExtractDataShow(id: int, text: str, mode: int = 0) -> datetime:
 		except ParserError:
 			raise InvalidDate(text)
 	return date
+
+
