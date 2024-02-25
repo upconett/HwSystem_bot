@@ -405,7 +405,6 @@ async def findNextLesson(id: int, subject: str, date: datetime = None, weekday: 
 	return result
 
 
-@ensureConnection
 def generateMongoRecord(date: datetime, schedule: dict, breaks: dict = None, subject: str = None, task: str = None, photos: list = None) -> dict:
 	"""
 	Generates dict file with schedule and tasks info that will be stored in MongoDB.\n
